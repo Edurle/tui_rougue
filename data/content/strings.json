@@ -1,0 +1,31 @@
+{
+  "_schema": {
+    "说明": "全部游戏内文案模板集中于此。{xxx} 为格式化占位符。整体润色、国风化改写只动此文件，不碰代码。"
+  },
+  "welcome": "你踏入了《山海行》的地界。状如禺而白耳的狌狌在暗处窥伺……",
+  "attack_hits": "{attacker} 击中了 {target}，造成 {damage} 点伤害。",
+  "attack_blocked": "{attacker} 的攻击被 {target} 格挡，未造成伤害。",
+  "player_hurt_warn": "警告：你的气血已不足三成！",
+  "monster_dies": "{name} 轰然倒地，化作一具尸骸。",
+  "player_dies": "你力竭而亡……行走山海之旅到此为止。",
+  "game_over_hint": "你已陨落 —— 按回车转世重修，按 Esc 离开。",
+  "gain_xp": "你汲取了 {xp} 点修为。",
+  "level_up": "修为精进！你达到了第 {level} 重境界。气血上限+8，攻+1，防+1。",
+  "pickup": "你拾起了 {item}。",
+  "inventory_full": "行囊已满，放不下 {item}。",
+  "no_item_here": "这里没有什么可拾取的东西。",
+  "heal_used": "你服下灵芝，恢复 {amount} 点气血。",
+  "heal_full": "你气血充盈，无需服用。",
+  "lightning_used": "五雷符轰然引动，一道天雷劈中 {target}，造成 {damage} 点伤害。",
+  "lightning_no_target": "四下无敌，天雷无处可落。",
+  "inventory_empty": "行囊空空如也。",
+  "inventory_title": "行囊（按字母使用，Esc 收起）",
+  "descend": "你循石阶下行，抵达第 {floor} 层。",
+  "not_on_stairs": "这里没有向下的石阶。",
+  "corpse_name": "{name}尸骸",
+  "hud_hp": "气血 {hp}/{max_hp}",
+  "hud_hp_dead": "气血耗尽",
+  "hud_level": "修为 第{level}重（{xp}/{next}）",
+  "hud_floor": "地下第{floor}层",
+  "game_over_tag": "已陨落"
+}

@@ -1,0 +1,16 @@
+{
+  "_schema": {
+    "说明": "玩家初始定义。数值调整只改此文件。"
+  },
+  "name": "行者",
+  "char": "@",
+  "color": [235, 235, 235],
+  "tags": ["player"],
+  "fighter": { "hp": 30, "power": 5, "defense": 1 },
+  "level": {
+    "base_xp": 60,
+    "step_xp": 90,
+    "per_level": { "max_hp": 8, "power": 1, "defense": 1 }
+  },
+  "inventory": { "capacity": 10 }
+}

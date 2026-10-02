@@ -1,0 +1,28 @@
+{
+  "_schema": {
+    "说明": "物品定义。consumable.type 对应 consumable.py 的效果注册表；新效果=新类+注册+此处引用。tags 为五行/出处扩展预留。",
+    "字段": {
+      "name": "显示名",
+      "char": "地图字符",
+      "color": "[R, G, B]",
+      "tags": "扩展标签",
+      "consumable": "可消耗效果：type 对应注册表，其余为效果参数"
+    }
+  },
+  "lingzhi": {
+    "name": "灵芝",
+    "char": "!",
+    "color": [206, 68, 68],
+    "tags": ["herb", "wood"],
+    "lore": "山川精气所结，服之养气疗伤。",
+    "consumable": { "type": "heal", "amount": 12 }
+  },
+  "wulei_fu": {
+    "name": "五雷符",
+    "char": "?",
+    "color": [240, 214, 92],
+    "tags": ["talisman", "metal"],
+    "lore": "雷部符箓，祭出时引天雷落在近前妖邪身上。",
+    "consumable": { "type": "lightning", "damage": 14, "max_range": 8 }
+  }
+}

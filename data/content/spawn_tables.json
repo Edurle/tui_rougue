@@ -1,0 +1,23 @@
+{
+  "_schema": {
+    "说明": "按层数的投放权重表。生成器先按 min_floor/max_floor 过滤，再按 weight 加权抽取。调节难度曲线只改此文件。",
+    "字段": {
+      "monsters/items": "投放条目：id 必须存在于 monsters.json / items.json",
+      "per_room": "每个房间：chance 触发概率，min/max 数量区间"
+    }
+  },
+  "monsters": [
+    { "id": "xingxing", "min_floor": 1, "max_floor": null, "weight": 6 },
+    { "id": "gudiao", "min_floor": 2, "max_floor": null, "weight": 4 },
+    { "id": "jiuweihu", "min_floor": 3, "max_floor": null, "weight": 2 },
+    { "id": "jiuweihu", "min_floor": 5, "max_floor": null, "weight": 5 }
+  ],
+  "items": [
+    { "id": "lingzhi", "min_floor": 1, "max_floor": null, "weight": 6 },
+    { "id": "wulei_fu", "min_floor": 1, "max_floor": null, "weight": 3 }
+  ],
+  "per_room": {
+    "monsters": { "chance": 0.6, "min": 1, "max": 2 },
+    "items": { "chance": 0.45, "min": 1, "max": 1 }
+  }
+}

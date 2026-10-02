@@ -1,0 +1,31 @@
+{
+  "_schema": {
+    "说明": "【天工开物·占位数据】为将来的采集/合成（炮制、锻造）系统预留。系统首版未实现；实现时：inputs/output 中的 id 必须存在于 items.json（或未来的材料表），产出物品同样走 items.json 定义。",
+    "字段": {
+      "id": "稳定标识",
+      "name": "配方名",
+      "chapter": "对应《天工开物》篇目",
+      "inputs": "材料清单 [{id, count}]",
+      "output": "产物 {id, count}",
+      "tags": "扩展标签"
+    }
+  },
+  "recipes": [
+    {
+      "id": "refine_lingzhi",
+      "name": "炮制灵芝",
+      "chapter": "曲蘖",
+      "inputs": [{ "id": "lingzhi", "count": 3 }],
+      "output": { "id": "lingzhi_dew", "count": 1 },
+      "tags": ["tiangongkaiwu", "alchemy"]
+    },
+    {
+      "id": "inscribe_wulei",
+      "name": "摹刻五雷符",
+      "chapter": "丹青",
+      "inputs": [{ "id": "wulei_fu", "count": 1 }, { "id": "lingzhi", "count": 1 }],
+      "output": { "id": "wulei_fu", "count": 2 },
+      "tags": ["tiangongkaiwu", "talisman"]
+    }
+  ]
+}

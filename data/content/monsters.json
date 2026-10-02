@@ -1,0 +1,46 @@
+{
+  "_schema": {
+    "说明": "山海经异兽定义。components 里的键对应代码中的组件注册表（content_loader.py），新增行为=新组件类+注册+此处引用。tags 为预留扩展字段：五行/阴阳/出处典籍，首版不消费。",
+    "字段": {
+      "name": "显示名",
+      "char": "地图字符",
+      "color": "[R, G, B]",
+      "tags": "扩展标签（shanhaijing=山海经, 五行, 典籍篇目等）",
+      "components.fighter": "战斗组件：hp/power/defense/xp_reward",
+      "components.ai": "AI 行为，type 对应 ai.py 注册表"
+    }
+  },
+  "xingxing": {
+    "name": "狌狌",
+    "char": "x",
+    "color": [191, 122, 58],
+    "tags": ["shanhaijing", "nanshanjing", "beast", "wood"],
+    "lore": "《南山经》：招摇之山，有兽焉，其状如禺而白耳，伏行人走，其名曰狌狌，食之善走。",
+    "components": {
+      "fighter": { "hp": 8, "power": 3, "defense": 0, "xp_reward": 30 },
+      "ai": { "type": "hostile" }
+    }
+  },
+  "gudiao": {
+    "name": "蛊雕",
+    "char": "d",
+    "color": [214, 76, 52],
+    "tags": ["shanhaijing", "nanshanjing", "bird", "metal"],
+    "lore": "《南山经》：鹿吴之山，泽更之水出焉。有兽焉，名曰蛊雕，其状如雕而有角，其音如婴儿之音，是食人。",
+    "components": {
+      "fighter": { "hp": 14, "power": 5, "defense": 1, "xp_reward": 90 },
+      "ai": { "type": "hostile" }
+    }
+  },
+  "jiuweihu": {
+    "name": "九尾狐",
+    "char": "h",
+    "color": [235, 160, 207],
+    "tags": ["shanhaijing", "nanshanjing", "beast", "fire"],
+    "lore": "《南山经》：青丘之山，有兽焉，其状如狐而九尾，其音如婴儿，能食人；食者不蛊。",
+    "components": {
+      "fighter": { "hp": 22, "power": 7, "defense": 2, "xp_reward": 220 },
+      "ai": { "type": "hostile" }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "_schema": {
+    "说明": "【周易·占位数据】为将来的占卜/卦象事件系统预留。系统首版未实现；实现时：effect_hook 填注册表中效果类型名（如 'buff_power'、'reveal_map'），由 DivinationAction 消费。",
+    "字段": {
+      "id": "稳定标识",
+      "name": "卦名",
+      "symbol": "卦符 Unicode",
+      "full_name": "全名",
+      "judgment": "卦辞",
+      "effect_hook": "效果钩子：null=未定；实现占卜系统时映射到效果注册表",
+      "tags": "扩展标签"
+    }
+  },
+  "hexagrams": [
+    {
+      "id": "qian",
+      "name": "乾",
+      "symbol": "☰",
+      "full_name": "乾为天",
+      "judgment": "元，亨，利，贞。",
+      "effect_hook": null,
+      "tags": ["zhouyi", "yang"]
+    },
+    {
+      "id": "kun",
+      "name": "坤",
+      "symbol": "☷",
+      "full_name": "坤为地",
+      "judgment": "元亨，利牝马之贞。君子有攸往，先迷后得主，利。",
+      "effect_hook": null,
+      "tags": ["zhouyi", "yin"]
+    },
+    {
+      "id": "kan",
+      "name": "坎",
+      "symbol": "☵",
+      "full_name": "坎为水",
+      "judgment": "习坎，有孚，维心亨，行有尚。",
+      "effect_hook": null,
+      "tags": ["zhouyi", "water", "peril"]
+    }
+  ]
+}

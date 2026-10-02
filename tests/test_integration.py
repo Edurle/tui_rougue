@@ -1,0 +1,119 @@
+"""集成测试：合成键盘事件驱动完整输入管线（按键→动作→引擎→敌回合）。
+
+模拟 main.py 的 handler 切换逻辑，验证真实按键路径下的
+战斗 / 拾取 / 行囊 / 使用物品 / 下楼 / 死亡重开。
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import tcod  # noqa: E402
+from tcod.event import KeySym  # noqa: E402
+
+import input_handlers as ih  # noqa: E402
+from content_loader import load_content  # noqa: E402
+from engine import Engine  # noqa: E402
+
+
+def dispatch_key(handler, sym):
+    """构造合成 KeyDown 事件并派发，返回动作。"""
+    event = tcod.event.KeyDown(sym=sym, scancode=0, mod=tcod.event.Modifier.NONE, repeat=False)
+    return handler.dispatch(event)
+
+
+def apply(handler, action, engine):
+    """镜像 main.py 主循环对返回值的处理逻辑。"""
+    if action is None:
+        return handler
+    if isinstance(action, ih.SwitchHandlerAction):
+        if isinstance(action, ih.OpenInventoryAction):
+            return ih.InventoryEventHandler(engine)
+        if isinstance(action, ih.CloseMenuAction):
+            return ih.MainGameEventHandler(engine)
+        if isinstance(action, ih.RestartAction):
+            return None  # 由调用方重建
+        return handler
+    engine.handle_action(action)
+    return handler
+
+
+def test_full_key_pipeline_combat_pickup_inventory_stairs():
+    content = load_content()
+    engine = Engine(content)
+    handler = ih.MainGameEventHandler(engine)
+    player = engine.player
+
+    # 1) 在玩家左侧放一只狌狌，往左走 = bump 攻击，直到击杀
+    monster = content.build_monster("xingxing", engine.gamemap, player.x - 1, player.y)
+    for _ in range(60):
+        action = dispatch_key(handler, KeySym.H)
+        handler = apply(handler, action, engine)
+        if not monster.is_alive:
+            break
+    assert not monster.is_alive, "按 H 攻击应能击杀狌狌"
+    joined_log = " ".join(m.plain_text for m in engine.message_log.messages)
+    assert "狌狌" in joined_log
+    assert player.level.current_xp > 0
+
+    # 2) 脚下放灵芝，按 G 拾取
+    item = content.build_item("lingzhi", engine.gamemap, monster.x, monster.y)
+    player.x, player.y = monster.x, monster.y
+    action = dispatch_key(handler, KeySym.G)
+    handler = apply(handler, action, engine)
+    assert item in player.inventory.items
+
+    # 3) 按 I 开行囊（切 handler），按 A 使用灵芝
+    player.fighter.hp = player.fighter.max_hp - 8
+    hp_before = player.fighter.hp
+    action = dispatch_key(handler, KeySym.I)
+    handler = apply(handler, action, engine)
+    assert isinstance(handler, ih.InventoryEventHandler)
+    action = dispatch_key(handler, KeySym.A)
+    handler = apply(handler, action, engine)
+    assert player.fighter.hp > hp_before
+    assert item not in player.inventory.items
+
+    # 4) Esc 关闭行囊回到主模式
+    action = dispatch_key(handler, KeySym.ESCAPE)
+    handler = apply(handler, action, engine)
+    assert isinstance(handler, ih.MainGameEventHandler)
+
+    # 5) 瞬移到楼梯口，按 > 下楼
+    sx, sy = engine.gamemap.downstairs_xy
+    player.x, player.y = sx, sy
+    action = dispatch_key(handler, KeySym.GREATER)
+    handler = apply(handler, action, engine)
+    assert engine.gamemap.floor_number == 2
+    assert player.gamemap is engine.gamemap
+
+
+def test_player_death_and_restart():
+    content = load_content()
+    engine = Engine(content)
+    player = engine.player
+    handler = ih.MainGameEventHandler(engine)
+
+    # 玩家身边放一只九尾狐并反复互殴直至玩家死亡（不闪避，直接站撸）
+    killer = content.build_monster("jiuweihu", engine.gamemap, player.x + 1, player.y)
+    killer.fighter.power = 50  # 确保快速致死
+    old_level_xp = player.level.current_xp
+    for _ in range(80):
+        action = dispatch_key(handler, KeySym.PERIOD)  # 原地待命一回合
+        handler = apply(handler, action, engine)
+        if engine.game_over:
+            break
+    assert engine.game_over
+    assert not player.is_alive
+    assert player.level.current_xp >= old_level_xp  # 反杀过也不影响结论
+
+    # 陨落模式：回车 = 重开
+    handler = ih.GameOverEventHandler(engine)
+    action = dispatch_key(handler, KeySym.RETURN)
+    assert isinstance(action, ih.RestartAction)
+    engine2 = Engine(content)
+    assert engine2.gamemap.floor_number == 1
+    assert engine2.player.is_alive
