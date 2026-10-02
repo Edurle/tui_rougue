@@ -135,6 +135,10 @@ class RestartAction(SwitchHandlerAction):
     """重开局：回到职业选择界面（由主循环解释）。"""
 
 
+class LoadGameAction(SwitchHandlerAction):
+    """读档：从存档重建引擎（由主循环解释）。"""
+
+
 class ChangeSizeAction:
     """显示设置切换标记（kind: map / sidebar），不消耗回合。由主循环重建窗口。"""
 
@@ -227,6 +231,19 @@ class MainGameEventHandler(LogScrollMixin, EventHandler):
             return ChangeSizeAction("map")
         if key == KeySym.F2:
             return ChangeSizeAction("sidebar")
+        if key == KeySym.F5 and player.is_alive:
+            import save_manager
+
+            save_manager.save_game(engine)
+            engine.message_log.add_message(engine.content.strings["save_ok"], "system")
+            return None
+        if key == KeySym.F9:
+            import save_manager
+
+            if save_manager.save_exists():
+                return LoadGameAction()
+            engine.message_log.add_message(engine.content.strings["save_none"], "warn")
+            return None
         return None
 
 
@@ -520,23 +537,34 @@ class GameOverEventHandler(EventHandler):
         return None
 
 
-class ClassSelectEventHandler(tcod.event.EventDispatch):
-    """开局双职业选择：两段（主→副）。不持有 engine——选择完成后 chosen 非 None。"""
+CONTINUE_ID = "§continue§"  # 职业选择列表顶部的"继续游历"占位项
 
-    def __init__(self, content, settings) -> None:
+
+class ClassSelectEventHandler(tcod.event.EventDispatch):
+    """开局双职业选择：两段（主→副）。不持有 engine——选择完成后 chosen 非 None。
+
+    has_save 时列表顶部多一项"继续游历（读档）"。
+    """
+
+    def __init__(self, content, settings, has_save: bool = False) -> None:
         self.content = content
         self.settings = settings
+        self.has_save = has_save
         self.class_ids: List[str] = list(content.classes.keys())
         self.primary: Optional[str] = None
         self.cursor = 0
         self.chosen: Optional[tuple] = None  # (主, 副) 就绪后由主循环取用
+        self.continue_requested = False  # 顶部"继续游历"被选中
         self.done = False
+
+    def _options(self) -> List[str]:
+        return ([CONTINUE_ID] if self.has_save else []) + self.class_ids
 
     def on_render(self, console) -> None:
         import render
 
         render.render_class_select(console, self.content, self.settings, primary=self.primary,
-                                   cursor=self.cursor)
+                                   cursor=self.cursor, has_save=self.has_save)
 
     def ev_quit(self, event: tcod.event.Quit):
         raise SystemExit()
@@ -544,14 +572,20 @@ class ClassSelectEventHandler(tcod.event.EventDispatch):
     def ev_keydown(self, event: tcod.event.KeyDown):
         key = normalize_sym(event.sym)
         if self.primary is None:
+            options = self._options()
             if key == KeySym.UP:
-                self.cursor = (self.cursor - 1) % len(self.class_ids)
+                self.cursor = (self.cursor - 1) % len(options)
                 return None
             if key == KeySym.DOWN:
-                self.cursor = (self.cursor + 1) % len(self.class_ids)
+                self.cursor = (self.cursor + 1) % len(options)
                 return None
             if key in CONFIRM_KEYS:
-                self.primary = self.class_ids[self.cursor]
+                picked = options[self.cursor % len(options)]
+                if picked == CONTINUE_ID:
+                    self.continue_requested = True
+                    self.done = True
+                    return None
+                self.primary = picked
                 self.cursor = 0
                 return None
             if key == KeySym.ESCAPE:

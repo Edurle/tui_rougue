@@ -143,5 +143,9 @@
   "travel_stop_gate": "眼前是一座秘境之门，你停下脚步。",
   "travel_stop_blocked": "去路受阻，旅行中断。",
   "travel_stop_region": "你踏入新的地界，驻足四望。",
-  "region_first_enter": "{intro}——{region}"
+  "region_first_enter": "{intro}——{region}",
+  "save_ok": "行迹已录于山海图卷。",
+  "save_none": "没有可续的行迹。",
+  "save_loaded": "你展开山海图卷，续前行迹。",
+  "continue_game": "继续游历（读档）"
 }

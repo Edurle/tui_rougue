@@ -52,6 +52,57 @@ class Engine:
         self.update_fov()
         self.message_log.add_message(content.strings["welcome"], "system")
 
+    @classmethod
+    def _restore(cls, engine: "Engine", content, settings, data: dict) -> None:
+        """从存档重建引擎状态（save_manager.load_engine 调用）。"""
+        import save_manager
+
+        engine.content = content
+        engine.settings = settings
+        engine.message_log = MessageLog(
+            x=settings.content_x,
+            width=settings.content_w,
+            height=settings.log_height,
+            theme_messages=content.theme["messages"],
+        )
+        engine.effects = Effects(content.theme["effects"])
+        engine.rng = random.Random()
+        engine.game_over = False
+        engine.realms = {}
+        engine.current_realm = None
+        engine.realm_cleared = set(data.get("realm_cleared", []))
+        engine.world_return_xy = tuple(data.get("world_return_xy", (0, 0)))
+        engine.active_page = data.get("active_page", 0)
+        engine.traveling = None
+        engine.visited_regions = set(data.get("visited_regions", []))
+
+        engine.world = save_manager._restore_map(engine, data["world"])
+        engine.gamemap = engine.world
+        engine.player = save_manager._restore_player(engine, data["player"])
+        for rid, floors in data.get("realms", {}).items():
+            engine.realms[rid] = {}
+            for depth_str, map_data in floors.items():
+                engine.realms[rid][int(depth_str)] = save_manager._restore_map(engine, map_data)
+
+        current = data.get("current", {})
+        if current.get("map_type") == "realm" and current.get("realm_id"):
+            rid = current["realm_id"]
+            floor = engine.realms.get(rid, {}).get(int(current.get("realm_depth", 1)))
+            if floor is not None:
+                engine.gamemap = floor
+                engine.current_realm = rid
+        # 玩家实体归属转移到当前地图（build_player 时挂在世界）
+        px, py = engine.player.x, engine.player.y
+        engine.player.place(engine.gamemap, px, py)
+
+        for m in data.get("messages", []):
+            from message_log import Message
+
+            msg = Message(m["text"], m.get("kind", "info"))
+            msg.count = m.get("count", 1)
+            engine.message_log.messages.append(msg)
+        engine.update_fov()
+
     # ---- 回合推进 ----
 
     def handle_action(self, action) -> None:
@@ -299,6 +350,7 @@ class Engine:
         self.current_realm = realm_id
         self.effects.clear()
         self.update_fov()
+        self.autosave()
 
     def exit_realm(self) -> None:
         """从秘境回世界，落在入口坐标。"""
@@ -310,6 +362,14 @@ class Engine:
         self.current_realm = None
         self.effects.clear()
         self.update_fov()
+        self.autosave()
+
+    def autosave(self) -> None:
+        """进出秘境与换层时自动存档（死亡即删档的 roguelike 铁律下安全）。"""
+        import save_manager
+
+        if self.player is not None and self.player.is_alive and not self.game_over:
+            save_manager.save_game(self)
 
     def _generate_realm_floor(self, realm_id: str, depth: int) -> GameMap:
         realm_def = self.content.realm_def(realm_id)
@@ -342,6 +402,7 @@ class Engine:
             # 层层深入，气脉与山川共鸣，真气全复
             self.player.fighter.mp = self.player.fighter.max_mp
         self.update_fov()
+        self.autosave()
 
     def previous_floor(self) -> None:
         """秘境内回上层；已在第 1 层则回世界。"""

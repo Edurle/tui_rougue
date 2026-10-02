@@ -142,5 +142,9 @@
   "travel_stop_gate": "A realm gate stands before you; you stop.",
   "travel_stop_blocked": "Your path is blocked; travel ends.",
   "travel_stop_region": "You enter unfamiliar lands and pause.",
-  "region_first_enter": "{intro} - {region}"
+  "region_first_enter": "{intro} - {region}",
+  "save_ok": "Your journey is inscribed on the map scroll.",
+  "save_none": "No saved journey to resume.",
+  "save_loaded": "You unroll the map scroll and resume your journey.",
+  "continue_game": "Continue Journey (Load)"
 }

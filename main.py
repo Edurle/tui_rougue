@@ -30,6 +30,7 @@ from input_handlers import (
     ExamineEventHandler,
     GameOverEventHandler,
     InventoryEventHandler,
+    LoadGameAction,
     MainGameEventHandler,
     OpenExamineAction,
     OpenInventoryAction,
@@ -98,17 +99,21 @@ def _present(context, console) -> None:
     context.present(console, keep_aspect=True, integer_scaling=True)
 
 
-def collect_class_ids(context, console, content, settings) -> tuple:
-    """开局两段职业选择（主→副）；返回 (主 id, 副 id)。"""
+def collect_class_ids(context, console, content, settings) -> tuple | None:
+    """开局两段职业选择（主→副）；返回 (主 id, 副 id) 或 None（选了"继续游历"）。"""
+    import save_manager
+
     strings = content.strings
     console.clear(fg=(236, 236, 240), bg=tuple(content.theme["background"]))
-    handler = ClassSelectEventHandler(content, settings)
+    handler = ClassSelectEventHandler(content, settings, has_save=save_manager.save_exists())
     while not handler.done:
         handler.on_render(console)
         _present(context, console)
         for event in tcod.event.get():
             handler.dispatch(event)
     console.clear(fg=(236, 236, 240), bg=tuple(content.theme["background"]))
+    if handler.continue_requested:
+        return None
     return handler.chosen
 
 
@@ -157,6 +162,14 @@ def game_loop(context, console, engine, content) -> str:
                 elif isinstance(action, OpenExamineAction):
                     handler = ExamineEventHandler(engine)
                 elif isinstance(action, CloseMenuAction):
+                    handler = MainGameEventHandler(engine)
+                elif isinstance(action, LoadGameAction):
+                    import save_manager
+
+                    loaded = save_manager.load_engine(content, settings)
+                    if loaded is not None:
+                        engine = loaded
+                        engine.message_log.add_message(strings["save_loaded"], "system")
                     handler = MainGameEventHandler(engine)
                 elif isinstance(action, RestartAction):
                     return "restart"
@@ -225,6 +238,27 @@ def run(lang: Optional[str], smoke_output: Optional[str] = None) -> None:
 
             if selected is None:
                 selected = collect_class_ids(context, console, content, settings)
+                if selected is None:
+                    # 选了"继续游历"：从存档重建引擎
+                    import save_manager
+
+                    engine = save_manager.load_engine(content, settings)
+                    if engine is not None:
+                        engine.message_log.add_message(strings["save_loaded"], "system")
+                        changed = game_loop(context, console, engine, content)
+                        if changed == "restart":
+                            pass  # selected 仍为 None：回到职业选择
+                        elif changed in ("map", "sidebar"):
+                            engine.apply_layout()
+                            engine.message_log.add_message(
+                                strings[f"ui_{changed}_size"].format(
+                                    size=strings[f"size_{settings.map_size if changed == 'map' else settings.sidebar_size}"]
+                                ),
+                                "info",
+                            )
+                        continue
+                    selected = None  # 读档失败（无档/版本旧）：落到新开局选择
+                    continue
 
             engine = new_engine(content, settings, selected)
             engine.message_log.add_message(

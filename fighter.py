@@ -250,6 +250,9 @@ class Fighter(BaseComponent):
             self.parent.art = "corpse"
             self.parent.fighter = None
             self.engine.game_over = True
+            import save_manager
+
+            save_manager.delete_save()  # 陨落即删档（roguelike 铁律）
             return
         if getattr(self.parent, "summon_ttl", None) is not None:
             # 契约兽力竭：化光消散，不留尸骸不掉落

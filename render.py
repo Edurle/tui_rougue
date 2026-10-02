@@ -535,15 +535,19 @@ def render_skill_learn_menu(console: tcod.console.Console, engine: "Engine", pag
         row += 1
 
 
-def render_class_select(console, content, settings, primary, cursor) -> None:
-    """开局双职业选择界面（两段）。"""
+def render_class_select(console, content, settings, primary, cursor, has_save: bool = False) -> None:
+    """开局双职业选择界面（两段）；有存档时顶部多一项"继续游历"。"""
     strings = content.strings
     theme = content.theme
     title = (
         strings["class_select_secondary"] if primary else strings["class_select_primary"]
     )
+    from input_handlers import CONTINUE_ID
+
     class_ids = list(content.classes.keys())
-    shown = class_ids if primary is None else [c for c in class_ids if c != primary]
+    shown = class_ids if primary is not None else (
+        ([CONTINUE_ID] if has_save else []) + class_ids
+    )
 
     map_cols = settings.map_cols
     map_rows = settings.map_rows
@@ -568,8 +572,13 @@ def render_class_select(console, content, settings, primary, cursor) -> None:
 
     row = y + 3
     for i, cid in enumerate(shown):
-        cdef = content.classes[cid]
         mark = "►" if i == cursor else " "
+        if cid == CONTINUE_ID:
+            name = strings["continue_game"]
+            console.print(x + 2, row, f"{mark} {name}", fg=(122, 220, 208))
+            row += 1
+            continue
+        cdef = content.classes[cid]
         stats = strings["class_select_stats"].format(
             hp=cdef["hp"], pow=cdef["power"], **{"def": cdef["defense"], "mp": cdef["mp"]}
         )
@@ -580,7 +589,11 @@ def render_class_select(console, content, settings, primary, cursor) -> None:
         row += 1
     # 选中项简介
     if shown:
-        desc = content._(content.classes[shown[cursor % len(shown)]]["desc"])
+        picked = shown[cursor % len(shown)]
+        if picked == CONTINUE_ID:
+            desc = strings["save_loaded"]
+        else:
+            desc = content._(content.classes[picked]["desc"])
         console.print(x + 2, y + menu_height - 2, desc[: menu_width - 4], fg=(170, 170, 180))
 
 
