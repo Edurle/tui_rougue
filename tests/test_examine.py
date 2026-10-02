@@ -27,9 +27,15 @@ def dispatch_key(handler, sym):
 
 
 def put_monster(engine, dx, dy, monster_id):
-    monster = engine.content.build_monster(
-        monster_id, engine.gamemap, engine.player.x + dx, engine.player.y + dy
-    )
+    import tile_types
+
+    x, y = engine.player.x + dx, engine.player.y + dy
+    # 大世界的森林会遮视野：把玩家与目标包围盒清成开阔地，保证测试可见
+    for cx in range(min(engine.player.x, x), max(engine.player.x, x) + 1):
+        for cy in range(min(engine.player.y, y), max(engine.player.y, y) + 1):
+            engine.gamemap.terrain[cx, cy] = tile_types.T_PLAIN
+    engine.gamemap.refresh_tile_flags()
+    monster = engine.content.build_monster(monster_id, engine.gamemap, x, y)
     engine.gamemap.update_fov(engine.player.x, engine.player.y)
     return monster
 

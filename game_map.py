@@ -47,8 +47,13 @@ class GameMap:
         self.realm_depth = realm_depth
         self.fov_radius = FOV_RADIUS
         self.entities: Set[Entity] = set()
-        self.downstairs_xy: Tuple[int, int] = (0, 0)
-        self.upstairs_xy: Tuple[int, int] = (0, 0)
+        self.downstairs_xy: Tuple[int, int] = (-1, -1)
+        self.upstairs_xy: Tuple[int, int] = (-1, -1)
+
+        # 世界地图专用：区域索引网格（regions.json 顺序）、名山地标、出生点
+        self.region_ids: Optional["np.ndarray"] = None
+        self.landmarks: list = []
+        self.spawn_xy: Tuple[int, int] = (0, 0)
 
         # order="F" 保证 [x, y] 索引与 tcod FOV 接口一致
         self.terrain = np.full((width, height), default_terrain, dtype=np.uint8, order="F")
@@ -96,6 +101,17 @@ class GameMap:
 
     def in_bounds(self, x: int, y: int) -> bool:
         return 0 <= x < self.width and 0 <= y < self.height
+
+    def nearest_landmark(self, x: int, y: int, max_dist: float = 30.0) -> Optional[dict]:
+        """最近的名山地标（曼哈顿距离，超出 max_dist 返回 None）。"""
+        best = None
+        best_d = max_dist
+        for lm in self.landmarks:
+            d = abs(lm["x"] - x) + abs(lm["y"] - y)
+            if d < best_d:
+                best_d = d
+                best = lm
+        return best
 
     def refresh_tile_flags(self) -> None:
         """按 terrain 重建 walkable/transparent 派生缓存（地形改动后调用）。"""

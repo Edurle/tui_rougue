@@ -3,7 +3,7 @@
     "Note": "English (US) templates. Keep keys identical to zh_CN.json."
   },
   "window_title": "Shanhai Trek — a roguelike",
-  "welcome": "You set out into the mountains and seas of Shanhai. In the deep woods, the xingxing are watching...",
+  "welcome": "You take your first step into the heart of the Shanhai continent. Beyond the Central Mountains and the four ranges, the Great Wilderness awaits...",
   "attack_hits": "{attacker} hits {target} for {damage} damage.",
   "attack_blocked": "{attacker}'s blow is turned aside by {target}.",
   "player_hurt_warn": "Warning: your health is below 30%!",
@@ -121,5 +121,8 @@
   "examine_resist": "Resistances: {resists}",
   "examine_no_resist": "Resistances: none",
   "examine_attack": "Strikes with {elements} essence",
-  "examine_none": "Nothing in sight to examine."
+  "examine_none": "Nothing in sight to examine.",
+  "descend_plain": "You descend; the way grows darker.",
+  "ascend_plain": "You climb back; daylight brightens.",
+  "region_enter": "You enter the realm of {region}."
 }

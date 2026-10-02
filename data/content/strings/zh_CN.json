@@ -3,7 +3,7 @@
     "说明": "简体中文文案模板。{xxx} 为格式化占位符。整体润色只动此文件。新增语言 = 新建同结构文件。"
   },
   "window_title": "山海行 — 字符 Roguelike",
-  "welcome": "你踏上《山海行》的山川之途。林深处，狌狌正窥伺着你……",
+  "welcome": "你踏出山海大陆腹地的第一步。中山经沃野千里，四方群山之外，大荒苍茫……",
   "attack_hits": "{attacker} 击中了 {target}，造成 {damage} 点伤害。",
   "attack_blocked": "{attacker} 的攻击被 {target} 格挡，未造成伤害。",
   "player_hurt_warn": "警告：你的气血已不足三成！",
@@ -122,5 +122,8 @@
   "examine_resist": "抗性：{resists}",
   "examine_no_resist": "抗性：无",
   "examine_attack": "爪击附{elements}之息",
-  "examine_none": "视野之内没有可查看的目标。"
+  "examine_none": "视野之内没有可查看的目标。",
+  "descend_plain": "你循径深入，前路愈发幽暗。",
+  "ascend_plain": "你循径回返，天光渐明。",
+  "region_enter": "你踏入{region}地界。"
 }

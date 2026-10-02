@@ -1,4 +1,7 @@
-"""上楼梯（楼层历史）与日志滚动测试。"""
+"""秘境地牢层间移动（上楼梯/层历史）与日志滚动测试。
+
+Engine 默认启动在大世界；这里用 helper 切到秘境式地牢验证层间语义。
+"""
 
 from __future__ import annotations
 
@@ -7,6 +10,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import procgen  # noqa: E402
 from actions import TakeStairsAction  # noqa: E402
 from content_loader import load_content  # noqa: E402
 from engine import Engine  # noqa: E402
@@ -15,7 +19,9 @@ from settings import Settings  # noqa: E402
 
 
 def make_engine() -> Engine:
-    return Engine(load_content(), Settings())
+    engine = Engine(load_content(), Settings())
+    engine.gamemap = procgen.generate_dungeon(engine, 1, engine.rng)
+    return engine
 
 
 def test_descend_then_ascend_roundtrip():

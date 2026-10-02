@@ -87,13 +87,12 @@ def test_full_key_pipeline_combat_pickup_inventory_stairs():
     handler = apply(handler, action, engine)
     assert isinstance(handler, ih.MainGameEventHandler)
 
-    # 5) 瞬移到楼梯口，按 > 下楼
-    sx, sy = engine.gamemap.downstairs_xy
-    player.x, player.y = sx, sy
+    # 5) 大世界没有山径：按 > 应得到提示而非下楼
     action = dispatch_key(handler, KeySym.GREATER)
     handler = apply(handler, action, engine)
-    assert engine.gamemap.floor_number == 2
-    assert player.gamemap is engine.gamemap
+    joined = " ".join(m.plain_text for m in engine.message_log.messages)
+    assert "山径" in joined
+    assert engine.gamemap is engine.world  # 仍在世界
 
 
 def test_shift_comma_is_ascend_not_pickup():
@@ -197,5 +196,6 @@ def test_player_death_and_restart():
     action = dispatch_key(handler, KeySym.RETURN)
     assert isinstance(action, ih.RestartAction)
     engine2 = Engine(content, Settings())
-    assert engine2.gamemap.floor_number == 1
+    assert engine2.gamemap is engine2.world  # 新开局出生在大世界
+    assert engine2.gamemap.map_type == "world"
     assert engine2.player.is_alive

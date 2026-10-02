@@ -36,11 +36,11 @@ def test_content_loads_and_validates():
     assert content.strings["welcome"]
 
 
-def test_spawn_tables_cover_floors():
+def test_spawn_tables_cover_difficulties():
     content = make_content()
-    for floor in range(1, 11):
-        assert content.monster_ids_for_floor(floor), f"第 {floor} 层无可投放怪物"
-        assert content.item_ids_for_floor(floor), f"第 {floor} 层无可投放物品"
+    for difficulty in range(1, 21):
+        assert content.monster_ids_for_difficulty(difficulty), f"难度 {difficulty} 无可投放怪物"
+        assert content.item_ids_for_difficulty(difficulty), f"难度 {difficulty} 无可投放物品"
 
 
 def test_unknown_component_type_fails_fast():
@@ -103,7 +103,8 @@ def test_first_room_is_safe():
     gamemap = gm_module.GameMap(engine, 26, 22)
     room = Rect(5, 5, 8, 8)
     for x, y in room.inner():
-        gamemap.tiles[x, y] = __import__("tile_types").FLOOR
+        gamemap.terrain[x, y] = __import__("tile_types").T_FLOOR
+    gamemap.refresh_tile_flags()
     # skip_first=True 模拟首房
     for _ in range(20):  # 反复投放，若机制失效 20 次内必然出现怪物
         _populate_room(gamemap, room, floor_number=1, content=content, rng=rng, skip_first=True)
@@ -132,6 +133,8 @@ def test_combat_and_death_flow():
 def test_stairs_descend_increments_floor():
     content = make_content()
     engine = make_engine(content)
+    # 世界地图无山径：直接切到秘境式地牢验证层间语义
+    engine.gamemap = procgen.generate_dungeon(engine, 1, engine.rng)
     sx, sy = engine.gamemap.downstairs_xy
     engine.player.x, engine.player.y = sx, sy
     from actions import TakeStairsAction

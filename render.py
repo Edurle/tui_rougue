@@ -256,14 +256,21 @@ def _render_sidebar(console: tcod.console.Console, engine: "Engine") -> None:
             fg=tuple(theme["hud"]["xp"]),
         )
 
-    floor_number = engine.gamemap.floor_number
+    gamemap = engine.gamemap
+    if gamemap.map_type == "world" and gamemap.region_ids is not None:
+        region = content.regions[int(gamemap.region_ids[player.x, player.y])]
+        location = content._(region["name"])
+        landmark = gamemap.nearest_landmark(player.x, player.y)
+        if landmark is not None:
+            location += "·" + landmark["name"]
+    else:
+        location = strings["hud_floor"].format(
+            region=content.region_name("zhongshanjing"), mountain=""
+        )
     console.print(
         x,
         layout["floor_row"],
-        strings["hud_floor"].format(
-            region=content.region_name_for_floor(floor_number),
-            mountain=content.mountain_for_floor(floor_number),
-        ),
+        location,
         fg=tuple(theme["hud"]["floor"]),
     )
 

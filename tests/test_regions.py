@@ -1,44 +1,54 @@
-"""山川游历区域测试：卷目覆盖、山名循环、叙事消息、卷目投放。"""
+"""山川游历区域测试（空间化）：zone 布局、难度轴、名山地标、世界渲染。"""
 
 from __future__ import annotations
 
 import os
+import random
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from actions import TakeStairsAction  # noqa: E402
 from content_loader import ContentError, load_content  # noqa: E402
-from engine import Engine  # noqa: E402
 from settings import Settings  # noqa: E402
+import worldgen  # noqa: E402
 
 
-def test_region_boundaries():
+class _FakeEngine:
+    """worldgen 只用到 engine.content。"""
+
+    def __init__(self, content):
+        self.content = content
+
+
+def _make_world(content, seed=42):
+    return worldgen.generate_world(_FakeEngine(content), random.Random(seed))
+
+
+def test_region_zone_schema_valid():
     content = load_content("zh_CN")
-    assert content.region_for_floor(1)["id"] == "nanshanjing"
-    assert content.region_for_floor(3)["id"] == "nanshanjing"
-    assert content.region_for_floor(4)["id"] == "xishanjing"
-    assert content.region_for_floor(7)["id"] == "beishanjing"
-    assert content.region_for_floor(10)["id"] == "dongshanjing"
-    assert content.region_for_floor(13)["id"] == "zhongshanjing"
-    assert content.region_for_floor(16)["id"] == "dahuangjing"
-    assert content.region_for_floor(99)["id"] == "dahuangjing"  # 开区间
+    zones = {r["zone"]: r for r in content.regions}
+    assert set(zones) == {"center", "south", "west", "north", "east", "outer"}
+    # 难度由中心向外围递增
+    assert zones["center"]["base_difficulty"] < zones["south"]["base_difficulty"]
+    assert zones["east"]["base_difficulty"] < zones["outer"]["base_difficulty"]
 
 
-def test_mountain_names_sequence_and_cycle():
+def test_region_grid_geometry():
+    """中心=中山经，四象限归四经，外围=大荒经。"""
     content = load_content("zh_CN")
-    assert content.mountain_for_floor(1) == "招摇之山"
-    assert content.mountain_for_floor(2) == "青丘之山"
-    assert content.mountain_for_floor(5) == "小华之山"  # 西山经第 2 座
-    assert content.mountain_for_floor(4) == "华山"
-    assert content.mountain_for_floor(19) == content.mountain_for_floor(16)  # 大荒 3 山循环
+    grid, regions = worldgen.region_grid(160, 100, content)
+    by_zone = {r["zone"]: i for i, r in enumerate(regions)}
+    assert grid.shape == (160, 100)
+    assert int(grid[80, 50]) == by_zone["center"]  # 正中心
+    assert int(grid[80, 85]) == by_zone["south"]  # 下=南
+    assert int(grid[80, 15]) == by_zone["north"]  # 上=北
+    assert int(grid[130, 50]) == by_zone["east"]  # 右=东
+    assert int(grid[25, 50]) == by_zone["west"]  # 左=西
+    assert int(grid[2, 2]) == by_zone["outer"]  # 角落=大荒
+    assert int(grid[155, 50]) == by_zone["outer"]  # 极东缘=大荒
 
-    en = load_content("en_US")
-    assert en.mountain_for_floor(1) == "Mt. Zhaoyao"
-    assert en.region_name_for_floor(16) == "Great Wilderness"
 
-
-def test_region_gap_rejected(tmp_path, monkeypatch):
+def test_missing_zone_rejected(tmp_path, monkeypatch):
     import json
 
     from content_loader import CONTENT_DIR, Content
@@ -53,57 +63,79 @@ def test_region_gap_rejected(tmp_path, monkeypatch):
             (dest / rel.parent).mkdir(parents=True, exist_ok=True)
             (dest / rel).write_bytes(f.read_bytes())
     data = json.loads((dest / "regions.json").read_text(encoding="utf-8"))
-    data["regions"][1]["min_floor"] = 5  # 制造 4 层空档
+    data["regions"] = [r for r in data["regions"] if r["zone"] != "west"]  # 抠掉西山经
     (dest / "regions.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     try:
-        Content(dest / ".." / "content" if False else dest)
+        Content(dest)
     except ContentError as exc:
-        assert "不连续" in str(exc)
+        assert "west" in str(exc)
     else:
-        raise AssertionError("楼层空档应被校验拒绝")
+        raise AssertionError("zone 缺失应被校验拒绝")
 
 
-def test_descend_message_contains_region_and_mountain():
-    engine = Engine(load_content("zh_CN"), Settings())
-    for expected_mountain in ("青丘之山", "堂庭之山", "华山"):  # 第 2、3、4 层
-        engine.player.x, engine.player.y = engine.gamemap.downstairs_xy
-        TakeStairsAction(engine.player, "down").perform(engine)
-        joined = "".join(m.plain_text for m in engine.message_log.messages).replace(" ", "")
-        assert expected_mountain in joined, f"消息应包含 {expected_mountain}：{joined}"
-    assert "西山经" in joined
-
-
-def test_spawn_table_matches_regions():
+def test_spawn_table_covers_region_difficulties():
     content = load_content()
-    for floor in range(1, 20):
-        ids = content.monster_ids_for_floor(floor)
-        assert ids, f"第 {floor} 层无可投放怪物"
+    for region in content.regions:
+        d = region["base_difficulty"]
+        assert content.monster_ids_for_difficulty(d), f"{region['id']} 难度 {d} 无可投放怪物"
+        assert content.item_ids_for_difficulty(d), f"{region['id']} 难度 {d} 无可投放物品"
 
 
-def test_new_monsters_present():
-    content = load_content()
-    for mid in ("luwu", "bifang", "zhudu", "qiuyu", "mafu", "xiangliu", "zhulong"):
-        assert mid in content.monsters
-        assert content.monsters[mid]["components"]["fighter"]["hp"] > 0
+def test_world_landmarks_named_from_regions():
+    content = load_content("zh_CN")
+    world = _make_world(content)
+    assert world.landmarks, "世界应有名山地标"
+    names = [lm["name"] for lm in world.landmarks]
+    all_mountains = [content._(m) for r in content.regions for m in r["mountains"]]
+    for name in names:
+        assert name in all_mountains, f"名山 {name} 不在 regions.json 山名表中"
+    # 每区至少一座名山
+    for region in content.regions:
+        assert any(lm["region_id"] == region["id"] for lm in world.landmarks), (
+            f"{region['id']} 没有名山地标"
+        )
 
 
-def test_new_monster_glyphs_are_single_ascii():
-    content = load_content()
-    for mid in ("luwu", "bifang", "zhudu", "qiuyu", "mafu", "xiangliu", "zhulong"):
-        ch = content.monsters[mid]["char"]
-        assert len(ch) == 1 and ch.isascii()
+def test_world_terrain_and_spawn():
+    import tile_types
+
+    content = load_content("zh_CN")
+    world = _make_world(content)
+    t = world.terrain
+    # 各类地形齐备（用户点名的元素：大地/山川/河流/湖泊/深渊）
+    for tid in (tile_types.T_PLAIN, tile_types.T_MOUNTAIN, tile_types.T_RIVER, tile_types.T_WATER, tile_types.T_ABYSS):
+        assert (t == tid).any(), f"地形 {tile_types.TERRAIN_DEFS[tid].key} 缺失"
+    # 出生点可走且在中山经（中心区）
+    sx, sy = world.spawn_xy
+    assert world.tiles["walkable"][sx, sy]
+    grid, regions = worldgen.region_grid(world.width, world.height, content)
+    by_zone = {r["zone"]: i for i, r in enumerate(regions)}
+    assert int(grid[sx, sy]) == by_zone["center"]
+    # 有游荡异兽与散落物品
+    assert len(world.actors) > 5
+    assert len(world.items) > 2
 
 
-def test_contextual_hints_render():
+def test_world_connectivity_from_spawn():
+    content = load_content("zh_CN")
+    world = _make_world(content, seed=7)
+    reached = worldgen._flood_reachable(world.terrain, world.spawn_xy)
+    walkable = world.tiles["walkable"]
+    ratio = float(reached[walkable].mean())
+    assert ratio > 0.85, f"世界整体可达率过低：{ratio:.3f}"
+
+
+def test_contextual_hints_render_world():
     import tcod
 
     import render
+    from engine import Engine
 
     content = load_content("zh_CN")
     engine = Engine(content, Settings())
+    player = engine.player
 
-    engine.player.x, engine.player.y = engine.gamemap.downstairs_xy  # 站上金色山径
-    content.build_item("lingzhi", engine.gamemap, engine.player.x, engine.player.y)  # 脚下放灵芝
+    content.build_item("lingzhi", engine.gamemap, player.x, player.y)  # 脚下放灵芝
     console = tcod.console.Console(40, 24, order="F")
     render.render_all(console, engine)
 
@@ -112,11 +144,9 @@ def test_contextual_hints_render():
         line = "".join(chr(c) for c in console.rgb[27:40, y]["ch"] if c != 32)
         texts.append(line)
     joined = "".join(texts)
-    assert ">" in joined and "深入" in joined.replace(" ", "")
     assert "G" in joined and "拾取" in joined.replace(" ", "")
 
-    engine.player.x += 1  # 离开山径与物品
-    # 清掉近旁的随机投放物品，避免新位置再触发拾取提示
+    engine.player.x += 1  # 离开物品格
     for existing in list(engine.gamemap.items):
         if abs(existing.x - engine.player.x) <= 1 and abs(existing.y - engine.player.y) <= 1:
             engine.gamemap.entities.discard(existing)
@@ -124,4 +154,6 @@ def test_contextual_hints_render():
     joined = "".join(
         "".join(chr(c) for c in console.rgb[27:40, y]["ch"] if c != 32) for y in (6, 7)
     )
-    assert ">" not in joined and "拾取" not in joined.replace(" ", "")
+    assert "拾取" not in joined.replace(" ", "")
+    # 大世界没有山径提示
+    assert "深入" not in joined.replace(" ", "")

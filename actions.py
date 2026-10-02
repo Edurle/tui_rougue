@@ -163,7 +163,10 @@ class UnequipAction(Action):
 
 
 class TakeStairsAction(Action):
-    """山径：站在下行山径（金）上按 > 下行，站在上行山径（青）上按 < 上行。"""
+    """山径：站在下行山径（金）上按 > 深入，站在上行山径（青）上按 < 回返。
+
+    大世界上没有山径（秘境入口单独交互）；Phase 2 起此动作用于秘境层间移动。
+    """
 
     def __init__(self, entity: "Actor", direction: str = "down") -> None:
         self.entity = entity
@@ -171,27 +174,18 @@ class TakeStairsAction(Action):
 
     def perform(self, engine: "Engine") -> None:
         strings = engine.content.strings
-        content = engine.content
+        if engine.gamemap.map_type != "realm":
+            raise exceptions.Impossible(
+                strings["not_on_stairs"] if self.direction == "down" else strings["not_on_up_stairs"]
+            )
         here = (self.entity.x, self.entity.y)
         if self.direction == "down":
             if here != engine.gamemap.downstairs_xy:
                 raise exceptions.Impossible(strings["not_on_stairs"])
             engine.next_floor()
-            floor = engine.gamemap.floor_number
-            engine.message_log.add_message(
-                strings["descend"].format(
-                    region=content.region_name_for_floor(floor), mountain=content.mountain_for_floor(floor)
-                ),
-                "descend",
-            )
+            engine.message_log.add_message(strings["descend_plain"], "descend")
         else:
             if here != engine.gamemap.upstairs_xy:
                 raise exceptions.Impossible(strings["not_on_up_stairs"])
             engine.previous_floor()
-            floor = engine.gamemap.floor_number
-            engine.message_log.add_message(
-                strings["ascend"].format(
-                    region=content.region_name_for_floor(floor), mountain=content.mountain_for_floor(floor)
-                ),
-                "descend",
-            )
+            engine.message_log.add_message(strings["ascend_plain"], "descend")

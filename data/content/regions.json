@@ -1,19 +1,35 @@
 {
   "_schema": {
-    "说明": "山川游历区域表：楼层区间映射《山海经》卷目，每层取卷内下一座山（超出列表循环）。下楼=循径深入更偏远的经卷，上楼=循径回返。min_floor/max_floor 须连续无缝覆盖第 1 层起。",
+    "说明": "山川游历区域表（空间化）：zone 定义大世界上的空间归属——center=中央腹地（出生）、south/west/north/east=四方经（按相对中心的方位四象限）、outer=最外围大荒环带。难度由中心向外围递增：中山经→四经→大荒经，契合『大荒在四海之外』。mountains 为名山地标配额（worldgen 在区域山脉上点选名山，HUD 显示最近名山）。",
     "字段": {
       "id": "区域标识",
       "name": "卷名（可本地化）",
-      "min_floor/max_floor": "楼层区间，null 为开区间",
+      "zone": "空间归属：center/south/west/north/east/outer",
+      "base_difficulty": "区域基础难度（投放表/秘境难度的基准轴）",
+      "mountain_count": "名山地标数量",
       "mountains": "山名序列（可本地化），按原书出现顺序"
     }
   },
   "regions": [
     {
+      "id": "zhongshanjing",
+      "name": { "zh_CN": "中山经", "en_US": "Central Mountains" },
+      "zone": "center",
+      "base_difficulty": 1,
+      "mountain_count": 3,
+      "mountains": [
+        { "zh_CN": "历儿之山", "en_US": "Mt. Li'er" },
+        { "zh_CN": "蔓渠之山", "en_US": "Mt. Manqu" },
+        { "zh_CN": "鲜山", "en_US": "Mt. Xian" },
+        { "zh_CN": "洞庭之山", "en_US": "Mt. Dongting" }
+      ]
+    },
+    {
       "id": "nanshanjing",
       "name": { "zh_CN": "南山经", "en_US": "Southern Mountains" },
-      "min_floor": 1,
-      "max_floor": 3,
+      "zone": "south",
+      "base_difficulty": 4,
+      "mountain_count": 3,
       "mountains": [
         { "zh_CN": "招摇之山", "en_US": "Mt. Zhaoyao" },
         { "zh_CN": "青丘之山", "en_US": "Mt. Qingqiu" },
@@ -24,8 +40,9 @@
     {
       "id": "xishanjing",
       "name": { "zh_CN": "西山经", "en_US": "Western Mountains" },
-      "min_floor": 4,
-      "max_floor": 6,
+      "zone": "west",
+      "base_difficulty": 5,
+      "mountain_count": 3,
       "mountains": [
         { "zh_CN": "华山", "en_US": "Mt. Hua" },
         { "zh_CN": "小华之山", "en_US": "Mt. Xiaohua" },
@@ -36,8 +53,9 @@
     {
       "id": "beishanjing",
       "name": { "zh_CN": "北山经", "en_US": "Northern Mountains" },
-      "min_floor": 7,
-      "max_floor": 9,
+      "zone": "north",
+      "base_difficulty": 7,
+      "mountain_count": 3,
       "mountains": [
         { "zh_CN": "单狐之山", "en_US": "Mt. Shanhu" },
         { "zh_CN": "大咸之山", "en_US": "Mt. Daxian" },
@@ -48,8 +66,9 @@
     {
       "id": "dongshanjing",
       "name": { "zh_CN": "东山经", "en_US": "Eastern Mountains" },
-      "min_floor": 10,
-      "max_floor": 12,
+      "zone": "east",
+      "base_difficulty": 10,
+      "mountain_count": 3,
       "mountains": [
         { "zh_CN": "泰山", "en_US": "Mt. Tai" },
         { "zh_CN": "余峨之山", "en_US": "Mt. Yu'e" },
@@ -58,22 +77,11 @@
       ]
     },
     {
-      "id": "zhongshanjing",
-      "name": { "zh_CN": "中山经", "en_US": "Central Mountains" },
-      "min_floor": 13,
-      "max_floor": 15,
-      "mountains": [
-        { "zh_CN": "历儿之山", "en_US": "Mt. Li'er" },
-        { "zh_CN": "蔓渠之山", "en_US": "Mt. Manqu" },
-        { "zh_CN": "鲜山", "en_US": "Mt. Xian" },
-        { "zh_CN": "洞庭之山", "en_US": "Mt. Dongting" }
-      ]
-    },
-    {
       "id": "dahuangjing",
       "name": { "zh_CN": "大荒经", "en_US": "Great Wilderness" },
-      "min_floor": 16,
-      "max_floor": null,
+      "zone": "outer",
+      "base_difficulty": 16,
+      "mountain_count": 4,
       "mountains": [
         { "zh_CN": "大荒之山", "en_US": "Mt. Dahuang" },
         { "zh_CN": "灵山", "en_US": "Mt. Ling" },

@@ -1,6 +1,6 @@
 {
   "_schema": {
-    "说明": "按楼层的投放权重表（山川游历：楼层区间对应《山海经》卷目，见 regions.json）。生成器先按 min_floor/max_floor 过滤，再按 weight 加权抽取。调节难度曲线只改此文件。",
+    "说明": "按难度的投放权重表（统一难度轴：大世界=所在区域基础难度，见 regions.json；秘境=区域基础难度+层深）。生成器先按 min_difficulty/max_difficulty 过滤，再按 weight 加权抽取。调节难度曲线只改此文件。",
     "字段": {
       "monsters/items": "投放条目：id 必须存在于 monsters.json / items.json",
       "per_room": "每个房间：chance 触发概率，min/max 数量区间"
@@ -9,221 +9,221 @@
   "monsters": [
     {
       "id": "xingxing",
-      "min_floor": 1,
-      "max_floor": 3,
-      "weight": 6
+      "weight": 6,
+      "min_difficulty": 1,
+      "max_difficulty": 3
     },
     {
       "id": "gudiao",
-      "min_floor": 2,
-      "max_floor": null,
-      "weight": 3
+      "weight": 3,
+      "min_difficulty": 2,
+      "max_difficulty": null
     },
     {
       "id": "luwu",
-      "min_floor": 4,
-      "max_floor": 9,
-      "weight": 3
+      "weight": 3,
+      "min_difficulty": 4,
+      "max_difficulty": 9
     },
     {
       "id": "bifang",
-      "min_floor": 4,
-      "max_floor": 6,
-      "weight": 3
+      "weight": 3,
+      "min_difficulty": 4,
+      "max_difficulty": 6
     },
     {
       "id": "xingxing",
-      "min_floor": 4,
-      "max_floor": 6,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 4,
+      "max_difficulty": 6
     },
     {
       "id": "zhudu",
-      "min_floor": 7,
-      "max_floor": 12,
-      "weight": 4
+      "weight": 4,
+      "min_difficulty": 7,
+      "max_difficulty": 12
     },
     {
       "id": "gudiao",
-      "min_floor": 7,
-      "max_floor": 9,
-      "weight": 2
+      "weight": 2,
+      "min_difficulty": 7,
+      "max_difficulty": 9
     },
     {
       "id": "qiuyu",
-      "min_floor": 10,
-      "max_floor": 15,
-      "weight": 4
+      "weight": 4,
+      "min_difficulty": 10,
+      "max_difficulty": 15
     },
     {
       "id": "mafu",
-      "min_floor": 13,
-      "max_floor": null,
-      "weight": 4
+      "weight": 4,
+      "min_difficulty": 13,
+      "max_difficulty": null
     },
     {
       "id": "jiuweihu",
-      "min_floor": 13,
-      "max_floor": null,
-      "weight": 2
+      "weight": 2,
+      "min_difficulty": 13,
+      "max_difficulty": null
     },
     {
       "id": "xiangliu",
-      "min_floor": 16,
-      "max_floor": null,
-      "weight": 3
+      "weight": 3,
+      "min_difficulty": 16,
+      "max_difficulty": null
     },
     {
       "id": "jiuweihu",
-      "min_floor": 16,
-      "max_floor": null,
-      "weight": 4
+      "weight": 4,
+      "min_difficulty": 16,
+      "max_difficulty": null
     },
     {
       "id": "zhulong",
-      "min_floor": 16,
-      "max_floor": null,
-      "weight": 3
+      "weight": 3,
+      "min_difficulty": 16,
+      "max_difficulty": null
     }
   ],
   "items": [
     {
       "id": "lingzhi",
-      "min_floor": 1,
-      "max_floor": null,
-      "weight": 6
+      "weight": 6,
+      "min_difficulty": 1,
+      "max_difficulty": null
     },
     {
       "id": "wulei_fu",
-      "min_floor": 1,
-      "max_floor": null,
-      "weight": 3
+      "weight": 3,
+      "min_difficulty": 1,
+      "max_difficulty": null
     },
     {
       "id": "huiqisan",
-      "min_floor": 1,
-      "max_floor": null,
-      "weight": 3
+      "weight": 3,
+      "min_difficulty": 1,
+      "max_difficulty": null
     },
     {
       "id": "w_taomu",
-      "min_floor": 1,
-      "max_floor": 4,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 1,
+      "max_difficulty": 4
     },
     {
       "id": "b_maxie",
-      "min_floor": 1,
-      "max_floor": 4,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 1,
+      "max_difficulty": 4
     },
     {
       "id": "m_zhuli",
-      "min_floor": 2,
-      "max_floor": 5,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 2,
+      "max_difficulty": 5
     },
     {
       "id": "p_yupei",
-      "min_floor": 2,
-      "max_floor": 6,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 2,
+      "max_difficulty": 6
     },
     {
       "id": "a_xuangui",
-      "min_floor": 3,
-      "max_floor": 7,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 3,
+      "max_difficulty": 7
     },
     {
       "id": "b_zhuifeng",
-      "min_floor": 3,
-      "max_floor": 7,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 3,
+      "max_difficulty": 7
     },
     {
       "id": "p_miaoshou",
-      "min_floor": 3,
-      "max_floor": 8,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 3,
+      "max_difficulty": 8
     },
     {
       "id": "w_kunwu",
-      "min_floor": 5,
-      "max_floor": 12,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 5,
+      "max_difficulty": 12
     },
     {
       "id": "a_xisi",
-      "min_floor": 5,
-      "max_floor": 12,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 5,
+      "max_difficulty": 12
     },
     {
       "id": "p_bishui",
-      "min_floor": 6,
-      "max_floor": 12,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 6,
+      "max_difficulty": 12
     },
     {
       "id": "p_baidu",
-      "min_floor": 6,
-      "max_floor": 14,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 6,
+      "max_difficulty": 14
     },
     {
       "id": "m_qingtongmian",
-      "min_floor": 7,
-      "max_floor": 14,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 7,
+      "max_difficulty": 14
     },
     {
       "id": "b_dengyun",
-      "min_floor": 7,
-      "max_floor": 14,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 7,
+      "max_difficulty": 14
     },
     {
       "id": "w_ganjiang",
-      "min_floor": 12,
-      "max_floor": null,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 12,
+      "max_difficulty": null
     },
     {
       "id": "p_zhaoyao",
-      "min_floor": 13,
-      "max_floor": null,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 13,
+      "max_difficulty": null
     },
     {
       "id": "m_xiezhi",
-      "min_floor": 14,
-      "max_floor": null,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 14,
+      "max_difficulty": null
     },
     {
       "id": "a_bihuo",
-      "min_floor": 5,
-      "max_floor": 12,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 5,
+      "max_difficulty": 12
     },
     {
       "id": "m_leiwen",
-      "min_floor": 6,
-      "max_floor": 12,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 6,
+      "max_difficulty": 12
     },
     {
       "id": "p_qingxin",
-      "min_floor": 5,
-      "max_floor": 13,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 5,
+      "max_difficulty": 13
     },
     {
       "id": "b_dubi",
-      "min_floor": 6,
-      "max_floor": 13,
-      "weight": 1
+      "weight": 1,
+      "min_difficulty": 6,
+      "max_difficulty": 13
     }
   ],
   "per_room": {

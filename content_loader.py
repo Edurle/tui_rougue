@@ -149,35 +149,39 @@ class Content:
         self._validate_classes_skills()
 
     def _validate_regions(self) -> None:
-        expected_floor = 1
-        for region in sorted(self.regions, key=lambda r: r["min_floor"]):
-            if region["min_floor"] != expected_floor:
-                raise ContentError(f"regions.json 楼层不连续：期望第 {expected_floor} 层开始，实际 {region['min_floor']}")
+        valid_zones = {"center", "south", "west", "north", "east", "outer"}
+        seen_zones: set = set()
+        for region in self.regions:
+            for field_name in ("id", "name", "zone", "base_difficulty", "mountains"):
+                _require(region, field_name, f"区域 {region.get('id', '?')}")
+            if region["zone"] not in valid_zones:
+                raise ContentError(
+                    f"区域 {region['id']} 的 zone '{region['zone']}' 非法，可用：{sorted(valid_zones)}"
+                )
+            if region["zone"] in seen_zones:
+                raise ContentError(f"区域 {region['id']} 的 zone '{region['zone']}' 与其他区域重复")
+            seen_zones.add(region["zone"])
+            difficulty = region["base_difficulty"]
+            if not isinstance(difficulty, int) or difficulty < 0:
+                raise ContentError(f"区域 {region['id']} 的 base_difficulty 必须是非负整数")
             if not region["mountains"]:
                 raise ContentError(f"区域 {region['id']} 山名列表为空")
-            if region["max_floor"] is not None and region["max_floor"] < region["min_floor"]:
-                raise ContentError(f"区域 {region['id']} 的楼层区间非法")
-            if region["max_floor"] is None:
-                expected_floor = 10**9
-            else:
-                expected_floor = region["max_floor"] + 1
+            if not isinstance(region.get("mountain_count", 0), int) or region["mountain_count"] < 1:
+                raise ContentError(f"区域 {region['id']} 的 mountain_count 必须是正整数")
+        missing = valid_zones - seen_zones
+        if missing:
+            raise ContentError(f"regions.json 缺少 zone：{sorted(missing)}（六大经须齐备）")
 
     # ---- 山川游历区域 ----
 
-    def region_for_floor(self, floor: int) -> dict:
+    def region_by_id(self, region_id: str) -> dict:
         for region in self.regions:
-            if region["min_floor"] <= floor and (region["max_floor"] is None or floor <= region["max_floor"]):
+            if region["id"] == region_id:
                 return region
-        raise ContentError(f"第 {floor} 层不在任何区域内")
+        raise ContentError(f"区域 '{region_id}' 不存在")
 
-    def region_name_for_floor(self, floor: int) -> str:
-        return self._(self.region_for_floor(floor)["name"])
-
-    def mountain_for_floor(self, floor: int) -> str:
-        region = self.region_for_floor(floor)
-        mountains = region["mountains"]
-        index = (floor - region["min_floor"]) % len(mountains)
-        return self._(mountains[index])
+    def region_name(self, region_id: str) -> str:
+        return self._(self.region_by_id(region_id)["name"])
 
     # ---- 校验 ----
 
@@ -257,11 +261,11 @@ class Content:
                     raise ContentError(f"投放表 {kind} 引用了不存在的 id '{entry['id']}'")
                 if entry["weight"] <= 0:
                     raise ContentError(f"投放表 {kind} 中 {entry['id']} 的 weight 必须为正")
-        for floor in range(1, 20):
-            if not self.monster_ids_for_floor(floor):
-                raise ContentError(f"第 {floor} 层没有任何可投放怪物")
-            if not self.item_ids_for_floor(floor):
-                raise ContentError(f"第 {floor} 层没有任何可投放物品")
+        for difficulty in range(1, 21):
+            if not self.monster_ids_for_difficulty(difficulty):
+                raise ContentError(f"难度 {difficulty} 没有任何可投放怪物")
+            if not self.item_ids_for_difficulty(difficulty):
+                raise ContentError(f"难度 {difficulty} 没有任何可投放物品")
 
     def _validate_classes_skills(self) -> None:
         if len(self.classes) < 2:
@@ -391,37 +395,40 @@ class Content:
         for kind, value in theme["messages"].items():
             _rgb(value, f"theme.messages.{kind}")
 
-    # ---- 投放 ----
+    # ---- 投放（统一难度轴）----
 
     @staticmethod
-    def _pick_ids(table: List[dict], floor: int) -> List[str]:
+    def _pick_ids(table: List[dict], difficulty: int) -> List[str]:
         matched = [
             (e["id"], e["weight"])
             for e in table
-            if e["min_floor"] <= floor and (e["max_floor"] is None or floor <= e["max_floor"])
+            if e["min_difficulty"] <= difficulty
+            and (e["max_difficulty"] is None or difficulty <= e["max_difficulty"])
         ]
         return [i for i, _ in matched]
 
-    def monster_ids_for_floor(self, floor: int) -> List[str]:
-        return self._pick_ids(self.spawn_monsters, floor)
+    def monster_ids_for_difficulty(self, difficulty: int) -> List[str]:
+        return self._pick_ids(self.spawn_monsters, difficulty)
 
-    def item_ids_for_floor(self, floor: int) -> List[str]:
-        return self._pick_ids(self.spawn_items, floor)
+    def item_ids_for_difficulty(self, difficulty: int) -> List[str]:
+        return self._pick_ids(self.spawn_items, difficulty)
 
-    def random_monster_id(self, floor: int, rng: random.Random) -> str:
+    def random_monster_id(self, difficulty: int, rng: random.Random) -> str:
         matched = [
             (e["id"], e["weight"])
             for e in self.spawn_monsters
-            if e["min_floor"] <= floor and (e["max_floor"] is None or floor <= e["max_floor"])
+            if e["min_difficulty"] <= difficulty
+            and (e["max_difficulty"] is None or difficulty <= e["max_difficulty"])
         ]
         ids, weights = zip(*matched)
         return rng.choices(ids, weights=weights, k=1)[0]
 
-    def random_item_id(self, floor: int, rng: random.Random) -> str:
+    def random_item_id(self, difficulty: int, rng: random.Random) -> str:
         matched = [
             (e["id"], e["weight"])
             for e in self.spawn_items
-            if e["min_floor"] <= floor and (e["max_floor"] is None or floor <= e["max_floor"])
+            if e["min_difficulty"] <= difficulty
+            and (e["max_difficulty"] is None or difficulty <= e["max_difficulty"])
         ]
         ids, weights = zip(*matched)
         return rng.choices(ids, weights=weights, k=1)[0]
@@ -485,9 +492,9 @@ class Content:
             )
         return item
 
-    def random_equipment_id(self, floor: int, rng: random.Random) -> Optional[str]:
-        """怪物死亡掉落抽取：tier ≤ floor//4+2 的装备池随机一件。"""
-        cap = floor // 4 + 2
+    def random_equipment_id(self, difficulty: int, rng: random.Random) -> Optional[str]:
+        """怪物死亡掉落抽取：tier ≤ difficulty//4+2 的装备池随机一件。"""
+        cap = difficulty // 4 + 2
         pool = [
             iid for iid, idef in self.equip_items.items() if int(idef.get("tier", 1)) <= cap
         ]

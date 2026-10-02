@@ -11,6 +11,7 @@ import random
 import exceptions
 import procgen
 import skills as skills_module
+import worldgen
 from content_loader import DEFAULT_CLASS_IDS
 from effects import Effects
 from game_map import GameMap
@@ -35,11 +36,11 @@ class Engine:
         self.floors: dict = {}  # 楼层历史：floor_number -> GameMap，支持上行返回
         self.active_page = 0  # 技能页：0 主职业 / 1 副职业（Tab 切换）
 
-        # 玩家实体在第 1 层生成时创建一次，此后跨层复用（保留状态）
+        # 玩家实体在世界生成后创建一次，此后跨地图复用（保留状态）
         self.player = None  # type: ignore[assignment]
-        self.gamemap: GameMap = GameMap(self, 1, 1, floor_number=1)
-        self.player = content.build_player(self.gamemap, 0, 0, class_ids)
-        self.gamemap = procgen.generate_dungeon(self, floor_number=1, rng=self.rng)
+        self.world: GameMap = worldgen.generate_world(self, self.rng)
+        self.gamemap: GameMap = self.world
+        self.player = content.build_player(self.world, *self.world.spawn_xy, class_ids)
         self.update_fov()
         self.message_log.add_message(content.strings["welcome"], "system")
 
