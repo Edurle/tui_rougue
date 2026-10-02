@@ -42,6 +42,8 @@ class Notice:
     x: int
     y: int
     born: float
+    char: str = "!"
+    color: Tuple[int, int, int] = (255, 222, 122)
 
 
 class Effects:
@@ -96,6 +98,56 @@ class Effects:
 
     def spawn_notice(self, x: int, y: int) -> None:
         self.notices.append(Notice(x, y, self._clock()))
+
+    # ---- 技能特效 ----
+
+    def spawn_aoe_ring(self, x: int, y: int, radius: float) -> None:
+        """AOE 环形扩散粒子。"""
+        now = self._clock()
+        color = (196, 168, 255)
+        count = max(8, int(radius * 6))
+        for i in range(count):
+            angle = i * 2 * math.pi / count
+            r = max(0.8, radius)
+            self.sparks.append(
+                Spark(x, y, math.cos(angle) * r * 2.4, math.sin(angle) * r * 2.4, "✦", color, now)
+            )
+
+    def spawn_buff(self, x: int, y: int) -> None:
+        """增益金光标记。"""
+        self.float_texts.append(FloatText(x, y, "↑", (255, 222, 122), self._clock(), big=True))
+
+    def spawn_trail(self, x0: int, y0: int, x1: int, y1: int) -> None:
+        """位移残影：起点到落点沿线粒子。"""
+        now = self._clock()
+        steps = max(1, int(math.hypot(x1 - x0, y1 - y0)))
+        color = (170, 200, 255)
+        for i in range(steps + 1):
+            t = i / steps
+            self.sparks.append(
+                Spark(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, 0, -0.5, "·", color, now)
+            )
+
+    def spawn_poison_mark(self, x: int, y: int) -> None:
+        self.float_texts.append(FloatText(x, y, "毒", (140, 220, 110), self._clock()))
+
+    def spawn_poison_tick(self, x: int, y: int, amount: int) -> None:
+        self.float_texts.append(FloatText(x, y, f"-{amount}", (140, 220, 110), self._clock()))
+
+    def spawn_stun(self, x: int, y: int) -> None:
+        self.notices.append(Notice(x, y, self._clock(), char="!", color=(180, 180, 190)))
+
+    def spawn_mp(self, x: int, y: int, amount: int) -> None:
+        self.float_texts.append(FloatText(x, y, f"+{amount}", (120, 226, 232), self._clock()))
+
+    def spawn_summon(self, x: int, y: int) -> None:
+        now = self._clock()
+        color = (150, 220, 240)
+        for i in range(8):
+            angle = i * math.pi / 4
+            self.sparks.append(
+                Spark(x, y, math.cos(angle) * -3, math.sin(angle) * -3, "✦", color, now)
+            )
 
     def clear(self) -> None:
         self.float_texts.clear()
@@ -163,4 +215,4 @@ class Effects:
             age = now - n.born
             ratio = 1 - age / life_notice
             if 0 <= n.x < map_width and 0 <= n.y - 1 < map_height:
-                console.print(n.x, n.y - 1, "!", fg=(255, 222, 122))
+                console.print(n.x, n.y - 1, n.char, fg=blend(n.color, ratio))

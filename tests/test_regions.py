@@ -104,11 +104,11 @@ def test_contextual_hints_render():
 
     engine.player.x, engine.player.y = engine.gamemap.downstairs_xy  # 站上金色山径
     content.build_item("lingzhi", engine.gamemap, engine.player.x, engine.player.y)  # 脚下放灵芝
-    console = tcod.console.Console(40, 22, order="F")
+    console = tcod.console.Console(40, 24, order="F")
     render.render_all(console, engine)
 
     texts = []
-    for y in (6, 8, 10):
+    for y in (6, 7):
         line = "".join(chr(c) for c in console.rgb[27:40, y]["ch"] if c != 32)
         texts.append(line)
     joined = "".join(texts)
@@ -116,8 +116,12 @@ def test_contextual_hints_render():
     assert "G" in joined and "拾取" in joined.replace(" ", "")
 
     engine.player.x += 1  # 离开山径与物品
+    # 清掉近旁的随机投放物品，避免新位置再触发拾取提示
+    for existing in list(engine.gamemap.items):
+        if abs(existing.x - engine.player.x) <= 1 and abs(existing.y - engine.player.y) <= 1:
+            engine.gamemap.entities.discard(existing)
     render.render_all(console, engine)
     joined = "".join(
-        "".join(chr(c) for c in console.rgb[27:40, y]["ch"] if c != 32) for y in (6, 8, 10)
+        "".join(chr(c) for c in console.rgb[27:40, y]["ch"] if c != 32) for y in (6, 7)
     )
     assert ">" not in joined and "拾取" not in joined.replace(" ", "")

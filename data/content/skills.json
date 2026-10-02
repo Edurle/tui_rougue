@@ -1,0 +1,2005 @@
+{
+  "s_leifa_1": {
+    "class": "leifa",
+    "slot": 1,
+    "name": {
+      "zh_CN": "掌心雷",
+      "en_US": "Palm Thunder"
+    },
+    "desc": {
+      "zh_CN": "掌中引雷，轰击眼前之敌。",
+      "en_US": "Thunder crackles in your palm, striking the foe before you."
+    },
+    "tags": [
+      "thunder"
+    ],
+    "mp": 4,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 6,
+      "scale": 1.5,
+      "hits": 1
+    }
+  },
+  "s_leifa_2": {
+    "class": "leifa",
+    "slot": 2,
+    "name": {
+      "zh_CN": "疾风步",
+      "en_US": "Gale Step"
+    },
+    "desc": {
+      "zh_CN": "身随风向，倏忽数丈。",
+      "en_US": "Ride the wind; blink across the tiles."
+    },
+    "tags": [
+      "move"
+    ],
+    "mp": 3,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "teleport_step",
+      "range": 3
+    }
+  },
+  "s_leifa_3": {
+    "class": "leifa",
+    "slot": 3,
+    "name": {
+      "zh_CN": "雷池",
+      "en_US": "Thunder Pool"
+    },
+    "desc": {
+      "zh_CN": "以身为池，雷走四邻。",
+      "en_US": "A pool of thunder spills to every neighbouring tile."
+    },
+    "tags": [
+      "thunder",
+      "aoe"
+    ],
+    "mp": 6,
+    "cost": 1,
+    "requires": [
+      "s_leifa_1"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1,
+      "power": 5,
+      "scale": 1
+    }
+  },
+  "s_leifa_4": {
+    "class": "leifa",
+    "slot": 4,
+    "name": {
+      "zh_CN": "引雷符",
+      "en_US": "Bolt Sigil"
+    },
+    "desc": {
+      "zh_CN": "符引天雷，力贯双臂。",
+      "en_US": "A sigil that channels sky-force into your arms."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 5,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "buff_power",
+      "amount": 2,
+      "turns": 12
+    }
+  },
+  "s_leifa_5": {
+    "class": "leifa",
+    "slot": 5,
+    "name": {
+      "zh_CN": "金光咒",
+      "en_US": "Gold Light Ward"
+    },
+    "desc": {
+      "zh_CN": "金光护体，刀兵不侵。",
+      "en_US": "Golden light sheathes you against blade and claw."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 5,
+    "cost": 1,
+    "requires": [
+      "s_leifa_4"
+    ],
+    "effect": {
+      "type": "buff_defense",
+      "amount": 3,
+      "turns": 12
+    }
+  },
+  "s_leifa_6": {
+    "class": "leifa",
+    "slot": 6,
+    "name": {
+      "zh_CN": "雷遁",
+      "en_US": "Thunder Blink"
+    },
+    "desc": {
+      "zh_CN": "化雷而行，其疾如电。",
+      "en_US": "Become the bolt itself."
+    },
+    "tags": [
+      "move"
+    ],
+    "mp": 5,
+    "cost": 1,
+    "requires": [
+      "s_leifa_2"
+    ],
+    "effect": {
+      "type": "teleport_step",
+      "range": 6
+    }
+  },
+  "s_leifa_7": {
+    "class": "leifa",
+    "slot": 7,
+    "name": {
+      "zh_CN": "天雷破",
+      "en_US": "Skyfall Bolt"
+    },
+    "desc": {
+      "zh_CN": "一雷破空，妖邪辟易。",
+      "en_US": "A single bolt splits the sky."
+    },
+    "tags": [
+      "thunder"
+    ],
+    "mp": 10,
+    "cost": 1,
+    "requires": [
+      "s_leifa_3"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 12,
+      "scale": 2.5,
+      "hits": 1
+    }
+  },
+  "s_leifa_8": {
+    "class": "leifa",
+    "slot": 8,
+    "name": {
+      "zh_CN": "万雷引",
+      "en_US": "Myriad Bolts"
+    },
+    "desc": {
+      "zh_CN": "万雷齐落，方圆俱寂。",
+      "en_US": "Ten thousand bolts fall at once."
+    },
+    "tags": [
+      "thunder",
+      "aoe"
+    ],
+    "mp": 18,
+    "cost": 2,
+    "requires": [
+      "s_leifa_7"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 4,
+      "power": 10,
+      "scale": 2
+    }
+  },
+  "s_jianke_1": {
+    "class": "jianke",
+    "slot": 1,
+    "name": {
+      "zh_CN": "斩铁",
+      "en_US": "Iron Cleaver"
+    },
+    "desc": {
+      "zh_CN": "一剑之下，铁石俱断。",
+      "en_US": "One stroke shears iron and stone alike."
+    },
+    "tags": [],
+    "mp": 3,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 8,
+      "scale": 2,
+      "hits": 1
+    }
+  },
+  "s_jianke_2": {
+    "class": "jianke",
+    "slot": 2,
+    "name": {
+      "zh_CN": "剑罡",
+      "en_US": "Sword Aura"
+    },
+    "desc": {
+      "zh_CN": "罡气外放，伤及周身。",
+      "en_US": "Sword-aura spills outward, wounding all around."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 5,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1,
+      "power": 5,
+      "scale": 1
+    }
+  },
+  "s_jianke_3": {
+    "class": "jianke",
+    "slot": 3,
+    "name": {
+      "zh_CN": "瞬步",
+      "en_US": "Flash Step"
+    },
+    "desc": {
+      "zh_CN": "步随身动，瞬息即至。",
+      "en_US": "A single breath, a single step."
+    },
+    "tags": [
+      "move"
+    ],
+    "mp": 3,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "teleport_step",
+      "range": 3
+    }
+  },
+  "s_jianke_4": {
+    "class": "jianke",
+    "slot": 4,
+    "name": {
+      "zh_CN": "裂空斩",
+      "en_US": "Sky-Rending Cut"
+    },
+    "desc": {
+      "zh_CN": "剑气裂空，无可阻挡。",
+      "en_US": "A cut that rends the very air."
+    },
+    "tags": [],
+    "mp": 8,
+    "cost": 1,
+    "requires": [
+      "s_jianke_1"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 14,
+      "scale": 3,
+      "hits": 1
+    }
+  },
+  "s_jianke_5": {
+    "class": "jianke",
+    "slot": 5,
+    "name": {
+      "zh_CN": "铁骨咒",
+      "en_US": "Ironbone Ward"
+    },
+    "desc": {
+      "zh_CN": "咒固筋骨，坚如铁石。",
+      "en_US": "A ward that tempers bone to iron."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 5,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "buff_defense",
+      "amount": 4,
+      "turns": 12
+    }
+  },
+  "s_jianke_6": {
+    "class": "jianke",
+    "slot": 6,
+    "name": {
+      "zh_CN": "剑气长河",
+      "en_US": "Sword River"
+    },
+    "desc": {
+      "zh_CN": "剑气如河，奔涌不休。",
+      "en_US": "Sword-aura flows like an unending river."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 10,
+    "cost": 1,
+    "requires": [
+      "s_jianke_2"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1.5,
+      "power": 8,
+      "scale": 1.5
+    }
+  },
+  "s_jianke_7": {
+    "class": "jianke",
+    "slot": 7,
+    "name": {
+      "zh_CN": "无我",
+      "en_US": "Selfless Blade"
+    },
+    "desc": {
+      "zh_CN": "忘我而剑，其锋愈锐。",
+      "en_US": "Forget the self; the blade sharpens."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 8,
+    "cost": 1,
+    "requires": [
+      "s_jianke_5"
+    ],
+    "effect": {
+      "type": "buff_power",
+      "amount": 4,
+      "turns": 12
+    }
+  },
+  "s_jianke_8": {
+    "class": "jianke",
+    "slot": 8,
+    "name": {
+      "zh_CN": "人剑合一",
+      "en_US": "Blade Unity"
+    },
+    "desc": {
+      "zh_CN": "人剑合一，剑气纵横十步。",
+      "en_US": "Sword and wielder become one; aura sweeps ten paces."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 18,
+    "cost": 2,
+    "requires": [
+      "s_jianke_6"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 4,
+      "power": 12,
+      "scale": 2.5
+    }
+  },
+  "s_wuzhu_1": {
+    "class": "wuzhu",
+    "slot": 1,
+    "name": {
+      "zh_CN": "荆棘刺",
+      "en_US": "Thorn Sting"
+    },
+    "desc": {
+      "zh_CN": "巫术化刺，刺骨蚀心。",
+      "en_US": "A shaman's thorn that bites to the bone."
+    },
+    "tags": [],
+    "mp": 3,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 5,
+      "scale": 1.5,
+      "hits": 1
+    }
+  },
+  "s_wuzhu_2": {
+    "class": "wuzhu",
+    "slot": 2,
+    "name": {
+      "zh_CN": "蚀心蛊",
+      "en_US": "Heart-Gnaw Gu"
+    },
+    "desc": {
+      "zh_CN": "蛊虫入体，蚀心腐骨。",
+      "en_US": "A gu that gnaws the heart and rots the bones."
+    },
+    "tags": [
+      "poison"
+    ],
+    "mp": 5,
+    "cost": 1,
+    "requires": [
+      "s_wuzhu_1"
+    ],
+    "effect": {
+      "type": "poison_dot",
+      "damage": 3,
+      "scale": 1,
+      "turns": 6
+    }
+  },
+  "s_wuzhu_3": {
+    "class": "wuzhu",
+    "slot": 3,
+    "name": {
+      "zh_CN": "回春术",
+      "en_US": "Vernal Rite"
+    },
+    "desc": {
+      "zh_CN": "咒起回春，伤者自愈。",
+      "en_US": "A rite that calls spring back into flesh."
+    },
+    "tags": [
+      "heal"
+    ],
+    "mp": 5,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "heal_self",
+      "amount": 8,
+      "scale": 2
+    }
+  },
+  "s_wuzhu_4": {
+    "class": "wuzhu",
+    "slot": 4,
+    "name": {
+      "zh_CN": "万棘阵",
+      "en_US": "Thorn Field"
+    },
+    "desc": {
+      "zh_CN": "荆棘蔓生，遍地锋芒。",
+      "en_US": "Thorns erupt across the field."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 8,
+    "cost": 1,
+    "requires": [
+      "s_wuzhu_1"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1.5,
+      "power": 6,
+      "scale": 1.5
+    }
+  },
+  "s_wuzhu_5": {
+    "class": "wuzhu",
+    "slot": 5,
+    "name": {
+      "zh_CN": "石肤咒",
+      "en_US": "Stoneskin Ward"
+    },
+    "desc": {
+      "zh_CN": "咒化肌肤，坚若磐石。",
+      "en_US": "Skin turns to living stone."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 5,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "buff_defense",
+      "amount": 3,
+      "turns": 12
+    }
+  },
+  "s_wuzhu_6": {
+    "class": "wuzhu",
+    "slot": 6,
+    "name": {
+      "zh_CN": "血祭",
+      "en_US": "Blood Offering"
+    },
+    "desc": {
+      "zh_CN": "以血为祭，力灌一击。",
+      "en_US": "Pay in blood; strike with all you have."
+    },
+    "tags": [],
+    "mp": 0,
+    "cost": 1,
+    "requires": [
+      "s_wuzhu_4"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 16,
+      "scale": 3,
+      "hits": 1,
+      "hp_cost": 6
+    }
+  },
+  "s_wuzhu_7": {
+    "class": "wuzhu",
+    "slot": 7,
+    "name": {
+      "zh_CN": "巫蛊滔天",
+      "en_US": "Gu Tide"
+    },
+    "desc": {
+      "zh_CN": "蛊如潮涌，毒浸八方。",
+      "en_US": "A tide of gu drowns the eight directions."
+    },
+    "tags": [
+      "poison",
+      "aoe"
+    ],
+    "mp": 12,
+    "cost": 1,
+    "requires": [
+      "s_wuzhu_2"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1.5,
+      "power": 7,
+      "scale": 1.5,
+      "poison": [
+        2,
+        4
+      ]
+    }
+  },
+  "s_wuzhu_8": {
+    "class": "wuzhu",
+    "slot": 8,
+    "name": {
+      "zh_CN": "青丘仙泽",
+      "en_US": "Qingiu Blessing"
+    },
+    "desc": {
+      "zh_CN": "仙泽沛然，疗伤破敌。",
+      "en_US": "A blessed spring heals you and scours your foes."
+    },
+    "tags": [
+      "heal"
+    ],
+    "mp": 14,
+    "cost": 2,
+    "requires": [
+      "s_wuzhu_3"
+    ],
+    "effect": {
+      "type": "heal_self",
+      "amount": 20,
+      "scale": 3,
+      "aoe_radius": 1,
+      "aoe_power": 4
+    }
+  },
+  "s_yishe_1": {
+    "class": "yishe",
+    "slot": 1,
+    "name": {
+      "zh_CN": "射日箭",
+      "en_US": "Sunshot Arrow"
+    },
+    "desc": {
+      "zh_CN": "一箭既出，如日坠空。",
+      "en_US": "One arrow, like a falling sun."
+    },
+    "tags": [],
+    "mp": 3,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 7,
+      "scale": 2,
+      "hits": 1
+    }
+  },
+  "s_yishe_2": {
+    "class": "yishe",
+    "slot": 2,
+    "name": {
+      "zh_CN": "鹰目",
+      "en_US": "Hawk Eye"
+    },
+    "desc": {
+      "zh_CN": "目若鹰隼，箭无虚发。",
+      "en_US": "Eyes of a hawk; no arrow flies true."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 4,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "buff_power",
+      "amount": 2,
+      "turns": 15
+    }
+  },
+  "s_yishe_3": {
+    "class": "yishe",
+    "slot": 3,
+    "name": {
+      "zh_CN": "连珠矢",
+      "en_US": "Stringed Arrows"
+    },
+    "desc": {
+      "zh_CN": "箭如连珠，三矢连发。",
+      "en_US": "Arrows like strung beads; three in a breath."
+    },
+    "tags": [],
+    "mp": 6,
+    "cost": 1,
+    "requires": [
+      "s_yishe_1"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 5,
+      "scale": 1,
+      "hits": 3
+    }
+  },
+  "s_yishe_4": {
+    "class": "yishe",
+    "slot": 4,
+    "name": {
+      "zh_CN": "贯虹矢",
+      "en_US": "Rainbow Piercer"
+    },
+    "desc": {
+      "zh_CN": "一矢贯虹，破甲穿云。",
+      "en_US": "An arrow that pierces rainbow and mail alike."
+    },
+    "tags": [],
+    "mp": 8,
+    "cost": 1,
+    "requires": [
+      "s_yishe_3"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 13,
+      "scale": 3,
+      "hits": 1
+    }
+  },
+  "s_yishe_5": {
+    "class": "yishe",
+    "slot": 5,
+    "name": {
+      "zh_CN": "风行步",
+      "en_US": "Windwalk"
+    },
+    "desc": {
+      "zh_CN": "御风而行，其疾如风。",
+      "en_US": "Walk the wind."
+    },
+    "tags": [
+      "move"
+    ],
+    "mp": 3,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "teleport_step",
+      "range": 4
+    }
+  },
+  "s_yishe_6": {
+    "class": "yishe",
+    "slot": 6,
+    "name": {
+      "zh_CN": "箭雨",
+      "en_US": "Arrow Rain"
+    },
+    "desc": {
+      "zh_CN": "仰天抛射，箭落如雨。",
+      "en_US": "Arrows loosed skyward fall as rain."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 9,
+    "cost": 1,
+    "requires": [
+      "s_yishe_4"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1.5,
+      "power": 6,
+      "scale": 1.5
+    }
+  },
+  "s_yishe_7": {
+    "class": "yishe",
+    "slot": 7,
+    "name": {
+      "zh_CN": "破军矢",
+      "en_US": "Army-Breaker"
+    },
+    "desc": {
+      "zh_CN": "一矢破军，锐不可当。",
+      "en_US": "One arrow to break an army."
+    },
+    "tags": [],
+    "mp": 12,
+    "cost": 1,
+    "requires": [
+      "s_yishe_6"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 18,
+      "scale": 4,
+      "hits": 1
+    }
+  },
+  "s_yishe_8": {
+    "class": "yishe",
+    "slot": 8,
+    "name": {
+      "zh_CN": "落日弓",
+      "en_US": "Setting-Sun Bow"
+    },
+    "desc": {
+      "zh_CN": "挽弓如月，落日千里。",
+      "en_US": "Draw the bow like a moon; the sun falls a thousand li."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 18,
+    "cost": 2,
+    "requires": [
+      "s_yishe_7"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 4,
+      "power": 11,
+      "scale": 2.5
+    }
+  },
+  "s_kuafu_1": {
+    "class": "kuafu",
+    "slot": 1,
+    "name": {
+      "zh_CN": "巨力震",
+      "en_US": "Titan Quake"
+    },
+    "desc": {
+      "zh_CN": "巨力跺地，震伤四邻。",
+      "en_US": "A titan's stomp shudders the ground."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 4,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1,
+      "power": 6,
+      "scale": 1.5
+    }
+  },
+  "s_kuafu_2": {
+    "class": "kuafu",
+    "slot": 2,
+    "name": {
+      "zh_CN": "踏山",
+      "en_US": "Mountain Stride"
+    },
+    "desc": {
+      "zh_CN": "一步踏山，越过丘壑。",
+      "en_US": "Stride over hills and hollows."
+    },
+    "tags": [
+      "move"
+    ],
+    "mp": 2,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "teleport_step",
+      "range": 2
+    }
+  },
+  "s_kuafu_3": {
+    "class": "kuafu",
+    "slot": 3,
+    "name": {
+      "zh_CN": "不坏身",
+      "en_US": "Unbreaking Body"
+    },
+    "desc": {
+      "zh_CN": "肉身如山，不坏不摧。",
+      "en_US": "A body like the mountain itself."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 6,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "buff_defense",
+      "amount": 5,
+      "turns": 15
+    }
+  },
+  "s_kuafu_4": {
+    "class": "kuafu",
+    "slot": 4,
+    "name": {
+      "zh_CN": "拽山掷",
+      "en_US": "Hurl Peak"
+    },
+    "desc": {
+      "zh_CN": "拔山而掷，砸落敌身。",
+      "en_US": "Uproot a peak and hurl it."
+    },
+    "tags": [],
+    "mp": 7,
+    "cost": 1,
+    "requires": [
+      "s_kuafu_1"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 12,
+      "scale": 2.5,
+      "hits": 1
+    }
+  },
+  "s_kuafu_5": {
+    "class": "kuafu",
+    "slot": 5,
+    "name": {
+      "zh_CN": "巨灵碾压",
+      "en_US": "Titan Crush"
+    },
+    "desc": {
+      "zh_CN": "巨灵临世，碾碎八方。",
+      "en_US": "A titan's tread crushes all around."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 10,
+    "cost": 1,
+    "requires": [
+      "s_kuafu_4"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1.5,
+      "power": 8,
+      "scale": 2
+    }
+  },
+  "s_kuafu_6": {
+    "class": "kuafu",
+    "slot": 6,
+    "name": {
+      "zh_CN": "逐日",
+      "en_US": "Sun-Chase"
+    },
+    "desc": {
+      "zh_CN": "追日之志，力贯周身。",
+      "en_US": "The will that chased the sun fills your limbs."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 6,
+    "cost": 1,
+    "requires": [
+      "s_kuafu_3"
+    ],
+    "effect": {
+      "type": "buff_power",
+      "amount": 3,
+      "turns": 15
+    }
+  },
+  "s_kuafu_7": {
+    "class": "kuafu",
+    "slot": 7,
+    "name": {
+      "zh_CN": "山河撼",
+      "en_US": "Land Shaker"
+    },
+    "desc": {
+      "zh_CN": "撼动山河，群敌失据。",
+      "en_US": "Mountains and rivers shake; foes lose their footing."
+    },
+    "tags": [
+      "stun"
+    ],
+    "mp": 12,
+    "cost": 1,
+    "requires": [
+      "s_kuafu_5"
+    ],
+    "effect": {
+      "type": "stun_aoe",
+      "turns": 2,
+      "radius": 1.5,
+      "power": 6,
+      "scale": 1
+    }
+  },
+  "s_kuafu_8": {
+    "class": "kuafu",
+    "slot": 8,
+    "name": {
+      "zh_CN": "逐日怒",
+      "en_US": "Sun-Chaser's Wrath"
+    },
+    "desc": {
+      "zh_CN": "怒火燎原，山河变色。",
+      "en_US": "Wrath spreads like wildfire; the land changes colour."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 18,
+    "cost": 2,
+    "requires": [
+      "s_kuafu_7"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 4,
+      "power": 13,
+      "scale": 3
+    }
+  },
+  "s_yingwei_1": {
+    "class": "yingwei",
+    "slot": 1,
+    "name": {
+      "zh_CN": "蚀骨刺",
+      "en_US": "Bone-Etch Sting"
+    },
+    "desc": {
+      "zh_CN": "暗刺蚀骨，痛入骨髓。",
+      "en_US": "A hidden sting that etches the bone."
+    },
+    "tags": [],
+    "mp": 3,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 7,
+      "scale": 2,
+      "hits": 1
+    }
+  },
+  "s_yingwei_2": {
+    "class": "yingwei",
+    "slot": 2,
+    "name": {
+      "zh_CN": "影遁",
+      "en_US": "Shadow Slip"
+    },
+    "desc": {
+      "zh_CN": "没入阴影，无声无息。",
+      "en_US": "Melt into shadow without a sound."
+    },
+    "tags": [
+      "move"
+    ],
+    "mp": 2,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "teleport_step",
+      "range": 3
+    }
+  },
+  "s_yingwei_3": {
+    "class": "yingwei",
+    "slot": 3,
+    "name": {
+      "zh_CN": "连诛",
+      "en_US": "Serial Kills"
+    },
+    "desc": {
+      "zh_CN": "连番出手，诛敌于隙。",
+      "en_US": "Strike again and again through the gaps."
+    },
+    "tags": [],
+    "mp": 6,
+    "cost": 1,
+    "requires": [
+      "s_yingwei_1"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 5,
+      "scale": 1,
+      "hits": 3
+    }
+  },
+  "s_yingwei_4": {
+    "class": "yingwei",
+    "slot": 4,
+    "name": {
+      "zh_CN": "背袭",
+      "en_US": "Backstab"
+    },
+    "desc": {
+      "zh_CN": "自影中出，一击致命。",
+      "en_US": "From the shadow behind: one killing blow."
+    },
+    "tags": [],
+    "mp": 8,
+    "cost": 1,
+    "requires": [
+      "s_yingwei_3"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 15,
+      "scale": 3,
+      "hits": 1
+    }
+  },
+  "s_yingwei_5": {
+    "class": "yingwei",
+    "slot": 5,
+    "name": {
+      "zh_CN": "雾隐",
+      "en_US": "Mist Veil"
+    },
+    "desc": {
+      "zh_CN": "雾隐其身，刀剑难加。",
+      "en_US": "A veil of mist turns blows aside."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 4,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "buff_defense",
+      "amount": 3,
+      "turns": 10
+    }
+  },
+  "s_yingwei_6": {
+    "class": "yingwei",
+    "slot": 6,
+    "name": {
+      "zh_CN": "影刃乱舞",
+      "en_US": "Shadow Blade Dance"
+    },
+    "desc": {
+      "zh_CN": "影刃齐出，乱舞伤敌。",
+      "en_US": "Shadow-blades dance and wound."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 9,
+    "cost": 1,
+    "requires": [
+      "s_yingwei_4"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1,
+      "power": 7,
+      "scale": 1.5
+    }
+  },
+  "s_yingwei_7": {
+    "class": "yingwei",
+    "slot": 7,
+    "name": {
+      "zh_CN": "绝命刺",
+      "en_US": "Death Thrust"
+    },
+    "desc": {
+      "zh_CN": "以命换命，刺出绝境。",
+      "en_US": "Trade blood for the killing thrust."
+    },
+    "tags": [],
+    "mp": 10,
+    "cost": 1,
+    "requires": [
+      "s_yingwei_6"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 20,
+      "scale": 4,
+      "hits": 1,
+      "hp_cost": 4
+    }
+  },
+  "s_yingwei_8": {
+    "class": "yingwei",
+    "slot": 8,
+    "name": {
+      "zh_CN": "影分身",
+      "en_US": "Shadow Split"
+    },
+    "desc": {
+      "zh_CN": "分身千百，刃影重重。",
+      "en_US": "A hundred shadows, a hundred blades."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 16,
+    "cost": 2,
+    "requires": [
+      "s_yingwei_7"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 2,
+      "power": 9,
+      "scale": 2
+    }
+  },
+  "s_gushi_1": {
+    "class": "gushi",
+    "slot": 1,
+    "name": {
+      "zh_CN": "蚀骨蛊",
+      "en_US": "Bone-Gnaw Gu"
+    },
+    "desc": {
+      "zh_CN": "蛊蚀其骨，昼夜不息。",
+      "en_US": "A gu that gnaws the bone day and night."
+    },
+    "tags": [
+      "poison"
+    ],
+    "mp": 4,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "poison_dot",
+      "damage": 3,
+      "scale": 1,
+      "turns": 5
+    }
+  },
+  "s_gushi_2": {
+    "class": "gushi",
+    "slot": 2,
+    "name": {
+      "zh_CN": "瘴云",
+      "en_US": "Miasma Cloud"
+    },
+    "desc": {
+      "zh_CN": "瘴云漫卷，毒浸群敌。",
+      "en_US": "A miasmal cloud poisons the crowd."
+    },
+    "tags": [
+      "poison",
+      "aoe"
+    ],
+    "mp": 6,
+    "cost": 1,
+    "requires": [
+      "s_gushi_1"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1,
+      "power": 4,
+      "scale": 1,
+      "poison": [
+        2,
+        3
+      ]
+    }
+  },
+  "s_gushi_3": {
+    "class": "gushi",
+    "slot": 3,
+    "name": {
+      "zh_CN": "驱虫咬",
+      "en_US": "Swarm Bite"
+    },
+    "desc": {
+      "zh_CN": "驱虫成群，啮敌要害。",
+      "en_US": "Drive the swarm to gnaw vitals."
+    },
+    "tags": [],
+    "mp": 3,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 6,
+      "scale": 2,
+      "hits": 1
+    }
+  },
+  "s_gushi_4": {
+    "class": "gushi",
+    "slot": 4,
+    "name": {
+      "zh_CN": "蛊毒引爆",
+      "en_US": "Gu Detonation"
+    },
+    "desc": {
+      "zh_CN": "蛊毒积于敌身，一瞬引爆。",
+      "en_US": "Gu venom pools in the foe — then detonates."
+    },
+    "tags": [
+      "poison"
+    ],
+    "mp": 8,
+    "cost": 1,
+    "requires": [
+      "s_gushi_1"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 10,
+      "scale": 2.5,
+      "hits": 1
+    }
+  },
+  "s_gushi_5": {
+    "class": "gushi",
+    "slot": 5,
+    "name": {
+      "zh_CN": "蛊甲",
+      "en_US": "Gu Carapace"
+    },
+    "desc": {
+      "zh_CN": "蛊虫结甲，附体护身。",
+      "en_US": "Gu weave a carapace over your skin."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 5,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "buff_defense",
+      "amount": 3,
+      "turns": 12
+    }
+  },
+  "s_gushi_6": {
+    "class": "gushi",
+    "slot": 6,
+    "name": {
+      "zh_CN": "万蛊噬心",
+      "en_US": "Myriad Gu Feast"
+    },
+    "desc": {
+      "zh_CN": "万蛊噬心，痛不欲生。",
+      "en_US": "Ten thousand gu feast upon the heart."
+    },
+    "tags": [
+      "poison"
+    ],
+    "mp": 12,
+    "cost": 1,
+    "requires": [
+      "s_gushi_4"
+    ],
+    "effect": {
+      "type": "poison_dot",
+      "damage": 5,
+      "scale": 1,
+      "turns": 8
+    }
+  },
+  "s_gushi_7": {
+    "class": "gushi",
+    "slot": 7,
+    "name": {
+      "zh_CN": "毒龙钻",
+      "en_US": "Venom Drake Drill"
+    },
+    "desc": {
+      "zh_CN": "毒聚如龙，钻心裂肺。",
+      "en_US": "Venom gathers into a drake that drills the heart."
+    },
+    "tags": [
+      "poison"
+    ],
+    "mp": 10,
+    "cost": 1,
+    "requires": [
+      "s_gushi_3"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 12,
+      "scale": 3,
+      "hits": 1,
+      "poison": [
+        3,
+        4
+      ]
+    }
+  },
+  "s_gushi_8": {
+    "class": "gushi",
+    "slot": 8,
+    "name": {
+      "zh_CN": "蛊神降世",
+      "en_US": "Gu God Descends"
+    },
+    "desc": {
+      "zh_CN": "蛊神临世，毒染山河。",
+      "en_US": "The gu god descends; venom stains the land."
+    },
+    "tags": [
+      "poison",
+      "aoe"
+    ],
+    "mp": 18,
+    "cost": 2,
+    "requires": [
+      "s_gushi_6"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 4,
+      "power": 9,
+      "scale": 2,
+      "poison": [
+        4,
+        6
+      ]
+    }
+  },
+  "s_yushou_1": {
+    "class": "yushou",
+    "slot": 1,
+    "name": {
+      "zh_CN": "灵犬契约",
+      "en_US": "Hound Pact"
+    },
+    "desc": {
+      "zh_CN": "与灵犬立契，并肩而战。",
+      "en_US": "Seal a pact; a spirit hound fights at your side."
+    },
+    "tags": [
+      "summon"
+    ],
+    "mp": 6,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "summon",
+      "duration": 15,
+      "beast_hp": 10,
+      "beast_power": 4,
+      "beast_char": "d",
+      "beast_color": [
+        220,
+        190,
+        120
+      ],
+      "beast_name": {
+        "zh_CN": "灵犬",
+        "en_US": "Spirit Hound"
+      }
+    }
+  },
+  "s_yushou_2": {
+    "class": "yushou",
+    "slot": 2,
+    "name": {
+      "zh_CN": "犄角冲",
+      "en_US": "Horn Charge"
+    },
+    "desc": {
+      "zh_CN": "兽角前冲，顶翻敌身。",
+      "en_US": "Charge with beast horns and toss the foe."
+    },
+    "tags": [],
+    "mp": 4,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 7,
+      "scale": 2,
+      "hits": 1
+    }
+  },
+  "s_yushou_3": {
+    "class": "yushou",
+    "slot": 3,
+    "name": {
+      "zh_CN": "兽魂共鸣",
+      "en_US": "Beast Resonance"
+    },
+    "desc": {
+      "zh_CN": "兽魂共鸣，气力大增。",
+      "en_US": "Your beast's soul resonates; strength swells."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 5,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "buff_power",
+      "amount": 3,
+      "turns": 15
+    }
+  },
+  "s_yushou_4": {
+    "class": "yushou",
+    "slot": 4,
+    "name": {
+      "zh_CN": "狼群啸",
+      "en_US": "Wolf Howl"
+    },
+    "desc": {
+      "zh_CN": "长啸引狼，撕咬群敌。",
+      "en_US": "A howl summons wolves that tear the crowd."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 8,
+    "cost": 1,
+    "requires": [
+      "s_yushou_1"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1,
+      "power": 5,
+      "scale": 1
+    }
+  },
+  "s_yushou_5": {
+    "class": "yushou",
+    "slot": 5,
+    "name": {
+      "zh_CN": "灵犀",
+      "en_US": "Beast Empathy"
+    },
+    "desc": {
+      "zh_CN": "以灵犀之意，抚平伤势。",
+      "en_US": "Beast empathy knits your wounds."
+    },
+    "tags": [
+      "heal"
+    ],
+    "mp": 6,
+    "cost": 1,
+    "requires": [
+      "s_yushou_1"
+    ],
+    "effect": {
+      "type": "heal_self",
+      "amount": 10,
+      "scale": 2
+    }
+  },
+  "s_yushou_6": {
+    "class": "yushou",
+    "slot": 6,
+    "name": {
+      "zh_CN": "白泽啸",
+      "en_US": "Baize Roar"
+    },
+    "desc": {
+      "zh_CN": "白泽长啸，群敌震惶。",
+      "en_US": "The baize roars; the crowd freezes in terror."
+    },
+    "tags": [
+      "stun"
+    ],
+    "mp": 10,
+    "cost": 1,
+    "requires": [
+      "s_yushou_4"
+    ],
+    "effect": {
+      "type": "stun_aoe",
+      "turns": 1,
+      "radius": 1.5,
+      "power": 5,
+      "scale": 1
+    }
+  },
+  "s_yushou_7": {
+    "class": "yushou",
+    "slot": 7,
+    "name": {
+      "zh_CN": "巨熊击",
+      "en_US": "Great Bear Blow"
+    },
+    "desc": {
+      "zh_CN": "巨熊挥爪，一击千钧。",
+      "en_US": "A great bear's swipe, heavy as a mountain."
+    },
+    "tags": [],
+    "mp": 9,
+    "cost": 1,
+    "requires": [
+      "s_yushou_2"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 14,
+      "scale": 3,
+      "hits": 1
+    }
+  },
+  "s_yushou_8": {
+    "class": "yushou",
+    "slot": 8,
+    "name": {
+      "zh_CN": "白泽临",
+      "en_US": "Baize Descends"
+    },
+    "desc": {
+      "zh_CN": "白泽神兽，应召临世。",
+      "en_US": "The divine baize answers your call."
+    },
+    "tags": [
+      "summon"
+    ],
+    "mp": 18,
+    "cost": 2,
+    "requires": [
+      "s_yushou_6"
+    ],
+    "effect": {
+      "type": "summon",
+      "duration": 20,
+      "beast_hp": 18,
+      "beast_power": 8,
+      "beast_char": "Z",
+      "beast_color": [
+        240,
+        240,
+        250
+      ],
+      "beast_name": {
+        "zh_CN": "白泽",
+        "en_US": "Baize"
+      }
+    }
+  },
+  "s_fushi_1": {
+    "class": "fushi",
+    "slot": 1,
+    "name": {
+      "zh_CN": "火符",
+      "en_US": "Fire Sigil"
+    },
+    "desc": {
+      "zh_CN": "祭出火符，焚灼敌身。",
+      "en_US": "A fire sigil sears the foe."
+    },
+    "tags": [
+      "fire"
+    ],
+    "mp": 3,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 6,
+      "scale": 2,
+      "hits": 1
+    }
+  },
+  "s_fushi_2": {
+    "class": "fushi",
+    "slot": 2,
+    "name": {
+      "zh_CN": "符甲",
+      "en_US": "Sigil Harness"
+    },
+    "desc": {
+      "zh_CN": "符箓护体，坚不可摧。",
+      "en_US": "Sigils plate your body."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 4,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "buff_defense",
+      "amount": 3,
+      "turns": 12
+    }
+  },
+  "s_fushi_3": {
+    "class": "fushi",
+    "slot": 3,
+    "name": {
+      "zh_CN": "连珠符",
+      "en_US": "Stringed Sigils"
+    },
+    "desc": {
+      "zh_CN": "符如连珠，接连轰落。",
+      "en_US": "Sigils fall like strung beads."
+    },
+    "tags": [],
+    "mp": 6,
+    "cost": 1,
+    "requires": [
+      "s_fushi_1"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 5,
+      "scale": 1,
+      "hits": 3
+    }
+  },
+  "s_fushi_4": {
+    "class": "fushi",
+    "slot": 4,
+    "name": {
+      "zh_CN": "三昧符",
+      "en_US": "Samadhi Sigil"
+    },
+    "desc": {
+      "zh_CN": "三昧真火，焚尽四邻。",
+      "en_US": "Samadhi fire scorches every neighbour."
+    },
+    "tags": [
+      "fire",
+      "aoe"
+    ],
+    "mp": 8,
+    "cost": 1,
+    "requires": [
+      "s_fushi_1"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1,
+      "power": 7,
+      "scale": 1.5
+    }
+  },
+  "s_fushi_5": {
+    "class": "fushi",
+    "slot": 5,
+    "name": {
+      "zh_CN": "遁地符",
+      "en_US": "Earth-Sink Sigil"
+    },
+    "desc": {
+      "zh_CN": "化符入地，遁行无碍。",
+      "en_US": "Sink with the sigil into the earth."
+    },
+    "tags": [
+      "move"
+    ],
+    "mp": 4,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "teleport_step",
+      "range": 5
+    }
+  },
+  "s_fushi_6": {
+    "class": "fushi",
+    "slot": 6,
+    "name": {
+      "zh_CN": "火龙符",
+      "en_US": "Fire Drake Sigil"
+    },
+    "desc": {
+      "zh_CN": "火龙腾空，扑噬敌身。",
+      "en_US": "A fire drake leaps to engulf the foe."
+    },
+    "tags": [
+      "fire"
+    ],
+    "mp": 10,
+    "cost": 1,
+    "requires": [
+      "s_fushi_4"
+    ],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 13,
+      "scale": 3,
+      "hits": 1
+    }
+  },
+  "s_fushi_7": {
+    "class": "fushi",
+    "slot": 7,
+    "name": {
+      "zh_CN": "镇魂符",
+      "en_US": "Soul-Pin Sigil"
+    },
+    "desc": {
+      "zh_CN": "符镇其魂，动弹不得。",
+      "en_US": "The sigil pins the soul; the body cannot move."
+    },
+    "tags": [
+      "stun"
+    ],
+    "mp": 10,
+    "cost": 1,
+    "requires": [
+      "s_fushi_2"
+    ],
+    "effect": {
+      "type": "stun_aoe",
+      "turns": 2,
+      "radius": 1,
+      "power": 0,
+      "scale": 0
+    }
+  },
+  "s_fushi_8": {
+    "class": "fushi",
+    "slot": 8,
+    "name": {
+      "zh_CN": "天火符",
+      "en_US": "Heaven Fire Sigil"
+    },
+    "desc": {
+      "zh_CN": "天火焚野，无所遁形。",
+      "en_US": "Heaven's fire scorches the field bare."
+    },
+    "tags": [
+      "fire",
+      "aoe"
+    ],
+    "mp": 18,
+    "cost": 2,
+    "requires": [
+      "s_fushi_6"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 4,
+      "power": 11,
+      "scale": 2.5
+    }
+  },
+  "s_yueshi_1": {
+    "class": "yueshi",
+    "slot": 1,
+    "name": {
+      "zh_CN": "音刃",
+      "en_US": "Sound Blade"
+    },
+    "desc": {
+      "zh_CN": "凝音为刃，割裂敌身。",
+      "en_US": "Sound condenses into a cutting edge."
+    },
+    "tags": [],
+    "mp": 3,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "damage_nearest",
+      "power": 5,
+      "scale": 2,
+      "hits": 1
+    }
+  },
+  "s_yueshi_2": {
+    "class": "yueshi",
+    "slot": 2,
+    "name": {
+      "zh_CN": "清心曲",
+      "en_US": "Clear-Heart Tune"
+    },
+    "desc": {
+      "zh_CN": "一曲清心，真气回涌。",
+      "en_US": "A tune that stills the heart; breath returns."
+    },
+    "tags": [],
+    "mp": 0,
+    "cost": 1,
+    "requires": [],
+    "effect": {
+      "type": "mp_restore",
+      "amount": 6
+    }
+  },
+  "s_yueshi_3": {
+    "class": "yueshi",
+    "slot": 3,
+    "name": {
+      "zh_CN": "裂帛音",
+      "en_US": "Silk-Tearing Note"
+    },
+    "desc": {
+      "zh_CN": "裂帛之音，震伤四邻。",
+      "en_US": "A note like tearing silk wounds all around."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 6,
+    "cost": 1,
+    "requires": [
+      "s_yueshi_1"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1,
+      "power": 6,
+      "scale": 1.5
+    }
+  },
+  "s_yueshi_4": {
+    "class": "yueshi",
+    "slot": 4,
+    "name": {
+      "zh_CN": "迷魂音",
+      "en_US": "Soul-Befuddling Note"
+    },
+    "desc": {
+      "zh_CN": "靡音入耳，神魂俱迷。",
+      "en_US": "The note unsettles; the mind wanders loose."
+    },
+    "tags": [
+      "stun"
+    ],
+    "mp": 6,
+    "cost": 1,
+    "requires": [
+      "s_yueshi_3"
+    ],
+    "effect": {
+      "type": "stun_aoe",
+      "turns": 1,
+      "radius": 1,
+      "power": 0,
+      "scale": 0
+    }
+  },
+  "s_yueshi_5": {
+    "class": "yueshi",
+    "slot": 5,
+    "name": {
+      "zh_CN": "绕梁",
+      "en_US": "Lingering Note"
+    },
+    "desc": {
+      "zh_CN": "余音绕梁，蚀骨不休。",
+      "en_US": "The note lingers, gnawing without end."
+    },
+    "tags": [
+      "poison"
+    ],
+    "mp": 6,
+    "cost": 1,
+    "requires": [
+      "s_yueshi_1"
+    ],
+    "effect": {
+      "type": "poison_dot",
+      "damage": 3,
+      "scale": 1,
+      "turns": 6
+    }
+  },
+  "s_yueshi_6": {
+    "class": "yueshi",
+    "slot": 6,
+    "name": {
+      "zh_CN": "变徵",
+      "en_US": "Zhi Variation"
+    },
+    "desc": {
+      "zh_CN": "变徵之声，慷慨激昂。",
+      "en_US": "The zhi note rises; strength kindles."
+    },
+    "tags": [
+      "buff"
+    ],
+    "mp": 6,
+    "cost": 1,
+    "requires": [
+      "s_yueshi_2"
+    ],
+    "effect": {
+      "type": "buff_power",
+      "amount": 3,
+      "turns": 15
+    }
+  },
+  "s_yueshi_7": {
+    "class": "yueshi",
+    "slot": 7,
+    "name": {
+      "zh_CN": "破阵曲",
+      "en_US": "Array-Breaking Tune"
+    },
+    "desc": {
+      "zh_CN": "一曲破阵，锐不可当。",
+      "en_US": "One tune scatters the formation."
+    },
+    "tags": [
+      "aoe"
+    ],
+    "mp": 12,
+    "cost": 1,
+    "requires": [
+      "s_yueshi_3"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 1.5,
+      "power": 9,
+      "scale": 2
+    }
+  },
+  "s_yueshi_8": {
+    "class": "yueshi",
+    "slot": 8,
+    "name": {
+      "zh_CN": "广陵散",
+      "en_US": "Guangling San"
+    },
+    "desc": {
+      "zh_CN": "广陵一散，绝响夺魂。",
+      "en_US": "The last performance; the note claims souls."
+    },
+    "tags": [
+      "aoe",
+      "stun"
+    ],
+    "mp": 18,
+    "cost": 2,
+    "requires": [
+      "s_yueshi_7"
+    ],
+    "effect": {
+      "type": "damage_aoe_self",
+      "radius": 4,
+      "power": 10,
+      "scale": 2.5,
+      "stun": 1
+    }
+  }
+}

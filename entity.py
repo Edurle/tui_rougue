@@ -16,6 +16,8 @@ if typing.TYPE_CHECKING:
     from ai import BaseAI
     from consumable import Consumable
     from engine import Engine
+    from equipment import EquippedItem
+    from equipment import Equipment as EquipmentComponent
     from fighter import Fighter
     from game_map import GameMap
     from inventory import Inventory
@@ -69,12 +71,29 @@ class Entity:
 
 
 class Actor(Entity):
-    def __init__(self, *, char: str = "?", color=(255, 255, 255), name="<无名之物>", **kwargs) -> None:
+    def __init__(
+        self,
+        *,
+        char: str = "?",
+        color=(255, 255, 255),
+        name="<无名之物>",
+        team: str = "wild",
+        **kwargs,
+    ) -> None:
         super().__init__(char=char, color=color, name=name, **kwargs)
         self.fighter: Optional["Fighter"] = None
         self.ai: Optional["BaseAI"] = None
         self.level: Optional["Level"] = None
         self.inventory: Optional["Inventory"] = None
+        self.equipment: Optional["EquipmentComponent"] = None
+        # 阵营："player"（玩家与召唤兽）/"wild"（异兽）；AI 据此选取敌对目标
+        self.team = team
+        # 双职业与技能（玩家专用；召唤兽仅用到 team/summon_ttl）
+        self.class_ids: tuple = ()
+        self.skill_points: int = 0
+        self.learned_skills: set = set()
+        # 召唤时限（None=非召唤）；到 0 由引擎移除
+        self.summon_ttl: Optional[int] = None
 
     @property
     def is_alive(self) -> bool:
@@ -85,3 +104,4 @@ class Item(Entity):
     def __init__(self, *, char: str = "?", color=(255, 255, 255), name="<无名之物>", **kwargs) -> None:
         super().__init__(char=char, color=color, name=name, **kwargs)
         self.consumable: Optional["Consumable"] = None
+        self.equipment: Optional["EquippedItem"] = None

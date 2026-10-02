@@ -4,6 +4,7 @@
 - 代码不含任何内容数值；数值、文案、投放权重全部在 JSON。
 - 组件按 JSON 里的 type 字符串从各模块的注册表分发；未知类型报错并指明出处。
 - 加载时做 schema 校验，坏数据在启动瞬间失败，绝不在对局中途崩。
+- classes.json / skills.json 支撑双职业与技能树（DAG、链首、效果类均校验）。
 - hexagrams.json / crafting.json 为周易、天工开物系统的占位数据，此版本
   仅校验可读，不消费——将来接入时在本文件增加对应构建函数即可。
 """
@@ -18,16 +19,34 @@ from typing import Any, Dict, List, Optional
 from ai import AI_TYPES
 from consumable import CONSUMABLE_TYPES
 from entity import Actor, Item
+from equipment import SLOT_ORDER, EquippedItem
 from fighter import Fighter
 from inventory import Inventory
 from level import Level
 from paths import resource_path
+from skills import SKILL_EFFECTS
 from tileset_art import ART_REGISTRY
 
 CONTENT_DIR = "data/content"
 
 SUPPORTED_LANGS = ("zh_CN", "en_US")
 DEFAULT_LANG = "zh_CN"
+
+# 默认双职业（测试/冒烟用；正常流程由职业选择界面传入）
+DEFAULT_CLASS_IDS = ("leifa", "fushi")
+
+# 效果类集合中计为"伤害/召唤/控制"的技能（单机铁律：每职业 ≥4）
+_OFFENSIVE_EFFECTS = {"damage_nearest", "damage_aoe_self", "poison_dot", "stun_aoe", "summon"}
+
+VALID_BONUS_KEYS = {"power", "defense", "max_hp", "max_mp"}
+VALID_AFFIX_IDS = {
+    "thunder_damage",
+    "aoe_damage",
+    "poison_damage",
+    "heal_power",
+    "mp_cost_reduce",
+    "kill_heal",
+}
 
 
 class ContentError(Exception):
@@ -83,6 +102,8 @@ class Content:
         monsters_raw = _load_json(directory / "monsters.json")
         items_raw = _load_json(directory / "items.json")
         spawn_raw = _load_json(directory / "spawn_tables.json")
+        classes_raw = _load_json(directory / "classes.json")
+        skills_raw = _load_json(directory / "skills.json")
 
         def load_strings(lang_code: str) -> Dict[str, str]:
             return {
@@ -103,6 +124,15 @@ class Content:
             k: v for k, v in monsters_raw.items() if not k.startswith("_")
         }
         self.items: Dict[str, dict] = {k: v for k, v in items_raw.items() if not k.startswith("_")}
+        self.classes: Dict[str, dict] = {
+            k: v for k, v in classes_raw.items() if not k.startswith("_")
+        }
+        self.skills: Dict[str, dict] = {
+            k: v for k, v in skills_raw.items() if not k.startswith("_")
+        }
+        self.equip_items: Dict[str, dict] = {
+            k: v for k, v in self.items.items() if "equipment" in v
+        }
         self.spawn_monsters: List[dict] = spawn_raw["monsters"]
         self.spawn_items: List[dict] = spawn_raw["items"]
         self.per_room: dict = spawn_raw["per_room"]
@@ -110,6 +140,7 @@ class Content:
         self._validate()
         self._validate_theme()
         self._validate_regions()
+        self._validate_classes_skills()
 
     def _validate_regions(self) -> None:
         expected_floor = 1
@@ -162,12 +193,34 @@ class Content:
             _require(idef, "name", f"物品 {iid}")
             _require(idef, "char", f"物品 {iid}")
             _rgb(idef["color"], f"物品 {iid}")
-            cons = _require(idef, "consumable", f"物品 {iid}")
-            ctype = _require(cons, "type", f"物品 {iid}.consumable")
-            if ctype not in CONSUMABLE_TYPES:
-                raise ContentError(
-                    f"物品 {iid} 的 consumable.type '{ctype}' 未注册，可用：{sorted(CONSUMABLE_TYPES)}"
-                )
+            has_consumable = "consumable" in idef
+            has_equipment = "equipment" in idef
+            if not has_consumable and not has_equipment:
+                raise ContentError(f"物品 {iid} 必须定义 consumable 或 equipment 之一")
+            if has_consumable:
+                cons = idef["consumable"]
+                ctype = _require(cons, "type", f"物品 {iid}.consumable")
+                if ctype not in CONSUMABLE_TYPES:
+                    raise ContentError(
+                        f"物品 {iid} 的 consumable.type '{ctype}' 未注册，可用：{sorted(CONSUMABLE_TYPES)}"
+                    )
+            if has_equipment:
+                gear = idef["equipment"]
+                slot = _require(gear, "slot", f"物品 {iid}.equipment")
+                if slot not in SLOT_ORDER:
+                    raise ContentError(
+                        f"物品 {iid} 的装备槽 '{slot}' 非法，可用：{list(SLOT_ORDER)}"
+                    )
+                for key in gear.get("bonuses", {}):
+                    if key not in VALID_BONUS_KEYS:
+                        raise ContentError(
+                            f"物品 {iid} 的加成键 '{key}' 非法，可用：{sorted(VALID_BONUS_KEYS)}"
+                        )
+                for affix in gear.get("affixes", []):
+                    if affix.get("id") not in VALID_AFFIX_IDS:
+                        raise ContentError(
+                            f"物品 {iid} 的词条 '{affix.get('id')}' 非法，可用：{sorted(VALID_AFFIX_IDS)}"
+                        )
         for pool_name, pool in (("怪物", self.monsters), ("物品", self.items), ("玩家", {"player": self.player_def})):
             for eid, edef in pool.items():
                 art = edef.get("art")
@@ -189,6 +242,98 @@ class Content:
                 raise ContentError(f"第 {floor} 层没有任何可投放怪物")
             if not self.item_ids_for_floor(floor):
                 raise ContentError(f"第 {floor} 层没有任何可投放物品")
+
+    def _validate_classes_skills(self) -> None:
+        if len(self.classes) < 2:
+            raise ContentError("classes.json 至少需要 2 个职业")
+        for cid, cdef in self.classes.items():
+            _require(cdef, "name", f"职业 {cid}")
+            for field_name in ("hp", "power", "defense", "mp"):
+                value = _require(cdef, field_name, f"职业 {cid}")
+                if not isinstance(value, int) or value < 0 or (field_name != "defense" and value <= 0):
+                    raise ContentError(f"职业 {cid} 的 {field_name} 必须是非负整数（defense 可为 0）")
+
+        for sid, sdef in self.skills.items():
+            if sdef.get("class") not in self.classes:
+                raise ContentError(f"技能 {sid} 引用了不存在的职业 '{sdef.get('class')}'")
+            slot = sdef.get("slot")
+            if not isinstance(slot, int) or not 1 <= slot <= 8:
+                raise ContentError(f"技能 {sid} 的 slot 必须是 1-8 的整数")
+            _require(sdef, "name", f"技能 {sid}")
+            eff_type = _require(sdef, "effect", f"技能 {sid}").get("type")
+            if eff_type not in SKILL_EFFECTS:
+                raise ContentError(
+                    f"技能 {sid} 的 effect.type '{eff_type}' 未注册，可用：{sorted(SKILL_EFFECTS)}"
+                )
+            cost = sdef.get("cost", 1)
+            if cost not in (1, 2):
+                raise ContentError(f"技能 {sid} 的 cost 必须是 1 或 2")
+            for req in sdef.get("requires", []):
+                if req not in self.skills:
+                    raise ContentError(f"技能 {sid} 的前置 '{req}' 不存在")
+                if self.skills[req]["class"] != sdef["class"]:
+                    raise ContentError(f"技能 {sid} 的前置 '{req}' 属于其他职业")
+
+        by_class: Dict[str, List[dict]] = {}
+        for sid, sdef in self.skills.items():
+            by_class.setdefault(sdef["class"], []).append(sdef)
+        for cid, skills in by_class.items():
+            if len(skills) != 8:
+                raise ContentError(f"职业 {cid} 应有 8 个技能，实际 {len(skills)}")
+            slots = sorted(s["slot"] for s in skills)
+            if slots != list(range(1, 9)):
+                raise ContentError(f"职业 {cid} 的 slot 必须恰好覆盖 1-8")
+            heads = sum(1 for s in skills if not s["requires"])
+            if heads < 2:
+                raise ContentError(f"职业 {cid} 的链首技能（无前置）应 ≥2，实际 {heads}")
+            offensive = sum(1 for s in skills if s["effect"]["type"] in _OFFENSIVE_EFFECTS)
+            if offensive < 4:
+                raise ContentError(
+                    f"职业 {cid} 的伤害/召唤/控制技能应 ≥4，实际 {offensive}"
+                )
+            self._assert_skill_dag_acyclic(cid, skills)
+        for cid in self.classes:
+            if cid not in by_class:
+                raise ContentError(f"职业 {cid} 没有任何技能")
+
+    @staticmethod
+    def _assert_skill_dag_acyclic(class_id: str, skills: List[dict]) -> None:
+        by_id = {f"s_{class_id}_{s['slot']}": s for s in skills}
+        state: dict[str, int] = {}  # 0=未访问 1=栈中 2=完成
+
+        def visit(skill_id: str) -> None:
+            mark = state.get(skill_id, 0)
+            if mark == 1:
+                raise ContentError(f"职业 {class_id} 的技能前置关系成环（涉及 {skill_id}）")
+            if mark == 2:
+                return
+            state[skill_id] = 1
+            for req in by_id[skill_id].get("requires", []):
+                if req in by_id:
+                    visit(req)
+            state[skill_id] = 2
+
+        for skill_id in by_id:
+            visit(skill_id)
+
+    # ---- 职业/技能查询 ----
+
+    def class_name(self, class_id: str) -> str:
+        return self._(self.classes[class_id]["name"])
+
+    def skills_for_class(self, class_id: str) -> List[dict]:
+        """按 slot 排序的职业技能清单（带 id 注入）。"""
+        result = [
+            {"id": sid, **sdef} for sid, sdef in self.skills.items() if sdef["class"] == class_id
+        ]
+        result.sort(key=lambda s: s["slot"])
+        return result
+
+    def skill_for_slot(self, class_id: str, slot: int) -> Optional[dict]:
+        for sid, sdef in self.skills.items():
+            if sdef["class"] == class_id and sdef["slot"] == slot:
+                return {"id": sid, **sdef}
+        return None
 
     def _validate_theme(self) -> None:
         theme = self.theme
@@ -279,7 +424,6 @@ class Content:
 
     def build_item(self, item_id: str, gamemap, x: int, y: int) -> Item:
         idef = self.items[item_id]
-        cons_data = idef["consumable"]
         item = Item(
             gamemap=gamemap,
             x=x,
@@ -291,17 +435,50 @@ class Content:
             lore=self._(idef.get("lore", "")),
             art=idef.get("art"),
         )
-        consumable_cls = CONSUMABLE_TYPES[cons_data["type"]]
-        kwargs = {k: v for k, v in cons_data.items() if k != "type"}
-        item.consumable = consumable_cls(**kwargs)
-        item.consumable.parent = item
+        if "consumable" in idef:
+            cons_data = idef["consumable"]
+            consumable_cls = CONSUMABLE_TYPES[cons_data["type"]]
+            kwargs = {k: v for k, v in cons_data.items() if k != "type"}
+            item.consumable = consumable_cls(**kwargs)
+            item.consumable.parent = item
+        if "equipment" in idef:
+            gear_data = idef["equipment"]
+            item.equipment = EquippedItem(
+                slot=gear_data["slot"],
+                bonuses=gear_data.get("bonuses"),
+                affixes=gear_data.get("affixes"),
+            )
         return item
 
-    def build_player(self, gamemap, x: int, y: int) -> Actor:
+    def random_equipment_id(self, floor: int, rng: random.Random) -> Optional[str]:
+        """怪物死亡掉落抽取：tier ≤ floor//4+2 的装备池随机一件。"""
+        cap = floor // 4 + 2
+        pool = [
+            iid for iid, idef in self.equip_items.items() if int(idef.get("tier", 1)) <= cap
+        ]
+        if not pool:
+            return None
+        return rng.choice(sorted(pool))
+
+    def build_player(
+        self,
+        gamemap,
+        x: int,
+        y: int,
+        class_ids: tuple = DEFAULT_CLASS_IDS,
+    ) -> Actor:
         pdef = self.player_def
-        fighter_data = _require(pdef, "fighter", "player.json")
         level_data = _require(pdef, "level", "player.json")
         inv_data = _require(pdef, "inventory", "player.json")
+        if len(class_ids) != 2 or class_ids[0] == class_ids[1]:
+            raise ContentError(f"双职业定义非法：{class_ids}")
+        for cid in class_ids:
+            if cid not in self.classes:
+                raise ContentError(f"职业 '{cid}' 不存在于 classes.json")
+        primary, secondary = (self.classes[c] for c in class_ids)
+        # 双职业合并：主职业全量 + 副职业气血/真气上限各半（向上取整）
+        hp = int(primary["hp"]) + (int(secondary["hp"]) + 1) // 2
+        mp = int(primary["mp"]) + (int(secondary["mp"]) + 1) // 2
         player = Actor(
             gamemap=gamemap,
             x=x,
@@ -311,11 +488,16 @@ class Content:
             name=self._(pdef["name"]),
             blocks_movement=True,
             tags=list(pdef.get("tags", [])),
+            team="player",
         )
+        player.class_ids = tuple(class_ids)
+        player.skill_points = 2
+        player.learned_skills = set()
         player.fighter = Fighter(
-            hp=fighter_data["hp"],
-            power=fighter_data["power"],
-            defense=fighter_data["defense"],
+            hp=hp,
+            power=int(primary["power"]),
+            defense=int(primary["defense"]),
+            max_mp=mp,
         )
         player.fighter.parent = player
         player.level = Level(
@@ -326,7 +508,44 @@ class Content:
         player.level.parent = player
         player.inventory = Inventory(capacity=inv_data["capacity"])
         player.inventory.parent = player
+        from equipment import Equipment
+
+        player.equipment = Equipment()
+        player.equipment.parent = player
         return player
+
+    def build_summon(
+        self,
+        gamemap,
+        x: int,
+        y: int,
+        *,
+        name: str,
+        char: str,
+        color: tuple,
+        hp: int,
+        power: int,
+        duration: int,
+    ) -> Actor:
+        """契约兽：玩家阵营，AlliedAI，到时消散（engine 递减 summon_ttl）。"""
+        from ai import AlliedAI
+
+        beast = Actor(
+            gamemap=gamemap,
+            x=x,
+            y=y,
+            char=char,
+            color=color,
+            name=name,
+            blocks_movement=True,
+            team="player",
+        )
+        beast.fighter = Fighter(hp=hp, power=power, defense=0)
+        beast.fighter.parent = beast
+        beast.ai = AlliedAI()
+        beast.ai.parent = beast
+        beast.summon_ttl = duration
+        return beast
 
 
 def load_content(lang: str = DEFAULT_LANG) -> Content:

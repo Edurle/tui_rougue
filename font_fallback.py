@@ -51,6 +51,14 @@ def content_characters(content) -> set[str]:
         for definition in pool.values():
             chars.update(collect_text(definition.get("name", "")))
             chars.update(collect_text(definition.get("lore", "")))
+    # 职业与技能：名称、简介、召唤兽名（双语）进字形管线
+    for definition in content.classes.values():
+        chars.update(collect_text(definition.get("name", "")))
+        chars.update(collect_text(definition.get("desc", "")))
+    for definition in content.skills.values():
+        chars.update(collect_text(definition.get("name", "")))
+        chars.update(collect_text(definition.get("desc", "")))
+        chars.update(collect_text(definition["effect"].get("beast_name", "")))
     for region in content.regions:
         chars.update(collect_text(region["name"]))
         chars.update(collect_text(region["mountains"]))
@@ -62,7 +70,7 @@ def content_characters(content) -> set[str]:
 EXTRA_RUNTIME_CHARS = set(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     "!?+-*/=<>():;,._'\"[]{}@#$%&|~^` "
-    "✦⚡!%?><·"
+    "✦⚡!%?><·✓×↑►"
 )
 
 

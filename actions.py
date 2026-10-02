@@ -107,6 +107,61 @@ class ItemAction(Action):
         self.item.consumable.activate(self)
 
 
+class CastSkillAction(Action):
+    """施展当前页第 slot 槽技能（1-8 → slot 0-7）。需目标时抛 NeedTarget。"""
+
+    def __init__(self, entity: "Actor", slot: int, target=None) -> None:
+        self.entity = entity
+        self.slot = slot
+        self.target = target
+
+    def perform(self, engine: "Engine") -> None:
+        engine.execute_skill(self.slot, target=self.target)
+
+
+class EquipAction(Action):
+    """装备行囊中的一件（被顶替的旧件自动回行囊）。"""
+
+    def __init__(self, entity: "Actor", item: "Item") -> None:
+        self.entity = entity
+        self.item = item
+
+    def perform(self, engine: "Engine") -> None:
+        strings = engine.content.strings
+        equipment = self.entity.equipment
+        if equipment is None or self.item.equipment is None:
+            raise exceptions.Impossible(strings["no_item_here"])
+        replaced = equipment.equip(self.item)
+        if replaced is not None:
+            self.entity.inventory.add(replaced)
+        self.entity.fighter.clamp_vitals()
+        engine.message_log.add_message(
+            strings["equip_on"].format(item=self.item.name), "loot"
+        )
+
+
+class UnequipAction(Action):
+    """卸下指定装备槽，物品回行囊。"""
+
+    def __init__(self, entity: "Actor", slot: str) -> None:
+        self.entity = entity
+        self.slot = slot
+
+    def perform(self, engine: "Engine") -> None:
+        strings = engine.content.strings
+        equipment = self.entity.equipment
+        item = equipment.unequip_slot(self.slot) if equipment is not None else None
+        if item is None:
+            raise exceptions.Impossible(strings["no_item_here"])
+        try:
+            self.entity.inventory.add(item)
+        except InventoryFull:
+            equipment.equip(item)  # 放不回去，原样穿回
+            raise exceptions.Impossible(strings["inventory_full"].format(item=item.name))
+        self.entity.fighter.clamp_vitals()
+        engine.message_log.add_message(strings["equip_off"].format(item=item.name), "loot")
+
+
 class TakeStairsAction(Action):
     """山径：站在下行山径（金）上按 > 下行，站在上行山径（青）上按 < 上行。"""
 

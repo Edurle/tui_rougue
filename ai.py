@@ -2,6 +2,9 @@
 
 注册表 AI_TYPES 供 content_loader 分发：数据里写 "ai": {"type": "hostile"}，
 新增 AI 行为 = 新类 + 在注册表登记 + 数据引用，机制代码零改动。
+
+目标选取按阵营（Actor.team）：敌对 = team 不同的存活 actor；因此契约兽
+（team="player"，AlliedAI）能替玩家承接异兽的仇恨。
 """
 
 from __future__ import annotations
@@ -26,25 +29,38 @@ class BaseAI(BaseComponent):
 
     @property
     def can_see_player(self) -> bool:
-        """FOV 对称：异兽所在格在玩家视野内，即异兽也能看到玩家。"""
+        """FOV 对称：异兽所在格在玩家视野内，即异兽也能看到玩家方单位。"""
         return self.engine.gamemap.visible[self.parent.x, self.parent.y]
+
+    def hostile_target(self) -> typing.Optional["Actor"]:
+        """视野内最近的敌对存活 actor（非本阵营）。"""
+        engine = self.engine
+        candidates = [
+            actor
+            for actor in engine.gamemap.actors
+            if actor.team != self.parent.team
+            and engine.gamemap.visible[actor.x, actor.y]
+        ]
+        if not candidates:
+            return None
+        return min(candidates, key=self.parent.distance_to)
 
 
 class HostileEnemy(BaseAI):
-    """视野内 A* 追击，相邻则攻击；看不见则原地待命。"""
+    """视野内 A* 追击最近敌对单位（玩家或其契约兽）；看不见则原地待命。"""
 
     def __init__(self) -> None:
         self.saw_player = False
 
     def perform(self) -> None:
         engine: Engine = self.engine
-        target: Actor = engine.player
-        sees = self.can_see_player
+        target: typing.Optional[Actor] = self.hostile_target()
+        sees = target is not None
         if sees and not self.saw_player:
             engine.effects.spawn_notice(self.parent.x, self.parent.y)
         self.saw_player = sees
-        if not sees:
-            return  # 未见玩家，不动（将来可在此挂游荡/巡逻行为）
+        if target is None:
+            return  # 未见敌对单位，不动（将来可在此挂游荡/巡逻行为）
 
         # 代价数组：可行走为 1，被其他战斗单位占据的格子加高成本避免堵门
         cost = np.array(engine.gamemap.tiles["walkable"], dtype=np.int16)
@@ -68,6 +84,41 @@ class HostileEnemy(BaseAI):
         MovementAction(self.parent, dest_x - self.parent.x, dest_y - self.parent.y).perform(engine)
 
 
+class AlliedAI(BaseAI):
+    """契约兽：追击最近异兽；无敌可寻则待命在玩家近旁。"""
+
+    def perform(self) -> None:
+        engine: Engine = self.engine
+        target = self.hostile_target()
+        if target is None:
+            return
+        dx = target.x - self.parent.x
+        dy = target.y - self.parent.y
+        distance = max(abs(dx), abs(dy))
+        if distance <= 1:
+            MeleeAction(self.parent, dx, dy).perform(engine)
+            return
+
+        cost = np.array(engine.gamemap.tiles["walkable"], dtype=np.int16)
+        for actor in engine.gamemap.actors:
+            if cost[actor.x, actor.y]:
+                cost[actor.x, actor.y] += 10
+        graph = tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
+        pathfinder = tcod.path.Pathfinder(graph)
+        pathfinder.add_root((self.parent.x, self.parent.y))
+        path = pathfinder.path_to((target.x, target.y))
+        if path is None or len(path) < 2:
+            return
+        dest_x, dest_y = int(path[1][0]), int(path[1][1])
+        if (dest_x, dest_y) == (target.x, target.y):
+            MeleeAction(self.parent, dx, dy).perform(engine)
+            return
+        if engine.gamemap.get_actor_at(dest_x, dest_y):
+            return
+        MovementAction(self.parent, dest_x - self.parent.x, dest_y - self.parent.y).perform(engine)
+
+
 AI_TYPES = {
     "hostile": HostileEnemy,
+    "allied": AlliedAI,
 }

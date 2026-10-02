@@ -1,6 +1,7 @@
 """修为（等级）组件：经验获取与自动升级。
 
-升级加成数值由 data/content/player.json 驱动。
+升级加成数值由 data/content/player.json 驱动（max_hp/max_mp/power/defense/
+skill_points），作用于 fighter 的基础值（base_*），装备与 buff 由聚合层叠加。
 """
 
 from __future__ import annotations
@@ -38,15 +39,24 @@ class Level(BaseComponent):
         self.current_xp += xp
         strings = self.engine.content.strings
         self.engine.message_log.add_message(strings["gain_xp"].format(xp=xp), "xp")
-        if self.requires_level_up:
+        while self.requires_level_up:
             self.current_level += 1
-            fighter = self.parent.fighter
-            gained_hp = self.bonuses.get("max_hp", 0)
-            fighter.max_hp += gained_hp
-            fighter.heal(gained_hp)
-            fighter.power += self.bonuses.get("power", 0)
-            fighter.defense += self.bonuses.get("defense", 0)
-            self.engine.message_log.add_message(
-                strings["level_up"].format(level=self.current_level), "levelup"
-            )
-            self.engine.effects.spawn_level_up(self.parent.x, self.parent.y)
+            self._apply_level_up()
+
+    def _apply_level_up(self) -> None:
+        parent = self.parent
+        fighter = parent.fighter
+        strings = self.engine.content.strings
+        gained_hp = self.bonuses.get("max_hp", 0)
+        fighter.base_max_hp += gained_hp
+        fighter.heal(gained_hp)
+        gained_mp = self.bonuses.get("max_mp", 0)
+        fighter.base_max_mp += gained_mp
+        fighter.restore_mp(gained_mp)
+        fighter.base_power += self.bonuses.get("power", 0)
+        fighter.base_defense += self.bonuses.get("defense", 0)
+        parent.skill_points += self.bonuses.get("skill_points", 0)
+        self.engine.message_log.add_message(
+            strings["level_up"].format(level=self.current_level), "levelup"
+        )
+        self.engine.effects.spawn_level_up(parent.x, parent.y)

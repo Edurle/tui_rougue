@@ -61,7 +61,10 @@ def test_full_key_pipeline_combat_pickup_inventory_stairs():
     assert "狌狌" in joined_log
     assert player.level.current_xp > 0
 
-    # 2) 脚下放灵芝，按 G 拾取
+    # 2) 脚下放灵芝，按 G 拾取（先清掉 procgen 可能投在同格的随机物品）
+    for existing in list(engine.gamemap.items):
+        if (existing.x, existing.y) == (monster.x, monster.y):
+            engine.gamemap.entities.discard(existing)
     item = content.build_item("lingzhi", engine.gamemap, monster.x, monster.y)
     player.x, player.y = monster.x, monster.y
     action = dispatch_key(handler, KeySym.G)

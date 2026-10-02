@@ -1,4 +1,10 @@
-"""战斗组件：气血、攻防、经验结算与死亡处理。"""
+"""战斗组件：气血/真气、攻防聚合（基础+buff+装备词条）、状态机与死亡处理。
+
+聚合规则：
+- max_hp / max_mp / power / defense = base_* + 装备 bonuses + buff（power/defense）
+- 外部直写（测试与旧代码）视为重设基础值：hp setter 语义保持 clamp+死亡判定
+- buff（攻/防）、蛊毒 DOT、眩晕 = 回合状态机，由引擎在回合边界调用 tick_*
+"""
 
 from __future__ import annotations
 
@@ -8,13 +14,71 @@ from base_component import BaseComponent
 
 
 class Fighter(BaseComponent):
-    def __init__(self, hp: int, power: int, defense: int, xp_reward: int = 0) -> None:
-        self.max_hp = hp
+    def __init__(
+        self,
+        hp: int,
+        power: int,
+        defense: int,
+        xp_reward: int = 0,
+        max_mp: int = 0,
+    ) -> None:
+        self.base_max_hp = hp
         self._hp = hp
         self._dead = False
-        self.power = power
-        self.defense = defense
+        self.base_power = power
+        self.base_defense = defense
+        self.base_max_mp = max_mp
+        self._mp = max_mp
         self.xp_reward = xp_reward
+        # 回合状态：buffs[stat] = [amount, turns]；dot = [damage, turns]
+        self.buffs: dict[str, list[int]] = {}
+        self.dot: list[int] = [0, 0]
+        self.stun_turns = 0
+
+    # ---- 装备聚合 ----
+
+    def _gear_bonus(self, key: str) -> int:
+        parent = getattr(self, "parent", None)
+        equipment = getattr(parent, "equipment", None)
+        if equipment is None:
+            return 0
+        return equipment.bonus(key)
+
+    # ---- 聚合属性 ----
+
+    @property
+    def max_hp(self) -> int:
+        return self.base_max_hp + self._gear_bonus("max_hp")
+
+    @max_hp.setter
+    def max_hp(self, value: int) -> None:
+        self.base_max_hp = value
+
+    @property
+    def max_mp(self) -> int:
+        return self.base_max_mp + self._gear_bonus("max_mp")
+
+    @max_mp.setter
+    def max_mp(self, value: int) -> None:
+        self.base_max_mp = value
+
+    @property
+    def power(self) -> int:
+        return self.base_power + self.buff_amount("power") + self._gear_bonus("power")
+
+    @power.setter
+    def power(self, value: int) -> None:
+        self.base_power = value
+
+    @property
+    def defense(self) -> int:
+        return self.base_defense + self.buff_amount("defense") + self._gear_bonus("defense")
+
+    @defense.setter
+    def defense(self, value: int) -> None:
+        self.base_defense = value
+
+    # ---- 当前值 ----
 
     @property
     def hp(self) -> int:
@@ -27,10 +91,75 @@ class Fighter(BaseComponent):
             self._dead = True
             self.die()
 
+    @property
+    def mp(self) -> int:
+        return self._mp
+
+    @mp.setter
+    def mp(self, value: int) -> None:
+        self._mp = max(0, min(value, self.max_mp))
+
     def heal(self, amount: int) -> int:
         actual = min(amount, self.max_hp - self._hp)
         self._hp += actual
         return actual
+
+    def clamp_vitals(self) -> None:
+        """装备变动导致上限变化后收敛当前值（卸甲后气血不再超出上限）。"""
+        self._hp = min(self._hp, self.max_hp)
+        self._mp = min(self._mp, self.max_mp)
+
+    def restore_mp(self, amount: int) -> int:
+        actual = min(amount, self.max_mp - self._mp)
+        self._mp += actual
+        return actual
+
+    # ---- 状态机 ----
+
+    def apply_buff(self, stat: str, amount: int, turns: int) -> None:
+        """同属性重复施加：数值叠加、时长刷新。"""
+        current = self.buffs.get(stat)
+        if current is None:
+            self.buffs[stat] = [amount, turns]
+        else:
+            current[0] += amount
+            current[1] = turns
+
+    def buff_amount(self, stat: str) -> int:
+        entry = self.buffs.get(stat)
+        return entry[0] if entry else 0
+
+    def tick_buffs(self) -> bool:
+        """回合边界递减；返回是否有 buff 到期（用于提示）。"""
+        expired = False
+        for stat in list(self.buffs):
+            entry = self.buffs[stat]
+            entry[1] -= 1
+            if entry[1] <= 0:
+                del self.buffs[stat]
+                expired = True
+        return expired
+
+    def apply_poison(self, damage: int, turns: int) -> None:
+        """蛊毒施加：后到的毒覆盖先前的。"""
+        self.dot = [damage, turns]
+
+    @property
+    def poisoned(self) -> bool:
+        return self.dot[1] > 0
+
+    def tick_poison(self) -> int:
+        """结算本回合毒伤并递减时长；返回实际伤害（0=无毒）。"""
+        damage, turns = self.dot
+        if turns <= 0 or damage <= 0:
+            return 0
+        self.dot[1] = turns - 1
+        return damage
+
+    def apply_stun(self, turns: int) -> None:
+        self.stun_turns = max(self.stun_turns, turns)
+
+    # ---- 战斗 ----
 
     def is_player(self) -> bool:
         return self.parent is self.engine.player
@@ -52,6 +181,8 @@ class Fighter(BaseComponent):
             self.engine.effects.spawn_damage(
                 target.parent.x, target.parent.y, damage, is_player_victim=target.is_player()
             )
+            if not target.parent.is_alive:
+                self.engine.trigger_kill_heal(self.parent)
             if target.is_player() and 0 < target.hp / target.max_hp < 0.3 <= prev_ratio:
                 log.add_message(strings["player_hurt_warn"], "warn")
         else:
@@ -74,10 +205,18 @@ class Fighter(BaseComponent):
             self.parent.fighter = None
             self.engine.game_over = True
             return
+        if getattr(self.parent, "summon_ttl", None) is not None:
+            # 契约兽力竭：化光消散，不留尸骸不掉落
+            log.add_message(strings["summon_fade"].format(name=self.parent.name), "summon")
+            self.engine.effects.spawn_summon(self.parent.x, self.parent.y)
+            self.engine.gamemap.entities.discard(self.parent)
+            self.parent.fighter = None
+            return
         log.add_message(strings["monster_dies"].format(name=self.parent.name), "kill")
         if self.engine.player.level and self.engine.player.is_alive:
             self.engine.player.level.add_xp(self.xp_reward)
         self.engine.effects.spawn_pickup(self.parent.x, self.parent.y)
+        self.engine.roll_drop(self.parent.x, self.parent.y, source=self.parent)
         self.parent.char = "%"
         self.parent.color = tuple(theme["corpse_color"])
         self.parent.name = strings["corpse_name"].format(name=self.parent.name)

@@ -1,6 +1,6 @@
 {
   "_schema": {
-    "说明": "物品定义。consumable.type 对应 consumable.py 的效果注册表；新效果=新类+注册+此处引用。tags 为五行/出处扩展预留。name/lore 可本地化（同 monsters.json 规则）。"
+    "说明": "物品定义。consumable.type 对应 consumable.py 的效果注册表；equipment.slot 对应 equipment.py 的五槽（weapon/armor/boots/amulet/helm）。tier 影响怪物死亡掉落的楼层门槛。name/lore 可本地化（同 monsters.json 规则）。"
   },
   "lingzhi": {
     "name": {
@@ -51,6 +51,557 @@
       "type": "lightning",
       "damage": 14,
       "max_range": 8
+    }
+  },
+  "huiqisan": {
+    "name": {
+      "zh_CN": "回气散",
+      "en_US": "Breath Powder"
+    },
+    "char": "!",
+    "color": [
+      110,
+      220,
+      220
+    ],
+    "tags": [
+      "herb"
+    ],
+    "lore": {
+      "zh_CN": "研草木清气为散，一服真气汩汩而生。",
+      "en_US": "Ground herbs of clear qi; one dose and breath wells up again."
+    },
+    "tier": 1,
+    "consumable": {
+      "type": "heal_mp",
+      "amount": 8
+    }
+  },
+  "w_taomu": {
+    "name": {
+      "zh_CN": "桃木剑",
+      "en_US": "Peachwood Sword"
+    },
+    "char": "/",
+    "color": [
+      214,
+      138,
+      106
+    ],
+    "tags": [
+      "weapon"
+    ],
+    "lore": {
+      "zh_CN": "雷击桃木所削，剑气虽浅，百鬼犹避。",
+      "en_US": "Cut from lightning-struck peachwood; shallow in edge, yet ghosts give way."
+    },
+    "tier": 1,
+    "equipment": {
+      "slot": "weapon",
+      "bonuses": {
+        "power": 2
+      },
+      "affixes": [
+        {
+          "id": "mp_cost_reduce",
+          "value": 1
+        }
+      ]
+    }
+  },
+  "w_qingtong": {
+    "name": {
+      "zh_CN": "青铜戈",
+      "en_US": "Bronze Ge"
+    },
+    "char": "/",
+    "color": [
+      158,
+      178,
+      122
+    ],
+    "tags": [
+      "weapon"
+    ],
+    "lore": {
+      "zh_CN": "殷商战阵之遗，历千年而锋刃犹存。",
+      "en_US": "A relic of Shang battle lines; three thousand years, still keen."
+    },
+    "tier": 1,
+    "equipment": {
+      "slot": "weapon",
+      "bonuses": {
+        "power": 3
+      },
+      "affixes": []
+    }
+  },
+  "w_kunwu": {
+    "name": {
+      "zh_CN": "昆吾刀",
+      "en_US": "Kunwu Blade"
+    },
+    "char": "/",
+    "color": [
+      196,
+      214,
+      228
+    ],
+    "tags": [
+      "weapon"
+    ],
+    "lore": {
+      "zh_CN": "昆吾山下精铁所铸，挥动时刀罡如练。",
+      "en_US": "Forged of Kunwu iron; its sweeping aura flows like silk."
+    },
+    "tier": 2,
+    "equipment": {
+      "slot": "weapon",
+      "bonuses": {
+        "power": 5
+      },
+      "affixes": [
+        {
+          "id": "aoe_damage",
+          "value": 2
+        }
+      ]
+    }
+  },
+  "w_ganjiang": {
+    "name": {
+      "zh_CN": "干将",
+      "en_US": "Ganjiang"
+    },
+    "char": "/",
+    "color": [
+      232,
+      196,
+      116
+    ],
+    "tags": [
+      "weapon",
+      "legendary"
+    ],
+    "lore": {
+      "zh_CN": "莫邪以身殉炉，方成此雌雄双剑之雄。",
+      "en_US": "Moye gave herself to the furnace; this is the male of the pair."
+    },
+    "tier": 3,
+    "equipment": {
+      "slot": "weapon",
+      "bonuses": {
+        "power": 8
+      },
+      "affixes": [
+        {
+          "id": "kill_heal",
+          "value": 2
+        }
+      ]
+    }
+  },
+  "a_shoupi": {
+    "name": {
+      "zh_CN": "兽皮裘",
+      "en_US": "Beast-Pelt Jerkin"
+    },
+    "char": "]",
+    "color": [
+      180,
+      148,
+      110
+    ],
+    "tags": [
+      "armor"
+    ],
+    "lore": {
+      "zh_CN": "猎户手绩的粗裘，聊胜于无。",
+      "en_US": "A hunter's rough pelt; better than nothing."
+    },
+    "tier": 1,
+    "equipment": {
+      "slot": "armor",
+      "bonuses": {
+        "defense": 1
+      },
+      "affixes": []
+    }
+  },
+  "a_xuangui": {
+    "name": {
+      "zh_CN": "玄龟甲",
+      "en_US": "Dark-Turtle Shell"
+    },
+    "char": "]",
+    "color": [
+      110,
+      140,
+      150
+    ],
+    "tags": [
+      "armor"
+    ],
+    "lore": {
+      "zh_CN": "玄龟之甲打磨成护，沉厚如山。",
+      "en_US": "Polished shell of the dark turtle; heavy as a hill."
+    },
+    "tier": 1,
+    "equipment": {
+      "slot": "armor",
+      "bonuses": {
+        "defense": 2,
+        "max_hp": 6
+      },
+      "affixes": []
+    }
+  },
+  "a_xisi": {
+    "name": {
+      "zh_CN": "犀兕铠",
+      "en_US": "Rhinoceros Harness"
+    },
+    "char": "]",
+    "color": [
+      160,
+      160,
+      170
+    ],
+    "tags": [
+      "armor"
+    ],
+    "lore": {
+      "zh_CN": "犀兕之革串缀成铠，刀剑加身不过白痕。",
+      "en_US": "Hide of the xi-rhino, laced into mail; blades leave only pale marks."
+    },
+    "tier": 2,
+    "equipment": {
+      "slot": "armor",
+      "bonuses": {
+        "defense": 3,
+        "max_hp": 8
+      },
+      "affixes": []
+    }
+  },
+  "b_maxie": {
+    "name": {
+      "zh_CN": "麻鞋",
+      "en_US": "Hemp Sandals"
+    },
+    "char": "=",
+    "color": [
+      200,
+      180,
+      130
+    ],
+    "tags": [
+      "boots"
+    ],
+    "lore": {
+      "zh_CN": "千层麻线纳底，山路再远也不磨脚。",
+      "en_US": "Hundred-layer hemp soles; no mountain road wears them through."
+    },
+    "tier": 1,
+    "equipment": {
+      "slot": "boots",
+      "bonuses": {
+        "defense": 1
+      },
+      "affixes": []
+    }
+  },
+  "b_zhuifeng": {
+    "name": {
+      "zh_CN": "追风履",
+      "en_US": "Windchaser Shoes"
+    },
+    "char": "=",
+    "color": [
+      140,
+      220,
+      200
+    ],
+    "tags": [
+      "boots"
+    ],
+    "lore": {
+      "zh_CN": "着之步履生风，气脉亦随之活络。",
+      "en_US": "Wear them and the wind follows your step — and your breath."
+    },
+    "tier": 1,
+    "equipment": {
+      "slot": "boots",
+      "bonuses": {
+        "max_mp": 6
+      },
+      "affixes": []
+    }
+  },
+  "b_dengyun": {
+    "name": {
+      "zh_CN": "踏云履",
+      "en_US": "Cloud-Treading Shoes"
+    },
+    "char": "=",
+    "color": [
+      220,
+      226,
+      240
+    ],
+    "tags": [
+      "boots"
+    ],
+    "lore": {
+      "zh_CN": "云锦织面，行走间如有云气托足。",
+      "en_US": "Woven of cloud-brocade; mist bears each step."
+    },
+    "tier": 2,
+    "equipment": {
+      "slot": "boots",
+      "bonuses": {
+        "defense": 1,
+        "max_hp": 4
+      },
+      "affixes": []
+    }
+  },
+  "p_yupei": {
+    "name": {
+      "zh_CN": "玉佩",
+      "en_US": "Jade Pendant"
+    },
+    "char": "\"",
+    "color": [
+      150,
+      230,
+      190
+    ],
+    "tags": [
+      "amulet"
+    ],
+    "lore": {
+      "zh_CN": "君子无故玉不去身，温养气脉。",
+      "en_US": "A gentleman's jade, never parted; it tempers the breath."
+    },
+    "tier": 1,
+    "equipment": {
+      "slot": "amulet",
+      "bonuses": {
+        "max_mp": 8
+      },
+      "affixes": []
+    }
+  },
+  "p_bishui": {
+    "name": {
+      "zh_CN": "避水珠",
+      "en_US": "Water-Averting Pearl"
+    },
+    "char": "\"",
+    "color": [
+      120,
+      180,
+      240
+    ],
+    "tags": [
+      "amulet"
+    ],
+    "lore": {
+      "zh_CN": "含之入水不濡，清凉之气沁人心脾。",
+      "en_US": "Hold it and rivers part; its coolness steels the mind."
+    },
+    "tier": 2,
+    "equipment": {
+      "slot": "amulet",
+      "bonuses": {
+        "defense": 1,
+        "max_mp": 4
+      },
+      "affixes": []
+    }
+  },
+  "p_zhaoyao": {
+    "name": {
+      "zh_CN": "照妖镜",
+      "en_US": "Fiend-Revealing Mirror"
+    },
+    "char": "\"",
+    "color": [
+      230,
+      230,
+      245
+    ],
+    "tags": [
+      "amulet"
+    ],
+    "lore": {
+      "zh_CN": "镜光所照，妖形无所遁；雷法遇之愈威。",
+      "en_US": "Its light unmasks all fiends — and emboldens thunder."
+    },
+    "tier": 3,
+    "equipment": {
+      "slot": "amulet",
+      "bonuses": {
+        "power": 2
+      },
+      "affixes": [
+        {
+          "id": "thunder_damage",
+          "value": 3
+        }
+      ]
+    }
+  },
+  "p_baidu": {
+    "name": {
+      "zh_CN": "百毒佩",
+      "en_US": "Hundred-Venom Charm"
+    },
+    "char": "\"",
+    "color": [
+      140,
+      220,
+      120
+    ],
+    "tags": [
+      "amulet"
+    ],
+    "lore": {
+      "zh_CN": "以毒攻毒的古佩，蛊毒经此反而愈发狠辣。",
+      "en_US": "An old charm that fights venom with venom — and wins."
+    },
+    "tier": 2,
+    "equipment": {
+      "slot": "amulet",
+      "bonuses": {
+        "defense": 1
+      },
+      "affixes": [
+        {
+          "id": "poison_damage",
+          "value": 3
+        }
+      ]
+    }
+  },
+  "p_miaoshou": {
+    "name": {
+      "zh_CN": "妙手环",
+      "en_US": "Healer's Loop"
+    },
+    "char": "\"",
+    "color": [
+      240,
+      210,
+      170
+    ],
+    "tags": [
+      "amulet"
+    ],
+    "lore": {
+      "zh_CN": "巫医传下的手环，疗伤时气顺而力足。",
+      "en_US": "A healer's handed-down loop; mending flows smooth and strong."
+    },
+    "tier": 1,
+    "equipment": {
+      "slot": "amulet",
+      "bonuses": {
+        "max_mp": 4
+      },
+      "affixes": [
+        {
+          "id": "heal_power",
+          "value": 3
+        }
+      ]
+    }
+  },
+  "m_zhuli": {
+    "name": {
+      "zh_CN": "竹笠",
+      "en_US": "Bamboo Hat"
+    },
+    "char": "^",
+    "color": [
+      170,
+      200,
+      120
+    ],
+    "tags": [
+      "helm"
+    ],
+    "lore": {
+      "zh_CN": "青篾编就的斗笠，遮雨亦遮妖氛。",
+      "en_US": "Woven of green bamboo; turns rain and miasma alike."
+    },
+    "tier": 1,
+    "equipment": {
+      "slot": "helm",
+      "bonuses": {
+        "defense": 1
+      },
+      "affixes": []
+    }
+  },
+  "m_qingtongmian": {
+    "name": {
+      "zh_CN": "青铜面甲",
+      "en_US": "Bronze Visor"
+    },
+    "char": "^",
+    "color": [
+      150,
+      170,
+      140
+    ],
+    "tags": [
+      "helm"
+    ],
+    "lore": {
+      "zh_CN": "饕餮纹面甲，戴上后只余双眼冷光。",
+      "en_US": "A taotie-masked visor; beneath it, only cold eyes."
+    },
+    "tier": 2,
+    "equipment": {
+      "slot": "helm",
+      "bonuses": {
+        "defense": 2
+      },
+      "affixes": []
+    }
+  },
+  "m_xiezhi": {
+    "name": {
+      "zh_CN": "獬豸冠",
+      "en_US": "Xiezhi Crown"
+    },
+    "char": "^",
+    "color": [
+      235,
+      180,
+      110
+    ],
+    "tags": [
+      "helm"
+    ],
+    "lore": {
+      "zh_CN": "法冠之属，獬豸触邪，挥洒间罡风更烈。",
+      "en_US": "A crown of judgement; the xiezie gores the wicked, and winds answer."
+    },
+    "tier": 3,
+    "equipment": {
+      "slot": "helm",
+      "bonuses": {
+        "power": 1,
+        "defense": 1
+      },
+      "affixes": [
+        {
+          "id": "aoe_damage",
+          "value": 3
+        }
+      ]
     }
   }
 }

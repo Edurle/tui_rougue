@@ -4,6 +4,7 @@
                      [--sidebar large|medium|small] [--smoke [输出路径]]
 语言优先级：--lang 参数 > 系统语言检测 > zh_CN
 显示设置：F1 循环画面大小（字号+格数），F2 循环信息板宽度；持久化到 settings.json
+开局：两段职业选择（主→副）构造双职业行者；转世重修回到选择界面
 """
 
 from __future__ import annotations
@@ -16,18 +17,25 @@ from typing import Optional
 
 import tcod
 
+import exceptions
+import skills as skills_module
 from content_loader import DEFAULT_LANG, SUPPORTED_LANGS, load_content
 from engine import Engine
 from font_fallback import apply_font_pipeline
 from input_handlers import (
     ChangeSizeAction,
+    ClassSelectEventHandler,
     CloseMenuAction,
+    DirectionSelectEventHandler,
     GameOverEventHandler,
     InventoryEventHandler,
     MainGameEventHandler,
     OpenInventoryAction,
+    OpenSkillLearnAction,
     RestartAction,
+    SkillLearnEventHandler,
     SwitchHandlerAction,
+    TargetingEventHandler,
 )
 from paths import resource_path
 from settings import Settings
@@ -83,8 +91,27 @@ def build_tileset(content, settings) -> tcod.tileset.Tileset:
     return tileset
 
 
+def _present(context, console) -> None:
+    # 保持宽高比 + 整数倍缩放：窗口任意拉伸/最大化都不发糊（余量留黑边）
+    context.present(console, keep_aspect=True, integer_scaling=True)
+
+
+def collect_class_ids(context, console, content, settings) -> tuple:
+    """开局两段职业选择（主→副）；返回 (主 id, 副 id)。"""
+    strings = content.strings
+    console.clear(fg=(236, 236, 240), bg=tuple(content.theme["background"]))
+    handler = ClassSelectEventHandler(content, settings)
+    while not handler.done:
+        handler.on_render(console)
+        _present(context, console)
+        for event in tcod.event.get():
+            handler.dispatch(event)
+    console.clear(fg=(236, 236, 240), bg=tuple(content.theme["background"]))
+    return handler.chosen
+
+
 def game_loop(context, console, engine, content) -> str:
-    """主循环；返回变更类型（map/sidebar）请求重建窗口，退出走 SystemExit。"""
+    """主循环；返回变更类型（map/sidebar/restart）请求上层处理，退出走 SystemExit。"""
     handler = MainGameEventHandler(engine)
     last_time = time.perf_counter()
     while True:
@@ -94,8 +121,7 @@ def game_loop(context, console, engine, content) -> str:
 
         engine.effects.update(dt)
         handler.on_render(console)
-        # 保持宽高比 + 整数倍缩放：窗口任意拉伸/最大化都不发糊（余量留黑边）
-        context.present(console, keep_aspect=True, integer_scaling=True)
+        _present(context, console)
 
         if engine.game_over and not isinstance(handler, GameOverEventHandler):
             handler = GameOverEventHandler(engine)
@@ -115,22 +141,39 @@ def game_loop(context, console, engine, content) -> str:
             if isinstance(action, SwitchHandlerAction):
                 if isinstance(action, OpenInventoryAction):
                     handler = InventoryEventHandler(engine)
+                elif isinstance(action, OpenSkillLearnAction):
+                    handler = SkillLearnEventHandler(engine)
                 elif isinstance(action, CloseMenuAction):
                     handler = MainGameEventHandler(engine)
                 elif isinstance(action, RestartAction):
-                    engine = new_engine(engine.content, engine.settings)
-                    handler = MainGameEventHandler(engine)
+                    return "restart"
                 continue
 
             if action is not None:
-                engine.handle_action(action)
+                try:
+                    engine.handle_action(action)
+                except exceptions.NeedTarget as need:
+                    # 需要指定目标/方向的技能：切输入模式，不消耗回合
+                    effect = skills_module.SKILL_EFFECTS[need.skill["effect"]["type"]]
+                    if effect.needs_direction:
+                        handler = DirectionSelectEventHandler(engine, need.skill, need.slot)
+                    else:
+                        handler = TargetingEventHandler(engine, need.skill, need.slot)
 
 
-def new_engine(content, settings, previous_messages=None) -> Engine:
-    engine = Engine(content, settings)
+def new_engine(content, settings, class_ids=None, previous_messages=None) -> Engine:
+    if class_ids is None:
+        class_ids = engine_default(content)
+    engine = Engine(content, settings, class_ids)
     if previous_messages:
         engine.message_log.messages = previous_messages
     return engine
+
+
+def engine_default(content) -> tuple:
+    from content_loader import DEFAULT_CLASS_IDS
+
+    return DEFAULT_CLASS_IDS
 
 
 def run(lang: Optional[str], smoke_output: Optional[str] = None) -> None:
@@ -146,6 +189,7 @@ def run(lang: Optional[str], smoke_output: Optional[str] = None) -> None:
     if sidebar_override:
         settings.sidebar_size = sidebar_override
 
+    selected: Optional[tuple] = None  # 本会话双职业；restart 后置 None 重选
     while True:
         tileset = build_tileset(content, settings)
         with tcod.context.new(
@@ -156,24 +200,42 @@ def run(lang: Optional[str], smoke_output: Optional[str] = None) -> None:
             vsync=True,
         ) as context:
             console = tcod.console.Console(settings.total_cols, settings.total_rows, order="F")
-            engine = new_engine(content, settings)
 
             if smoke_output:
+                engine = new_engine(content, settings)  # 冒烟走默认双职业
                 handler = MainGameEventHandler(engine)
                 handler.on_render(console)
-                context.present(console, keep_aspect=True, integer_scaling=True)
+                _present(context, console)
                 context.save_screenshot(smoke_output)
                 print(f"冒烟截图已保存：{smoke_output}")
                 return
 
+            if selected is None:
+                selected = collect_class_ids(context, console, content, settings)
+
+            engine = new_engine(content, settings, selected)
+            engine.message_log.add_message(
+                strings["class_chosen"].format(
+                    primary=content.class_name(selected[0]),
+                    secondary=content.class_name(selected[1]),
+                ),
+                "system",
+            )
+
             changed = game_loop(context, console, engine, content)
-            if changed == "map":
-                engine = new_engine(content, settings, previous_messages=engine.message_log.messages)
+            if changed == "restart":
+                selected = None  # 转世重修：回到职业选择
+            elif changed == "map":
+                engine = new_engine(
+                    content, settings, selected, previous_messages=engine.message_log.messages
+                )
                 engine.message_log.add_message(
                     strings["ui_map_size"].format(size=strings[f"size_{settings.map_size}"]), "info"
                 )
             elif changed == "sidebar":
-                engine = new_engine(content, settings, previous_messages=engine.message_log.messages)
+                engine = new_engine(
+                    content, settings, selected, previous_messages=engine.message_log.messages
+                )
                 engine.message_log.add_message(
                     strings["ui_sidebar_size"].format(size=strings[f"size_{settings.sidebar_size}"]), "info"
                 )

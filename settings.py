@@ -12,15 +12,51 @@ from pathlib import Path
 
 SETTINGS_FILE = Path("settings.json")
 
-WINDOW_PIXELS = (1920, 1056)
+WINDOW_PIXELS = (1280, 768)
 SIZE_ORDER = ("large", "medium", "small")
 
-# 画面档：字格边长 px
-MAP_PRESETS = {"large": 48, "medium": 36, "small": 28}
+# 画面档：字格边长 px（窗口像素 1280x768 下的等比档位）
+MAP_PRESETS = {"large": 32, "medium": 24, "small": 18}
 # 信息板档：占列数（含分隔线）
 SIDEBAR_PRESETS = {"large": 14, "medium": 18, "small": 22}
 
 MIN_MAP_COLS = 16
+
+
+def sidebar_layout(total_rows: int) -> dict:
+    """信息板四段行预算：紧凑档（≤26 行）技能两列压缩，保日志 ≥5 行。
+
+    段落顺序：属性 → 技能页眉 → 技能区 → 装备区 → 分隔线 → 日志。
+    """
+    if total_rows <= 26:
+        return {
+            "compact": True,
+            "mp_row": 3,
+            "mp_bar": False,  # 真气数值行内嵌短条
+            "level_row": 4,
+            "floor_row": 5,
+            "hint_row": 7,  # 提示两行：6（旧）7（新）
+            "skill_header": 8,
+            "skill_first": 9,
+            "skill_count": 4,
+            "skill_two_cols": True,
+            "equip_first": 13,
+            "divider": 18,
+        }
+    return {
+        "compact": False,
+        "mp_row": 3,
+        "mp_bar": True,
+        "level_row": 5,
+        "floor_row": 6,
+        "hint_row": 7,
+        "skill_header": 8,
+        "skill_first": 9,
+        "skill_count": 8,
+        "skill_two_cols": False,
+        "equip_first": 17,
+        "divider": 22,
+    }
 
 
 class Settings:
@@ -73,7 +109,7 @@ class Settings:
 
     @property
     def divider_row(self) -> int:
-        return 12 if self.total_rows > 26 else 11
+        return sidebar_layout(self.total_rows)["divider"]
 
     @property
     def log_height(self) -> int:

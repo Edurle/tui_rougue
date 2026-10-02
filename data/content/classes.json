@@ -1,0 +1,142 @@
+{
+  "leifa": {
+    "name": {
+      "zh_CN": "雷法·方士",
+      "en_US": "Thunder Adept"
+    },
+    "desc": {
+      "zh_CN": "役使天雷的方士，杀伐凌厉，气海充盈。",
+      "en_US": "A tactician wielding heaven's thunder; devastating and deep of breath."
+    },
+    "hp": 26,
+    "power": 4,
+    "defense": 1,
+    "mp": 14
+  },
+  "jianke": {
+    "name": {
+      "zh_CN": "剑客",
+      "en_US": "Sword Saint"
+    },
+    "desc": {
+      "zh_CN": "以剑证道的游侠，气血雄厚，攻守兼备。",
+      "en_US": "A wandering sword saint; hardy, balanced in blade and guard."
+    },
+    "hp": 34,
+    "power": 6,
+    "defense": 2,
+    "mp": 8
+  },
+  "wuzhu": {
+    "name": {
+      "zh_CN": "巫祝",
+      "en_US": "Shaman"
+    },
+    "desc": {
+      "zh_CN": "沟通山川精魅的巫祝，能医能蛊。",
+      "en_US": "A shaman who bargains with spirits; heals as readily as hexes."
+    },
+    "hp": 30,
+    "power": 4,
+    "defense": 1,
+    "mp": 12
+  },
+  "yishe": {
+    "name": {
+      "zh_CN": "羿射",
+      "en_US": "Archer"
+    },
+    "desc": {
+      "zh_CN": "承羿之风的射手，箭出如虹。",
+      "en_US": "An archer of Yi's lineage; arrows fly like falling suns."
+    },
+    "hp": 28,
+    "power": 6,
+    "defense": 1,
+    "mp": 10
+  },
+  "kuafu": {
+    "name": {
+      "zh_CN": "夸父裔",
+      "en_US": "Kuafa Kin"
+    },
+    "desc": {
+      "zh_CN": "逐日巨人的后裔，筋骨如铁。",
+      "en_US": "Descendant of the sun-chaser; sinew like iron."
+    },
+    "hp": 42,
+    "power": 5,
+    "defense": 3,
+    "mp": 8
+  },
+  "yingwei": {
+    "name": {
+      "zh_CN": "影卫",
+      "en_US": "Shadow Guard"
+    },
+    "desc": {
+      "zh_CN": "藏身于影的卫士，一击致命。",
+      "en_US": "A guard of shadows; one strike, one death."
+    },
+    "hp": 26,
+    "power": 8,
+    "defense": 0,
+    "mp": 10
+  },
+  "gushi": {
+    "name": {
+      "zh_CN": "蛊师",
+      "en_US": "Gu Master"
+    },
+    "desc": {
+      "zh_CN": "豢养百蛊的驭毒者，缠绵致命。",
+      "en_US": "A breeder of hundred gu; a slow, certain death."
+    },
+    "hp": 28,
+    "power": 4,
+    "defense": 1,
+    "mp": 14
+  },
+  "yushou": {
+    "name": {
+      "zh_CN": "御兽师",
+      "en_US": "Beast Caller"
+    },
+    "desc": {
+      "zh_CN": "与百兽立契的驭者，呼朋引伴。",
+      "en_US": "A caller bonded with beasts; never fights alone."
+    },
+    "hp": 30,
+    "power": 4,
+    "defense": 1,
+    "mp": 12
+  },
+  "fushi": {
+    "name": {
+      "zh_CN": "符师",
+      "en_US": "Sigil Adept"
+    },
+    "desc": {
+      "zh_CN": "以符箓载道的术士，气脉绵长。",
+      "en_US": "A scribe of sigils; endless breath, endless fire."
+    },
+    "hp": 26,
+    "power": 4,
+    "defense": 1,
+    "mp": 16
+  },
+  "yueshi": {
+    "name": {
+      "zh_CN": "乐师",
+      "en_US": "Musician"
+    },
+    "desc": {
+      "zh_CN": "以音律扰神夺魄的乐师。",
+      "en_US": "A musician whose notes unravel the mind."
+    },
+    "hp": 28,
+    "power": 3,
+    "defense": 2,
+    "mp": 14
+  }
+}

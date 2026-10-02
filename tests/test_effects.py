@@ -88,8 +88,8 @@ def test_effects_render_headless():
     fx.spawn_heal(6, 6, 8)
     fx.spawn_level_up(7, 7)
     fx.spawn_notice(8, 8)
-    console = tcod.console.Console(40, 22, order="F")
-    fx.render(console, 26, 22)
+    console = tcod.console.Console(40, 24, order="F")
+    fx.render(console, 26, 24)
 
 
 def test_engine_has_effects_and_combat_triggers():

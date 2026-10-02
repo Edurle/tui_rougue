@@ -47,7 +47,11 @@ class GameMap:
 
     @property
     def items(self) -> list:
-        return [e for e in self.entities if isinstance(e, Item) and e.consumable is not None]
+        return [
+            e
+            for e in self.entities
+            if isinstance(e, Item) and (e.consumable is not None or e.equipment is not None)
+        ]
 
     def get_blocking_entity_at(self, x: int, y: int) -> Optional[Entity]:
         for entity in self.entities:

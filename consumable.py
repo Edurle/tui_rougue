@@ -44,6 +44,25 @@ class HealConsumable(Consumable):
         self.consume()
 
 
+class HealMpConsumable(Consumable):
+    """回气散：恢复真气。"""
+
+    def __init__(self, amount: int) -> None:
+        self.amount = amount
+
+    def activate(self, action: "ItemAction") -> None:
+        strings = self.engine.content.strings
+        player = self.engine.player
+        if player.fighter.mp >= player.fighter.max_mp:
+            raise exceptions.Impossible(strings["mp_full"])
+        restored = player.fighter.restore_mp(self.amount)
+        self.engine.message_log.add_message(
+            strings["heal_mp_used"].format(amount=restored), "heal"
+        )
+        self.engine.effects.spawn_mp(player.x, player.y, restored)
+        self.consume()
+
+
 class LightningConsumable(Consumable):
     def __init__(self, damage: int, max_range: int) -> None:
         self.damage = damage
@@ -76,5 +95,6 @@ class LightningConsumable(Consumable):
 
 CONSUMABLE_TYPES = {
     "heal": HealConsumable,
+    "heal_mp": HealMpConsumable,
     "lightning": LightningConsumable,
 }

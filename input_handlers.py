@@ -1,18 +1,21 @@
-"""输入处理：把 tcod 键盘事件翻译成动作（或菜单操作）。
+"""输入处理：把 tcod 键盘/鼠标事件翻译成动作（或菜单操作）。
 
-EventHandler 子类即"输入模式"：主模式、行囊模式、陨落模式。
-返回值两种：actions.Action（交给引擎执行）；SwitchHandlerAction 标记
-（由主循环切换输入模式 / 重开局），后者不是真正的回合动作。
+EventHandler 子类即"输入模式"：主模式、行囊、技能参悟（K）、瞄准（单体
+技能）、择向（位移技能）、陨落模式、开局职业选择。返回值两种：
+actions.Action（交给引擎执行）；SwitchHandlerAction 标记（由主循环切换
+输入模式 / 重开局），后者不是真正的回合动作。需目标的技能经引擎抛出
+NeedTarget，主循环接管切换到瞄准/择向模式。
 """
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import List, Optional
 
 import tcod
 from tcod.event import KeySym
 
 import actions
+from equipment import SLOT_ORDER
 
 MOVE_KEYS = {
     # 方向键
@@ -24,10 +27,9 @@ MOVE_KEYS = {
     KeySym.END: (-1, 1),
     KeySym.PAGEUP: (1, -1),
     KeySym.PAGEDOWN: (1, 1),
-    # vi 键（八方向）
+    # vi 键（八方向；K 已让位给技能参悟界面，上移请用方向键/W）
     KeySym.H: (-1, 0),
     KeySym.J: (0, 1),
-    KeySym.K: (0, -1),
     KeySym.L: (1, 0),
     KeySym.Y: (-1, -1),
     KeySym.U: (1, -1),
@@ -64,9 +66,27 @@ INVENTORY_TOGGLE_KEY = KeySym.I
 PICKUP_KEYS = {KeySym.G, KeySym.COMMA}
 DESCEND_KEY = KeySym.GREATER  # Shift + 句号
 ASCEND_KEY = KeySym.LESS  # Shift + 逗号
+SKILL_LEARN_KEY = KeySym.K  # vi 的 K 让位：上移用方向键/W
+TAB_KEY = KeySym.TAB
+EQUIP_KEY = KeySym.E
 
 SCROLL_UP_KEYS = {KeySym.LEFTBRACKET}
 SCROLL_DOWN_KEYS = {KeySym.RIGHTBRACKET}
+
+# 技能热键：主键排数字 1-8（小键盘数字仍用于移动）
+SLOT_KEYS = [
+    KeySym.N1,
+    KeySym.N2,
+    KeySym.N3,
+    KeySym.N4,
+    KeySym.N5,
+    KeySym.N6,
+    KeySym.N7,
+    KeySym.N8,
+]
+
+# 装备槽卸下键：1-5 对应 兵/甲/履/佩/冠（行囊界面内）
+UNEQUIP_KEYS = SLOT_KEYS[: len(SLOT_ORDER)]
 
 
 def normalize_sym(sym) -> int:
@@ -102,8 +122,12 @@ class CloseMenuAction(SwitchHandlerAction):
     pass
 
 
-class RestartAction(SwitchHandlerAction):
+class OpenSkillLearnAction(SwitchHandlerAction):
     pass
+
+
+class RestartAction(SwitchHandlerAction):
+    """重开局：回到职业选择界面（由主循环解释）。"""
 
 
 class ChangeSizeAction:
@@ -165,6 +189,13 @@ class MainGameEventHandler(LogScrollMixin, EventHandler):
             return actions.TakeStairsAction(player, "down")
         if key == ASCEND_KEY and player.is_alive:
             return actions.TakeStairsAction(player, "up")
+        if player.is_alive and key in SLOT_KEYS:
+            return actions.CastSkillAction(player, SLOT_KEYS.index(key) + 1)  # 键 N → 槽 N
+        if player.is_alive and key == TAB_KEY:
+            engine.active_page = 1 - engine.active_page  # 视图操作，不耗回合
+            return None
+        if player.is_alive and key == SKILL_LEARN_KEY:
+            return OpenSkillLearnAction()
         if key in SCROLL_UP_KEYS and player.is_alive:
             engine.message_log.scroll(3)
             return None
@@ -172,10 +203,7 @@ class MainGameEventHandler(LogScrollMixin, EventHandler):
             engine.message_log.scroll(-3)
             return None
         if key == INVENTORY_TOGGLE_KEY and player.is_alive:
-            if player.inventory.items:
-                return OpenInventoryAction()
-            engine.message_log.add_message(engine.content.strings["inventory_empty"], "info")
-            return None
+            return OpenInventoryAction()
         if key == KeySym.ESCAPE:
             return actions.EscapeAction()
         if key == KeySym.F1:
@@ -186,22 +214,210 @@ class MainGameEventHandler(LogScrollMixin, EventHandler):
 
 
 class InventoryEventHandler(EventHandler):
+    """行囊：字母=使用消耗品/装备装备件；↑↓+E=光标装备/卸下；1-5=卸下对应槽。"""
+
+    def __init__(self, engine) -> None:
+        super().__init__(engine)
+        self.cursor = 0  # 统一列表：前行囊物品，后 5 个装备槽
+
+    def _row_count(self) -> int:
+        return len(self.engine.player.inventory.items) + len(SLOT_ORDER)
+
     def on_render(self, console) -> None:
         super().on_render(console)
         import render
 
-        render.render_inventory_menu(console, self.engine)
+        render.render_inventory_menu(console, self.engine, cursor=self.cursor)
 
     def ev_keydown(self, event: tcod.event.KeyDown):
         engine = self.engine
         key = normalize_sym(event.sym)
         if key == KeySym.ESCAPE or key == INVENTORY_TOGGLE_KEY:
             return CloseMenuAction()
+        items = list(engine.player.inventory.items)
+        # E 优先于字母选择（字母表中不再用 e 选第 5 件）
+        if key == EQUIP_KEY:
+            return self._cursor_equip()
+        if key == KeySym.UP:
+            self.cursor = max(0, self.cursor - 1)
+            return None
+        if key == KeySym.DOWN:
+            self.cursor = min(self._row_count() - 1, self.cursor + 1)
+            return None
+        if key in CONFIRM_KEYS:
+            if self.cursor < len(items):
+                return self._use_or_equip(items[self.cursor])
+            return None
         if key in INVENTORY_LETTER_KEYS:
             index = INVENTORY_LETTER_KEYS.index(key)
-            items = list(engine.player.inventory.items)
             if index < len(items):
-                return actions.ItemAction(engine.player, items[index])
+                return self._use_or_equip(items[index])
+            return None
+        if key in UNEQUIP_KEYS:
+            slot = SLOT_ORDER[UNEQUIP_KEYS.index(key)]
+            if engine.player.equipment.slots.get(slot) is not None:
+                return actions.UnequipAction(engine.player, slot)
+            return None
+        return None
+
+    def _use_or_equip(self, item):
+        if item.equipment is not None:
+            return actions.EquipAction(self.engine.player, item)
+        if item.consumable is not None:
+            return actions.ItemAction(self.engine.player, item)
+        return None
+
+    def _cursor_equip(self):
+        engine = self.engine
+        items = list(engine.player.inventory.items)
+        if self.cursor < len(items):
+            item = items[self.cursor]
+            if item.equipment is not None:
+                return actions.EquipAction(engine.player, item)
+            return None
+        slot = SLOT_ORDER[self.cursor - len(items)]
+        if engine.player.equipment.slots.get(slot) is not None:
+            return actions.UnequipAction(engine.player, slot)
+        return None
+
+
+def items_is_empty_guard(engine, key) -> bool:  # pragma: no cover - 兼容占位
+    return False
+
+
+class SkillLearnEventHandler(EventHandler):
+    """参悟界面（K）：Tab 换职业页，↑↓ 选择，回车 学习，Esc 关闭。均不耗回合。"""
+
+    def __init__(self, engine) -> None:
+        super().__init__(engine)
+        self.page = engine.active_page
+        self.cursor = 0
+
+    def _skills(self) -> List[dict]:
+        class_id = self.engine.player.class_ids[self.page]
+        return self.engine.content.skills_for_class(class_id)
+
+    def on_render(self, console) -> None:
+        super().on_render(console)
+        import render
+
+        render.render_skill_learn_menu(console, self.engine, page=self.page, cursor=self.cursor)
+
+    def ev_keydown(self, event: tcod.event.KeyDown):
+        engine = self.engine
+        key = normalize_sym(event.sym)
+        if key == KeySym.ESCAPE or key == SKILL_LEARN_KEY:
+            return CloseMenuAction()
+        if key == TAB_KEY:
+            self.page = 1 - self.page
+            engine.active_page = self.page
+            self.cursor = 0
+            return None
+        if key == KeySym.UP:
+            self.cursor = max(0, self.cursor - 1)
+            return None
+        if key == KeySym.DOWN:
+            self.cursor = min(len(self._skills()) - 1, self.cursor + 1)
+            return None
+        if key in CONFIRM_KEYS:
+            skill = self._skills()[self.cursor]
+            try:
+                engine.learn_skill(skill["id"])
+            except Exception as exc:  # noqa: BLE001 —— Impossible 转提示
+                engine.message_log.add_message(str(exc), "warn")
+            return None
+        return None
+
+
+class TargetingEventHandler(EventHandler):
+    """瞄准模式：单体技能指定目标。Tab 循环 / 鼠标点击 / 回车确认 / Esc 取消。"""
+
+    def __init__(self, engine, skill: dict, slot: int) -> None:
+        super().__init__(engine)
+        self.skill = skill
+        self.slot = slot
+        self.targets: List = skills_visible_enemies(engine)
+        self.index = 0
+
+    def on_render(self, console) -> None:
+        super().on_render(console)
+        import render
+
+        target = self.current_target
+        if target is not None:
+            render.render_targeting_overlay(console, self.engine, target, self.skill)
+
+    @property
+    def current_target(self):
+        if not self.targets:
+            return None
+        self.targets = [t for t in self.targets if t.is_alive]
+        if not self.targets:
+            return None
+        return self.targets[self.index % len(self.targets)]
+
+    def ev_keydown(self, event: tcod.event.KeyDown):
+        engine = self.engine
+        key = normalize_sym(event.sym)
+        if key == KeySym.ESCAPE:
+            return CloseMenuAction()  # 取消：不耗真气不耗回合
+        if key == TAB_KEY:
+            if self.targets:
+                self.index = (self.index + 1) % len(self.targets)
+            return None
+        if key in CONFIRM_KEYS:
+            target = self.current_target
+            if target is None:
+                return CloseMenuAction()
+            return actions.CastSkillAction(engine.player, self.slot, target=target)
+        return None
+
+    def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown):
+        # tcod 21：经 context.convert_event 后 position 即格坐标（tile 属性已废弃）
+        if event.button == 1 and event.position is not None:
+            tx, ty = int(event.position[0]), int(event.position[1])
+            for i, actor in enumerate(self.targets):
+                if actor.is_alive and (actor.x, actor.y) == (tx, ty):
+                    self.index = i
+                    return actions.CastSkillAction(
+                        self.engine.player, self.slot, target=actor
+                    )
+        return None
+
+
+def skills_visible_enemies(engine) -> List:
+    import skills as skills_module
+
+    return skills_module.visible_enemies(engine, engine.player)
+
+
+class DirectionSelectEventHandler(EventHandler):
+    """择向模式：位移技能选八向落点。方向键选择 / 回车确认 / Esc 取消。"""
+
+    def __init__(self, engine, skill: dict, slot: int) -> None:
+        super().__init__(engine)
+        self.skill = skill
+        self.slot = slot
+        self.dx, self.dy = 1, 0
+
+    def on_render(self, console) -> None:
+        super().on_render(console)
+        import render
+
+        render.render_direction_overlay(console, self.engine, self.skill, self.dx, self.dy)
+
+    def ev_keydown(self, event: tcod.event.KeyDown):
+        engine = self.engine
+        key = normalize_sym(event.sym)
+        if key == KeySym.ESCAPE:
+            return CloseMenuAction()
+        if key in MOVE_KEYS:
+            self.dx, self.dy = MOVE_KEYS[key]
+            return None
+        if key in CONFIRM_KEYS:
+            return actions.CastSkillAction(
+                engine.player, self.slot, target=(self.dx, self.dy)
+            )
         return None
 
 
@@ -218,4 +434,60 @@ class GameOverEventHandler(EventHandler):
             return RestartAction()
         if key == KeySym.ESCAPE:
             return actions.EscapeAction()
+        return None
+
+
+class ClassSelectEventHandler(tcod.event.EventDispatch):
+    """开局双职业选择：两段（主→副）。不持有 engine——选择完成后 chosen 非 None。"""
+
+    def __init__(self, content, settings) -> None:
+        self.content = content
+        self.settings = settings
+        self.class_ids: List[str] = list(content.classes.keys())
+        self.primary: Optional[str] = None
+        self.cursor = 0
+        self.chosen: Optional[tuple] = None  # (主, 副) 就绪后由主循环取用
+        self.done = False
+
+    def on_render(self, console) -> None:
+        import render
+
+        render.render_class_select(console, self.content, self.settings, primary=self.primary,
+                                   cursor=self.cursor)
+
+    def ev_quit(self, event: tcod.event.Quit):
+        raise SystemExit()
+
+    def ev_keydown(self, event: tcod.event.KeyDown):
+        key = normalize_sym(event.sym)
+        if self.primary is None:
+            if key == KeySym.UP:
+                self.cursor = (self.cursor - 1) % len(self.class_ids)
+                return None
+            if key == KeySym.DOWN:
+                self.cursor = (self.cursor + 1) % len(self.class_ids)
+                return None
+            if key in CONFIRM_KEYS:
+                self.primary = self.class_ids[self.cursor]
+                self.cursor = 0
+                return None
+            if key == KeySym.ESCAPE:
+                raise SystemExit()
+        else:
+            remaining = [c for c in self.class_ids if c != self.primary]
+            if key == KeySym.UP:
+                self.cursor = (self.cursor - 1) % len(remaining)
+                return None
+            if key == KeySym.DOWN:
+                self.cursor = (self.cursor + 1) % len(remaining)
+                return None
+            if key in CONFIRM_KEYS:
+                secondary = remaining[self.cursor % len(remaining)]
+                self.chosen = (self.primary, secondary)
+                self.done = True
+                return None
+            if key == KeySym.ESCAPE:
+                self.primary = None  # 回到主职业选择
+                self.cursor = 0
+                return None
         return None
