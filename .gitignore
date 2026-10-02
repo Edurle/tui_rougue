@@ -10,3 +10,4 @@ tools/*.log
 tools/*.pid
 settings.json
 .zcode/
+saves/
