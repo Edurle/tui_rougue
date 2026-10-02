@@ -47,9 +47,11 @@ WORLD_MARGIN = 2
 # 河流与投放（机制常量）
 RIVER_SOURCES = 6
 RIVER_BRIDGE_EVERY = 9  # 河流每隔 N 格架桥，保证可渡
-MONSTER_DENSITY = 1 / 150  # 每 N 可走格一只游荡异兽
+MONSTER_DENSITY = 1 / 320  # 每 N 可走格一只游荡异兽（低密度，旅行可绕行）
+CENTER_MONSTER_DENSITY = 1 / 700  # 中山经腹地更安宁
 ITEM_DENSITY = 1 / 500
 SPAWN_CLEAR_RADIUS = 2  # 出生点安全清场半径
+SPAWN_SAFE_RADIUS = 18  # 出生点曼哈顿距离内不投放任何异兽
 LANDMARK_MIN_GAP = 12  # 名山之间的最小间距
 
 
@@ -481,17 +483,24 @@ def _populate_world(gamemap: GameMap, content, rng: random.Random, spawn: Tuple[
     coords = list(zip(xs.tolist(), ys.tolist()))
     rng.shuffle(coords)
 
+    center_index = next(
+        (i for i, r in enumerate(content.regions) if r["zone"] == "center"), 0
+    )
+
     def difficulty_at(x: int, y: int) -> int:
         idx = int(gamemap.region_ids[x, y])
         return int(content.regions[idx]["base_difficulty"])
 
-    monsters_left = max(8, int(len(coords) * MONSTER_DENSITY))
+    monsters_left = max(6, int(len(coords) * MONSTER_DENSITY))
     items_left = max(4, int(len(coords) * ITEM_DENSITY))
     for x, y in coords:
         if monsters_left <= 0 and items_left <= 0:
             break
-        near_spawn = abs(x - spawn[0]) + abs(y - spawn[1]) <= 12
-        if monsters_left > 0 and not near_spawn and rng.random() < 0.7:
+        near_spawn = abs(x - spawn[0]) + abs(y - spawn[1]) <= SPAWN_SAFE_RADIUS
+        in_center = int(gamemap.region_ids[x, y]) == center_index
+        monster_budget = CENTER_MONSTER_DENSITY if in_center else MONSTER_DENSITY
+        # 按区域密度预算节流：中心区投放更稀
+        if monsters_left > 0 and not near_spawn and rng.random() < (monster_budget / MONSTER_DENSITY) * 0.7:
             content.build_monster(
                 content.random_monster_id(difficulty_at(x, y), rng), gamemap, x, y
             )

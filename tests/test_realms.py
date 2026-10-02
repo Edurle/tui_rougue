@@ -142,3 +142,65 @@ def test_not_on_gate_gives_hint():
             pass
         else:
             raise AssertionError("不在秘境之门上按 > 应提示")
+
+
+# ---- 大世界旅行（Shift+方向）----
+
+
+def test_travel_walks_until_blocked():
+    from actions import BumpAction
+
+    engine = make_engine()
+    # 把玩家挪到开阔平原并清出一条向东长廊
+    import tile_types
+
+    world = engine.world
+    px, py = world.spawn_xy
+    for x in range(px, px + 30):
+        for y in range(py - 1, py + 2):
+            world.terrain[x, y] = tile_types.T_PLAIN
+    world.refresh_tile_flags()
+    engine.player.x, engine.player.y = px, py
+    engine.update_fov()
+
+    engine.traveling = (1, 0)
+    steps = 0
+    while engine.traveling is not None and steps < 100:
+        engine.travel_step()
+        steps += 1
+    assert engine.player.x > px + 5, "开阔地上旅行应持续行走"
+    assert engine.traveling is None
+
+
+def test_travel_stops_on_new_threat():
+    engine = make_engine()
+    world = engine.world
+    px, py = world.spawn_xy
+    import tile_types
+
+    for x in range(px, px + 20):
+        for y in range(py - 1, py + 2):
+            world.terrain[x, y] = tile_types.T_PLAIN
+    world.refresh_tile_flags()
+    engine.player.x, engine.player.y = px, py
+    engine.update_fov()
+
+    # 前方 6 格放一只敌兽
+    engine.content.build_monster("xingxing", world, px + 6, py)
+    world.update_fov(px, py)
+    engine.traveling = (1, 0)
+    for _ in range(50):
+        engine.travel_step()
+        if engine.traveling is None:
+            break
+    assert engine.traveling is None, "威胁进圈应停止旅行"
+    assert engine.player.x < px + 6, "不应撞进敌兽怀里"
+    joined = "".join(m.plain_text for m in engine.message_log.messages)
+    assert "敌踪" in joined or "受阻" in joined or "击中" in joined  # 预警停 / 撞阻停 / 遭袭停
+
+
+def test_region_first_enter_narrative():
+    engine = make_engine()
+    assert "zhongshanjing" in engine.visited_regions  # 出生即触发首入叙事
+    joined = "".join(m.plain_text for m in engine.message_log.messages)
+    assert "中山" in joined

@@ -137,5 +137,11 @@
   "hud_realm": "{realm}·第{depth}层",
   "hint_enter_realm": "踏入{name}",
   "hint_realm_exit": "回返尘世",
-  "hint_realm_ascend": "回返上层"
+  "hint_realm_ascend": "回返上层",
+  "travel_stop_enemy": "旅途中瞥见敌踪，你停下脚步。",
+  "travel_stop_item": "途中发现{item}，你停下脚步。",
+  "travel_stop_gate": "眼前是一座秘境之门，你停下脚步。",
+  "travel_stop_blocked": "去路受阻，旅行中断。",
+  "travel_stop_region": "你踏入新的地界，驻足四望。",
+  "region_first_enter": "{intro}——{region}"
 }

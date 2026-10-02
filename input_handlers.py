@@ -177,8 +177,15 @@ class MainGameEventHandler(LogScrollMixin, EventHandler):
         key = normalize_sym(event.sym)
         shift_held = bool(event.mod & tcod.event.Modifier.SHIFT)
 
+        if engine.traveling is not None:
+            engine.traveling = None  # 任意按键打断旅行（本键仍正常生效）
+
         if key in MOVE_KEYS and player.is_alive:
             dx, dy = MOVE_KEYS[key]
+            if shift_held and engine.gamemap.map_type == "world":
+                # 大世界旅行：Shift+方向 连续行走直到遇事（不耗回合，步进由主循环驱动）
+                engine.traveling = (dx, dy)
+                return None
             return actions.BumpAction(player, dx, dy)
         # 部分布局/输入法下 Shift+句号/逗号 上报为 基础键+Shift 修饰而非 >/< 键位，
         # 因此带 Shift 的句号/逗号一律解释为下楼/上楼，且先于等待/拾取判定。

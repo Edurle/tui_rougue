@@ -136,5 +136,11 @@
   "hud_realm": "{realm} - Depth {depth}",
   "hint_enter_realm": "Enter {name}",
   "hint_realm_exit": "Return to the wilds",
-  "hint_realm_ascend": "Climb up a floor"
+  "hint_realm_ascend": "Climb up a floor",
+  "travel_stop_enemy": "You spot movement ahead and halt.",
+  "travel_stop_item": "You notice {item} and stop.",
+  "travel_stop_gate": "A realm gate stands before you; you stop.",
+  "travel_stop_blocked": "Your path is blocked; travel ends.",
+  "travel_stop_region": "You enter unfamiliar lands and pause.",
+  "region_first_enter": "{intro} - {region}"
 }

@@ -116,12 +116,20 @@ def game_loop(context, console, engine, content) -> str:
     """主循环；返回变更类型（map/sidebar/restart）请求上层处理，退出走 SystemExit。"""
     handler = MainGameEventHandler(engine)
     last_time = time.perf_counter()
+    last_travel = 0.0
     while True:
         now = time.perf_counter()
         dt = min(0.1, now - last_time)
         last_time = now
 
         engine.effects.update(dt)
+
+        # 大世界旅行步进（Shift+方向触发，55ms 一步，任意按键打断）
+        if engine.traveling is not None and not engine.game_over:
+            if now - last_travel >= 0.055:
+                last_travel = now
+                engine.travel_step()
+
         handler.on_render(console)
         _present(context, console)
 
@@ -141,6 +149,7 @@ def game_loop(context, console, engine, content) -> str:
                 return action.kind
 
             if isinstance(action, SwitchHandlerAction):
+                engine.traveling = None  # 切换输入模式即终止旅行
                 if isinstance(action, OpenInventoryAction):
                     handler = InventoryEventHandler(engine)
                 elif isinstance(action, OpenSkillLearnAction):

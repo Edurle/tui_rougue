@@ -40,6 +40,9 @@ class Engine:
         self.realm_cleared: set = set()  # 已封印（通关）的秘境 id
         self.world_return_xy: Tuple[int, int] = (0, 0)  # 出秘境回世界的落点（入口坐标）
         self.active_page = 0  # 技能页：0 主职业 / 1 副职业（Tab 切换）
+        # 大世界旅行：Shift+方向 连续行走；None = 未在旅行
+        self.traveling: Optional[Tuple[int, int]] = None
+        self.visited_regions: set = set()  # 已踏入过的区域 id（首入叙事）
 
         # 玩家实体在世界生成后创建一次，此后跨地图复用（保留状态）
         self.player = None  # type: ignore[assignment]
@@ -138,6 +141,76 @@ class Engine:
 
     def update_fov(self) -> None:
         self.gamemap.update_fov(self.player.x, self.player.y)
+        if self.gamemap.map_type == "world":
+            self._check_region_enter()
+
+    def _check_region_enter(self) -> None:
+        """首次踏入新区域：游历叙事（世界专属）。"""
+        gamemap = self.gamemap
+        if gamemap.region_ids is None:
+            return
+        region = self.content.regions[int(gamemap.region_ids[self.player.x, self.player.y])]
+        if region["id"] in self.visited_regions:
+            return
+        self.visited_regions.add(region["id"])
+        self.message_log.add_message(
+            self.content.strings["region_first_enter"].format(
+                intro=self.content._(region["intro"]), region=self.content._(region["name"])
+            ),
+            "system",
+        )
+
+    # ---- 大世界旅行 ----
+
+    def travel_step(self) -> None:
+        """旅行连走一步：撞阻/发现敌踪·物品·秘境之门/踏入新界 即停。"""
+        from actions import BumpAction
+
+        if self.traveling is None or not self.player.is_alive:
+            self.traveling = None
+            return
+        dx, dy = self.traveling
+        strings = self.content.strings
+        x0, y0 = self.player.x, self.player.y
+        hp0 = self.player.fighter.hp
+
+        def visible_hostiles() -> int:
+            """视野内且贴近（≤8 格）的敌对异兽——旅行只在真正有威胁时停下。"""
+            from math import hypot
+
+            return sum(
+                1
+                for actor in self.gamemap.actors
+                if actor.team == "wild"
+                and self.gamemap.visible[actor.x, actor.y]
+                and hypot(actor.x - x0, actor.y - y0) <= 8.0
+            )
+
+        enemies_before = visible_hostiles()
+        self.handle_action(BumpAction(self.player, dx, dy))
+        if self.game_over or not self.player.is_alive:
+            self.traveling = None
+            return
+        moved = (self.player.x, self.player.y) != (x0, y0)
+        if not moved:
+            self.message_log.add_message(strings["travel_stop_blocked"], "info")
+            self.traveling = None
+            return
+        if self.player.fighter.hp < hp0:
+            self.traveling = None  # 途中遇袭
+            return
+        if visible_hostiles() > enemies_before:
+            self.message_log.add_message(strings["travel_stop_enemy"], "warn")
+            self.traveling = None
+            return
+        item = self.gamemap.get_item_at(self.player.x, self.player.y)
+        if item is not None:
+            self.message_log.add_message(strings["travel_stop_item"].format(item=item.name), "info")
+            self.traveling = None
+            return
+        if self.gamemap.get_realm_gate_at(self.player.x, self.player.y) is not None:
+            self.message_log.add_message(strings["travel_stop_gate"], "info")
+            self.traveling = None
 
     # ---- 技能 ----
 
