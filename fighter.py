@@ -4,6 +4,8 @@
 - max_hp / max_mp / power / defense = base_* + 装备 bonuses + buff（power/defense）
 - 外部直写（测试与旧代码）视为重设基础值：hp setter 语义保持 clamp+死亡判定
 - buff（攻/防）、蛊毒 DOT、眩晕 = 回合状态机，由引擎在回合边界调用 tick_*
+- 抗性：元素（thunder/fire/poison）按百分比减伤（下限 1 点）；stun 抗性
+  （"定力"）缩短眩晕时长。来源 = 怪物自身数据 + 玩家装备词条，上限 80%
 """
 
 from __future__ import annotations
@@ -11,6 +13,10 @@ from __future__ import annotations
 import random
 
 from base_component import BaseComponent
+
+RESIST_KINDS = ("thunder", "fire", "poison", "stun")
+RESIST_DAMAGE_KINDS = ("thunder", "fire", "poison")
+RESIST_CAP = 80
 
 
 class Fighter(BaseComponent):
@@ -21,6 +27,7 @@ class Fighter(BaseComponent):
         defense: int,
         xp_reward: int = 0,
         max_mp: int = 0,
+        resistances: dict | None = None,
     ) -> None:
         self.base_max_hp = hp
         self._hp = hp
@@ -30,6 +37,7 @@ class Fighter(BaseComponent):
         self.base_max_mp = max_mp
         self._mp = max_mp
         self.xp_reward = xp_reward
+        self.base_resistances: dict[str, int] = dict(resistances or {})
         # 回合状态：buffs[stat] = [amount, turns]；dot = [damage, turns]
         self.buffs: dict[str, list[int]] = {}
         self.dot: list[int] = [0, 0]
@@ -114,6 +122,25 @@ class Fighter(BaseComponent):
         self._mp += actual
         return actual
 
+    # ---- 抗性 ----
+
+    def resistance(self, kind: str) -> int:
+        """指定抗性（0-RESIST_CAP）：怪物自身数据 + 玩家装备词条聚合。"""
+        value = self.base_resistances.get(kind, 0)
+        equipment = getattr(getattr(self, "parent", None), "equipment", None)
+        if equipment is not None:
+            value += equipment.affix(f"resist_{kind}")
+        return min(RESIST_CAP, value)
+
+    def mitigate_incoming(self, damage: int, tags) -> int:
+        """按命中的元素抗性折算伤害：取 tags 中最高抗性，下限 1 点。"""
+        resist = max(
+            (self.resistance(t) for t in tags if t in RESIST_DAMAGE_KINDS), default=0
+        )
+        if resist <= 0:
+            return damage
+        return max(1, int(round(damage * (100 - resist) / 100)))
+
     # ---- 状态机 ----
 
     def apply_buff(self, stat: str, amount: int, turns: int) -> None:
@@ -141,8 +168,8 @@ class Fighter(BaseComponent):
         return expired
 
     def apply_poison(self, damage: int, turns: int) -> None:
-        """蛊毒施加：后到的毒覆盖先前的。"""
-        self.dot = [damage, turns]
+        """蛊毒施加：后到的毒覆盖先前的；每跳伤害吃目标毒抗（下限 1）。"""
+        self.dot = [self.mitigate_incoming(damage, ["poison"]), turns]
 
     @property
     def poisoned(self) -> bool:
@@ -157,6 +184,11 @@ class Fighter(BaseComponent):
         return damage
 
     def apply_stun(self, turns: int) -> None:
+        """施加眩晕：定力（stun 抗性）按比例缩短时长，可为 0（完全抵抗）。"""
+        resist = self.resistance("stun")
+        turns = int(turns * (100 - resist) / 100)
+        if turns <= 0:
+            return
         self.stun_turns = max(self.stun_turns, turns)
 
     # ---- 战斗 ----
@@ -165,8 +197,11 @@ class Fighter(BaseComponent):
         return self.parent is self.engine.player
 
     def attack(self, target: "Fighter") -> None:
-        """伤害 = 攻 - 防 + [-1, 2] 浮动，下限 0。五行生克将来在此处接入。"""
+        """伤害 = 攻 - 防 + [-1, 2] 浮动，下限 0；附带元素（attack_tags）吃目标抗性。"""
         damage = self.power - target.defense + random.randint(-1, 2)
+        element_tags = [t for t in getattr(self.parent, "attack_tags", []) if t in RESIST_DAMAGE_KINDS]
+        if element_tags:
+            damage = target.mitigate_incoming(damage, element_tags)
         strings = self.engine.content.strings
         log = self.engine.message_log
         if damage > 0:
@@ -181,6 +216,17 @@ class Fighter(BaseComponent):
             self.engine.effects.spawn_damage(
                 target.parent.x, target.parent.y, damage, is_player_victim=target.is_player()
             )
+            # 元素爪击命中玩家且玩家有对应抗性时给一行提示（装备构筑的正反馈）
+            if target.is_player() and element_tags:
+                resisted = max(target.resistance(t) for t in element_tags)
+                if resisted > 0:
+                    element_name = strings[f"element_{element_tags[0]}"]
+                    log.add_message(
+                        strings["attack_element_notice"].format(
+                            attacker=self.parent.name, element=element_name
+                        ),
+                        "combat_blocked",
+                    )
             if not target.parent.is_alive:
                 self.engine.trigger_kill_heal(self.parent)
             if target.is_player() and 0 < target.hp / target.max_hp < 0.3 <= prev_ratio:

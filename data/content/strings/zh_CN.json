@@ -77,7 +77,7 @@
   "learn_req": "需 {names}",
   "targeting_title": "瞄准 {skill}：Tab 换目标 · 点击指定 · 回车 确认 · Esc 取消",
   "targeting_none": "视野之中没有可选的目标。",
-  "targeting_info": "{name}（气血 {hp}）· 预计伤害 {damage}",
+  "targeting_info": "{name}（气血 {hp}）· 预计伤害 {damage}{resist}",
   "direction_title": "择向 {skill}：方向键选择落点 · 回车 确认 · Esc 取消",
   "class_select_primary": "择主职业（↑↓ 选择 · 回车 确认）",
   "class_select_secondary": "择副职业（↑↓ 选择 · 回车 确认 · Esc 返回）",
@@ -104,5 +104,17 @@
   "bon_power": "攻+{v}",
   "bon_defense": "防+{v}",
   "bon_max_hp": "血+{v}",
-  "bon_max_mp": "息+{v}"
+  "bon_max_mp": "息+{v}",
+  "resist_thunder": "雷抗+{v}%",
+  "resist_fire": "火抗+{v}%",
+  "resist_poison": "毒抗+{v}%",
+  "resist_stun": "定力+{v}%",
+  "aff_resist_thunder": "雷抗{v}%",
+  "aff_resist_fire": "火抗{v}%",
+  "aff_resist_poison": "毒抗{v}%",
+  "aff_resist_stun": "定力{v}%",
+  "attack_element_notice": "{attacker}的{element}之息透体而入！",
+  "element_thunder": "雷",
+  "element_fire": "火",
+  "element_poison": "毒"
 }

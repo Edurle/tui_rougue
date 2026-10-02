@@ -603,5 +603,133 @@
         }
       ]
     }
+  },
+  "a_bihuo": {
+    "name": {
+      "zh_CN": "蔽火袍",
+      "en_US": "Flame-Veil Robe"
+    },
+    "char": "]",
+    "color": [
+      216,
+      132,
+      92
+    ],
+    "tags": [
+      "armor"
+    ],
+    "lore": {
+      "zh_CN": "以南疆桐木丝织就，火舌燎过只余青烟。",
+      "en_US": "Woven of southern tong-wood silk; flames lick it and leave only smoke."
+    },
+    "tier": 2,
+    "equipment": {
+      "slot": "armor",
+      "bonuses": {
+        "defense": 2
+      },
+      "affixes": [
+        {
+          "id": "resist_fire",
+          "value": 40
+        }
+      ]
+    }
+  },
+  "m_leiwen": {
+    "name": {
+      "zh_CN": "雷纹冠",
+      "en_US": "Thunder-Rune Circlet"
+    },
+    "char": "^",
+    "color": [
+      176,
+      160,
+      236
+    ],
+    "tags": [
+      "helm"
+    ],
+    "lore": {
+      "zh_CN": "皮冠上錾雷纹，戴久了，天雷落身也只当蚊呐。",
+      "en_US": "A hide circlet etched with thunder runes; sky-bolts soon feel like gnat-bites."
+    },
+    "tier": 2,
+    "equipment": {
+      "slot": "helm",
+      "bonuses": {
+        "defense": 1
+      },
+      "affixes": [
+        {
+          "id": "resist_thunder",
+          "value": 35
+        }
+      ]
+    }
+  },
+  "p_qingxin": {
+    "name": {
+      "zh_CN": "清心佩",
+      "en_US": "Clear-Mind Charm"
+    },
+    "char": "\"",
+    "color": [
+      150,
+      226,
+      214
+    ],
+    "tags": [
+      "amulet"
+    ],
+    "lore": {
+      "zh_CN": "玉佩触腕生凉，戴上后心神澄定，魅惑难侵。",
+      "en_US": "The jade charm cools the wrist and stills the mind; bewitchment slides off."
+    },
+    "tier": 2,
+    "equipment": {
+      "slot": "amulet",
+      "bonuses": {
+        "max_mp": 4
+      },
+      "affixes": [
+        {
+          "id": "resist_stun",
+          "value": 40
+        }
+      ]
+    }
+  },
+  "b_dubi": {
+    "name": {
+      "zh_CN": "避毒履",
+      "en_US": "Venom-Ward Shoes"
+    },
+    "char": "=",
+    "color": [
+      158,
+      216,
+      128
+    ],
+    "tags": [
+      "boots"
+    ],
+    "lore": {
+      "zh_CN": "麻履浸过九道药汁，踏遍瘴泽而足不沾毒。",
+      "en_US": "Hemp shoes steeped nine times in herbal brew; mires and miasma leave no trace."
+    },
+    "tier": 2,
+    "equipment": {
+      "slot": "boots",
+      "bonuses": {
+        "defense": 1
+      },
+      "affixes": [
+        {
+          "id": "resist_poison",
+          "value": 35
+        }
+      ]
+    }
   }
 }

@@ -328,6 +328,16 @@ def _bonus_summary(strings, item) -> str:
     return " ".join(parts)
 
 
+def _affix_summary(strings, item) -> str:
+    """词条摘要（行囊菜单宽度足够时显示）：如 耗气-1 / 雷抗+35%。"""
+    parts = []
+    for affix in item.equipment.affixes:
+        key = f"aff_{affix['id']}"
+        if key in strings:
+            parts.append(strings[key].format(v=affix["value"]))
+    return " ".join(parts)
+
+
 # ---- 覆盖层菜单 ----
 
 
@@ -377,9 +387,13 @@ def render_inventory_menu(console: tcod.console.Console, engine: "Engine", curso
         else:
             mark = ">" if cursor == len(items) + i else " "
             summary = _bonus_summary(strings, item)
+            affixes = _affix_summary(strings, item)
             console.print(x + 2, row, f"{mark}{i + 1}) {slot_name} {item.name}", fg=COLOR_EQUIP)
-            if summary:
-                console.print(x + menu_width - len(summary) - 2, row, summary, fg=(150, 200, 160))
+            detail = (summary + " " + affixes).strip()
+            if detail:
+                console.print(
+                    x + menu_width - len(detail) - 2, row, detail, fg=(150, 200, 160)
+                )
         row += 1
 
 
@@ -498,8 +512,13 @@ def render_targeting_overlay(console: tcod.console.Console, engine: "Engine", ta
     if 0 <= tx < engine.settings.map_cols and 0 <= ty < engine.settings.map_rows:
         cell = console.rgb[tx, ty]
         console.print(tx, ty, chr(int(cell["ch"])), fg=(16, 12, 8), bg=(255, 226, 130))
+    # 预计伤害按目标抗性折算后展示，抗性显著时附注
     damage = skills_module.compute_damage(engine.player, skill)
-    info = strings["targeting_info"].format(name=target.name, hp=target.fighter.hp, damage=damage)
+    damage = target.fighter.mitigate_incoming(damage, skill.get("tags", []))
+    resist = skills_module.resist_description(engine.content, target, skill)
+    info = strings["targeting_info"].format(
+        name=target.name, hp=target.fighter.hp, damage=damage, resist=resist
+    )
     console.print(engine.settings.content_x, 0, info[: engine.settings.content_w], fg=(255, 226, 130))
     console.print(
         engine.settings.content_x, 1,

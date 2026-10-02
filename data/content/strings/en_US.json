@@ -76,7 +76,7 @@
   "learn_req": "needs {names}",
   "targeting_title": "Target {skill}: Tab: next · click: pick · Enter: cast · Esc: cancel",
   "targeting_none": "No target in sight.",
-  "targeting_info": "{name} (HP {hp}) · est. damage {damage}",
+  "targeting_info": "{name} (HP {hp}) · est. damage {damage}{resist}",
   "direction_title": "Aim {skill}: arrows: pick landing · Enter: go · Esc: cancel",
   "class_select_primary": "Choose primary class (arrows + Enter)",
   "class_select_secondary": "Choose secondary class (arrows + Enter · Esc: back)",
@@ -103,5 +103,17 @@
   "bon_power": "ATK+{v}",
   "bon_defense": "DEF+{v}",
   "bon_max_hp": "HP+{v}",
-  "bon_max_mp": "QI+{v}"
+  "bon_max_mp": "QI+{v}",
+  "resist_thunder": "THN RES+{v}%",
+  "resist_fire": "FIR RES+{v}%",
+  "resist_poison": "PSN RES+{v}%",
+  "resist_stun": "WILL+{v}%",
+  "aff_resist_thunder": "THN-R{v}%",
+  "aff_resist_fire": "FIR-R{v}%",
+  "aff_resist_poison": "PSN-R{v}%",
+  "aff_resist_stun": "WIL-R{v}%",
+  "attack_element_notice": "{attacker}'s {element} essence sears through you!",
+  "element_thunder": "thunder",
+  "element_fire": "fire",
+  "element_poison": "venom"
 }

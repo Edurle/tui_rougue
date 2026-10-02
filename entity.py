@@ -88,6 +88,8 @@ class Actor(Entity):
         self.equipment: Optional["EquipmentComponent"] = None
         # 阵营："player"（玩家与召唤兽）/"wild"（异兽）；AI 据此选取敌对目标
         self.team = team
+        # 普攻附带元素（thunder/fire/poison）：命中按目标抗性折算（数据注入）
+        self.attack_tags: list = []
         # 双职业与技能（玩家专用；召唤兽仅用到 team/summon_ttl）
         self.class_ids: tuple = ()
         self.skill_points: int = 0

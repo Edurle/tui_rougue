@@ -61,6 +61,21 @@ def compute_damage(player: "Actor", skill: dict, effect: dict | None = None) -> 
     return max(0, int(round(raw)))
 
 
+def resist_description(content, target: "Actor", skill: dict) -> str:
+    """瞄准 UI 用：技能命中元素中目标抗性最高的描述（如"·雷抗+60%"），无则空。"""
+    from fighter import RESIST_DAMAGE_KINDS
+
+    best_kind, best_value = None, 0
+    for kind in RESIST_DAMAGE_KINDS:
+        if kind in skill.get("tags", []):
+            value = target.fighter.resistance(kind)
+            if value > best_value:
+                best_kind, best_value = kind, value
+    if best_kind is None:
+        return ""
+    return "·" + content.strings[f"resist_{best_kind}"].format(v=best_value)
+
+
 def compute_poison(player: "Actor", skill: dict) -> tuple[int, int]:
     """蛊毒 DOT：(每回合伤害, 回合数)，伤害吃 power/scale/词条。"""
     eff = skill["effect"]
@@ -107,12 +122,13 @@ def visible_enemies(engine: "Engine", player: "Actor") -> list:
     return enemies
 
 
-def hit_actor(engine: "Engine", player: "Actor", target: "Actor", damage: int) -> None:
-    """对目标造成技能伤害（飘字+日志由调用方处理）。"""
-    target.fighter.hp -= damage
+def hit_actor(engine: "Engine", player: "Actor", target: "Actor", damage: int, skill: dict) -> None:
+    """对目标造成技能伤害：先按技能元素 tags 吃目标抗性折算。"""
+    damage = target.fighter.mitigate_incoming(damage, skill.get("tags", []))
     engine.effects.spawn_damage(
         target.x, target.y, damage, is_player_victim=target is engine.player
     )
+    target.fighter.hp -= damage
     if not target.is_alive:
         engine.trigger_kill_heal(player)
 
@@ -154,7 +170,7 @@ class DamageNearest(SkillEffect):
         for _ in range(hits):
             if not target.is_alive:
                 break
-            hit_actor(engine, player, target, damage)
+            hit_actor(engine, player, target, damage, skill)
         name = engine.content._(skill["name"])
         if hits > 1:
             engine.message_log.add_message(
@@ -189,7 +205,7 @@ class DamageAoeSelf(SkillEffect):
         damage = compute_damage(player, skill)
         engine.effects.spawn_aoe_ring(player.x, player.y, eff.get("radius", 1))
         for actor in targets:
-            hit_actor(engine, player, actor, damage)
+            hit_actor(engine, player, actor, damage, skill)
             if actor.is_alive:
                 if eff.get("poison"):
                     pd, pt = eff["poison"]
@@ -303,7 +319,9 @@ class HealSelf(SkillEffect):
             targets = aoe_targets(engine, player, skill, radius=eff["aoe_radius"])
             engine.effects.spawn_aoe_ring(player.x, player.y, eff["aoe_radius"])
             for actor in targets:
-                hit_actor(engine, player, actor, compute_damage(player, skill, aoe_eff))
+                hit_actor(
+                    engine, player, actor, compute_damage(player, skill, aoe_eff), skill
+                )
 
 
 @register
@@ -394,7 +412,7 @@ class StunAoe(SkillEffect):
         damage = compute_damage(player, skill) if eff.get("power", 0) > 0 else 0
         for actor in targets:
             if damage:
-                hit_actor(engine, player, actor, damage)
+                hit_actor(engine, player, actor, damage, skill)
             if actor.is_alive:
                 actor.fighter.apply_stun(int(eff.get("turns", 1)))
                 engine.effects.spawn_stun(actor.x, actor.y)

@@ -46,7 +46,13 @@ VALID_AFFIX_IDS = {
     "heal_power",
     "mp_cost_reduce",
     "kill_heal",
+    "resist_thunder",
+    "resist_fire",
+    "resist_poison",
+    "resist_stun",
 }
+RESIST_LIMIT = 80
+ELEMENTAL_ATTACK_TAGS = {"thunder", "fire", "poison"}
 
 
 class ContentError(Exception):
@@ -189,6 +195,20 @@ class Content:
                 raise ContentError(
                     f"怪物 {mid} 的 ai.type '{ai_type}' 未注册，可用：{sorted(AI_TYPES)}"
                 )
+            for kind, value in mdef.get("resistances", {}).items():
+                if kind not in ("thunder", "fire", "poison", "stun"):
+                    raise ContentError(
+                        f"怪物 {mid} 的抗性类型 '{kind}' 非法，可用：thunder/fire/poison/stun"
+                    )
+                if not isinstance(value, (int, float)) or not 0 < value <= RESIST_LIMIT:
+                    raise ContentError(
+                        f"怪物 {mid} 的抗性 {kind}={value} 必须在 (0, {RESIST_LIMIT}] 内"
+                    )
+            for tag in mdef.get("attack_tags", []):
+                if tag not in ELEMENTAL_ATTACK_TAGS:
+                    raise ContentError(
+                        f"怪物 {mid} 的 attack_tags '{tag}' 非法，可用：{sorted(ELEMENTAL_ATTACK_TAGS)}"
+                    )
         for iid, idef in self.items.items():
             _require(idef, "name", f"物品 {iid}")
             _require(idef, "char", f"物品 {iid}")
@@ -416,10 +436,12 @@ class Content:
             power=fighter_data["power"],
             defense=fighter_data["defense"],
             xp_reward=fighter_data.get("xp_reward", 0),
+            resistances=mdef.get("resistances"),
         )
         actor.fighter.parent = actor
         actor.ai = AI_TYPES[ai_data["type"]]()
         actor.ai.parent = actor
+        actor.attack_tags = list(mdef.get("attack_tags", []))
         return actor
 
     def build_item(self, item_id: str, gamemap, x: int, y: int) -> Item:

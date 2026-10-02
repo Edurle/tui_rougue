@@ -7,43 +7,235 @@
     }
   },
   "monsters": [
-    { "id": "xingxing", "min_floor": 1, "max_floor": 3, "weight": 6 },
-    { "id": "gudiao", "min_floor": 2, "max_floor": null, "weight": 3 },
-    { "id": "luwu", "min_floor": 4, "max_floor": 9, "weight": 3 },
-    { "id": "bifang", "min_floor": 4, "max_floor": 6, "weight": 3 },
-    { "id": "xingxing", "min_floor": 4, "max_floor": 6, "weight": 1 },
-    { "id": "zhudu", "min_floor": 7, "max_floor": 12, "weight": 4 },
-    { "id": "gudiao", "min_floor": 7, "max_floor": 9, "weight": 2 },
-    { "id": "qiuyu", "min_floor": 10, "max_floor": 15, "weight": 4 },
-    { "id": "mafu", "min_floor": 13, "max_floor": null, "weight": 4 },
-    { "id": "jiuweihu", "min_floor": 13, "max_floor": null, "weight": 2 },
-    { "id": "xiangliu", "min_floor": 16, "max_floor": null, "weight": 3 },
-    { "id": "jiuweihu", "min_floor": 16, "max_floor": null, "weight": 4 },
-    { "id": "zhulong", "min_floor": 16, "max_floor": null, "weight": 3 }
+    {
+      "id": "xingxing",
+      "min_floor": 1,
+      "max_floor": 3,
+      "weight": 6
+    },
+    {
+      "id": "gudiao",
+      "min_floor": 2,
+      "max_floor": null,
+      "weight": 3
+    },
+    {
+      "id": "luwu",
+      "min_floor": 4,
+      "max_floor": 9,
+      "weight": 3
+    },
+    {
+      "id": "bifang",
+      "min_floor": 4,
+      "max_floor": 6,
+      "weight": 3
+    },
+    {
+      "id": "xingxing",
+      "min_floor": 4,
+      "max_floor": 6,
+      "weight": 1
+    },
+    {
+      "id": "zhudu",
+      "min_floor": 7,
+      "max_floor": 12,
+      "weight": 4
+    },
+    {
+      "id": "gudiao",
+      "min_floor": 7,
+      "max_floor": 9,
+      "weight": 2
+    },
+    {
+      "id": "qiuyu",
+      "min_floor": 10,
+      "max_floor": 15,
+      "weight": 4
+    },
+    {
+      "id": "mafu",
+      "min_floor": 13,
+      "max_floor": null,
+      "weight": 4
+    },
+    {
+      "id": "jiuweihu",
+      "min_floor": 13,
+      "max_floor": null,
+      "weight": 2
+    },
+    {
+      "id": "xiangliu",
+      "min_floor": 16,
+      "max_floor": null,
+      "weight": 3
+    },
+    {
+      "id": "jiuweihu",
+      "min_floor": 16,
+      "max_floor": null,
+      "weight": 4
+    },
+    {
+      "id": "zhulong",
+      "min_floor": 16,
+      "max_floor": null,
+      "weight": 3
+    }
   ],
   "items": [
-    { "id": "lingzhi", "min_floor": 1, "max_floor": null, "weight": 6 },
-    { "id": "wulei_fu", "min_floor": 1, "max_floor": null, "weight": 3 },
-    { "id": "huiqisan", "min_floor": 1, "max_floor": null, "weight": 3 },
-    { "id": "w_taomu", "min_floor": 1, "max_floor": 4, "weight": 1 },
-    { "id": "b_maxie", "min_floor": 1, "max_floor": 4, "weight": 1 },
-    { "id": "m_zhuli", "min_floor": 2, "max_floor": 5, "weight": 1 },
-    { "id": "p_yupei", "min_floor": 2, "max_floor": 6, "weight": 1 },
-    { "id": "a_xuangui", "min_floor": 3, "max_floor": 7, "weight": 1 },
-    { "id": "b_zhuifeng", "min_floor": 3, "max_floor": 7, "weight": 1 },
-    { "id": "p_miaoshou", "min_floor": 3, "max_floor": 8, "weight": 1 },
-    { "id": "w_kunwu", "min_floor": 5, "max_floor": 12, "weight": 1 },
-    { "id": "a_xisi", "min_floor": 5, "max_floor": 12, "weight": 1 },
-    { "id": "p_bishui", "min_floor": 6, "max_floor": 12, "weight": 1 },
-    { "id": "p_baidu", "min_floor": 6, "max_floor": 14, "weight": 1 },
-    { "id": "m_qingtongmian", "min_floor": 7, "max_floor": 14, "weight": 1 },
-    { "id": "b_dengyun", "min_floor": 7, "max_floor": 14, "weight": 1 },
-    { "id": "w_ganjiang", "min_floor": 12, "max_floor": null, "weight": 1 },
-    { "id": "p_zhaoyao", "min_floor": 13, "max_floor": null, "weight": 1 },
-    { "id": "m_xiezhi", "min_floor": 14, "max_floor": null, "weight": 1 }
+    {
+      "id": "lingzhi",
+      "min_floor": 1,
+      "max_floor": null,
+      "weight": 6
+    },
+    {
+      "id": "wulei_fu",
+      "min_floor": 1,
+      "max_floor": null,
+      "weight": 3
+    },
+    {
+      "id": "huiqisan",
+      "min_floor": 1,
+      "max_floor": null,
+      "weight": 3
+    },
+    {
+      "id": "w_taomu",
+      "min_floor": 1,
+      "max_floor": 4,
+      "weight": 1
+    },
+    {
+      "id": "b_maxie",
+      "min_floor": 1,
+      "max_floor": 4,
+      "weight": 1
+    },
+    {
+      "id": "m_zhuli",
+      "min_floor": 2,
+      "max_floor": 5,
+      "weight": 1
+    },
+    {
+      "id": "p_yupei",
+      "min_floor": 2,
+      "max_floor": 6,
+      "weight": 1
+    },
+    {
+      "id": "a_xuangui",
+      "min_floor": 3,
+      "max_floor": 7,
+      "weight": 1
+    },
+    {
+      "id": "b_zhuifeng",
+      "min_floor": 3,
+      "max_floor": 7,
+      "weight": 1
+    },
+    {
+      "id": "p_miaoshou",
+      "min_floor": 3,
+      "max_floor": 8,
+      "weight": 1
+    },
+    {
+      "id": "w_kunwu",
+      "min_floor": 5,
+      "max_floor": 12,
+      "weight": 1
+    },
+    {
+      "id": "a_xisi",
+      "min_floor": 5,
+      "max_floor": 12,
+      "weight": 1
+    },
+    {
+      "id": "p_bishui",
+      "min_floor": 6,
+      "max_floor": 12,
+      "weight": 1
+    },
+    {
+      "id": "p_baidu",
+      "min_floor": 6,
+      "max_floor": 14,
+      "weight": 1
+    },
+    {
+      "id": "m_qingtongmian",
+      "min_floor": 7,
+      "max_floor": 14,
+      "weight": 1
+    },
+    {
+      "id": "b_dengyun",
+      "min_floor": 7,
+      "max_floor": 14,
+      "weight": 1
+    },
+    {
+      "id": "w_ganjiang",
+      "min_floor": 12,
+      "max_floor": null,
+      "weight": 1
+    },
+    {
+      "id": "p_zhaoyao",
+      "min_floor": 13,
+      "max_floor": null,
+      "weight": 1
+    },
+    {
+      "id": "m_xiezhi",
+      "min_floor": 14,
+      "max_floor": null,
+      "weight": 1
+    },
+    {
+      "id": "a_bihuo",
+      "min_floor": 5,
+      "max_floor": 12,
+      "weight": 1
+    },
+    {
+      "id": "m_leiwen",
+      "min_floor": 6,
+      "max_floor": 12,
+      "weight": 1
+    },
+    {
+      "id": "p_qingxin",
+      "min_floor": 5,
+      "max_floor": 13,
+      "weight": 1
+    },
+    {
+      "id": "b_dubi",
+      "min_floor": 6,
+      "max_floor": 13,
+      "weight": 1
+    }
   ],
   "per_room": {
-    "monsters": { "chance": 0.6, "min": 1, "max": 2 },
-    "items": { "chance": 0.45, "min": 1, "max": 1 }
+    "monsters": {
+      "chance": 0.6,
+      "min": 1,
+      "max": 2
+    },
+    "items": {
+      "chance": 0.45,
+      "min": 1,
+      "max": 1
+    }
   }
 }
