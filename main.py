@@ -27,9 +27,11 @@ from input_handlers import (
     ClassSelectEventHandler,
     CloseMenuAction,
     DirectionSelectEventHandler,
+    ExamineEventHandler,
     GameOverEventHandler,
     InventoryEventHandler,
     MainGameEventHandler,
+    OpenExamineAction,
     OpenInventoryAction,
     OpenSkillLearnAction,
     RestartAction,
@@ -143,6 +145,8 @@ def game_loop(context, console, engine, content) -> str:
                     handler = InventoryEventHandler(engine)
                 elif isinstance(action, OpenSkillLearnAction):
                     handler = SkillLearnEventHandler(engine)
+                elif isinstance(action, OpenExamineAction):
+                    handler = ExamineEventHandler(engine)
                 elif isinstance(action, CloseMenuAction):
                     handler = MainGameEventHandler(engine)
                 elif isinstance(action, RestartAction):

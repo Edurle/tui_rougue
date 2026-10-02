@@ -116,5 +116,11 @@
   "attack_element_notice": "{attacker}的{element}之息透体而入！",
   "element_thunder": "雷",
   "element_fire": "火",
-  "element_poison": "毒"
+  "element_poison": "毒",
+  "examine_title": "查看（Tab 换目标 · 点击指定 · Esc 关闭）",
+  "examine_stats": "气血 {hp}/{max_hp} · 攻 {power} · 防 {defense} · 修为 {xp}",
+  "examine_resist": "抗性：{resists}",
+  "examine_no_resist": "抗性：无",
+  "examine_attack": "爪击附{elements}之息",
+  "examine_none": "视野之内没有可查看的目标。"
 }

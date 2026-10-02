@@ -115,5 +115,11 @@
   "attack_element_notice": "{attacker}'s {element} essence sears through you!",
   "element_thunder": "thunder",
   "element_fire": "fire",
-  "element_poison": "venom"
+  "element_poison": "venom",
+  "examine_title": "Examine (Tab: next · click: pick · Esc: close)",
+  "examine_stats": "HP {hp}/{max_hp} · ATK {power} · DEF {defense} · XP {xp}",
+  "examine_resist": "Resistances: {resists}",
+  "examine_no_resist": "Resistances: none",
+  "examine_attack": "Strikes with {elements} essence",
+  "examine_none": "Nothing in sight to examine."
 }

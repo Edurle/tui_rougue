@@ -544,6 +544,105 @@ def render_direction_overlay(console: tcod.console.Console, engine: "Engine", sk
     )
 
 
+def render_examine_card(console: tcod.console.Console, engine: "Engine", target) -> None:
+    """查看模式属性卡：居中弹窗（属性/抗性/爪击/山海经典故）+ 目标格反色高亮。"""
+    strings = engine.content.strings
+    theme = engine.content.theme
+    from fighter import RESIST_KINDS
+
+    # 地图上目标格高亮（与瞄准态同款反色）
+    tx, ty = target.x, target.y
+    if 0 <= tx < engine.settings.map_cols and 0 <= ty < engine.settings.map_rows:
+        cell = console.rgb[tx, ty]
+        console.print(tx, ty, chr(int(cell["ch"])), fg=(16, 12, 8), bg=(255, 226, 130))
+
+    fighter = target.fighter
+    lore_lines = _wrap_cjk(target.lore, width=44)
+    inner_lines = 3 + (1 if fighter else 0)
+    resist_parts = [
+        strings[f"resist_{kind}"].format(v=fighter.resistance(kind)).replace("+", "")
+        for kind in RESIST_KINDS
+        if fighter is not None and fighter.resistance(kind) > 0
+    ]
+    inner_lines += 1  # 抗性行：有则列项，无则显示"抗性：无"
+    element_names = [strings[f"element_{t}"] for t in target.attack_tags]
+    if element_names:
+        inner_lines += 1
+    if lore_lines:
+        inner_lines += 1 + len(lore_lines)  # 空行 + lore 折行
+
+    map_cols = engine.settings.map_cols
+    map_rows = engine.settings.map_rows
+    menu_width = min(50, map_cols - 2)
+    menu_height = inner_lines + 4
+    x = max(0, (map_cols - menu_width) // 2)
+    y = max(0, (map_rows - menu_height) // 2)
+
+    console.draw_frame(
+        x=x,
+        y=y,
+        width=menu_width,
+        height=menu_height,
+        title=f" {target.name} · {strings['examine_title']} ",
+        clear=True,
+        fg=tuple(theme["ui"]["frame"]),
+        bg=tuple(theme["background"]),
+    )
+    row = y + 2
+    if fighter:
+        console.print(
+            x + 2,
+            row,
+            strings["examine_stats"].format(
+                hp=fighter.hp,
+                max_hp=fighter.max_hp,
+                power=fighter.power,
+                defense=fighter.defense,
+                xp=fighter.xp_reward,
+            )[: menu_width - 4],
+            fg=COLOR_NAME,
+        )
+        row += 1
+    if resist_parts:
+        console.print(
+            x + 2, row, strings["examine_resist"].format(resists=" ".join(resist_parts)),
+            fg=(150, 200, 160),
+        )
+    else:
+        console.print(x + 2, row, strings["examine_no_resist"], fg=(150, 150, 158))
+    row += 1
+    if element_names:
+        console.print(
+            x + 2,
+            row,
+            strings["examine_attack"].format(elements="、".join(element_names)),
+            fg=(240, 160, 110),
+        )
+        row += 1
+    if lore_lines:
+        row += 1  # 典故前空一行
+        for line in lore_lines:
+            console.print(x + 2, row, line, fg=(168, 168, 178))
+            row += 1
+
+
+def _wrap_cjk(text: str, width: int) -> List[str]:
+    """按显示列宽折行（本作 CJK 字符一格宽，直接按字符数折）。"""
+    if not text:
+        return []
+    lines = []
+    current = ""
+    for ch in text:
+        if len(current) + 1 > width:
+            lines.append(current)
+            current = ch
+        else:
+            current += ch
+    if current:
+        lines.append(current)
+    return lines
+
+
 def render_game_over(console: tcod.console.Console, engine: "Engine") -> None:
     strings = engine.content.strings
     theme = engine.content.theme

@@ -67,6 +67,7 @@ PICKUP_KEYS = {KeySym.G, KeySym.COMMA}
 DESCEND_KEY = KeySym.GREATER  # Shift + 句号
 ASCEND_KEY = KeySym.LESS  # Shift + 逗号
 SKILL_LEARN_KEY = KeySym.K  # vi 的 K 让位：上移用方向键/W
+EXAMINE_KEY = KeySym.X  # 查看视野内怪物属性
 TAB_KEY = KeySym.TAB
 EQUIP_KEY = KeySym.E
 
@@ -123,6 +124,10 @@ class CloseMenuAction(SwitchHandlerAction):
 
 
 class OpenSkillLearnAction(SwitchHandlerAction):
+    pass
+
+
+class OpenExamineAction(SwitchHandlerAction):
     pass
 
 
@@ -196,6 +201,11 @@ class MainGameEventHandler(LogScrollMixin, EventHandler):
             return None
         if player.is_alive and key == SKILL_LEARN_KEY:
             return OpenSkillLearnAction()
+        if player.is_alive and key == EXAMINE_KEY:
+            if _visible_examine_targets(engine):
+                return OpenExamineAction()
+            engine.message_log.add_message(engine.content.strings["examine_none"], "info")
+            return None
         if key in SCROLL_UP_KEYS and player.is_alive:
             engine.message_log.scroll(3)
             return None
@@ -389,6 +399,64 @@ def skills_visible_enemies(engine) -> List:
     import skills as skills_module
 
     return skills_module.visible_enemies(engine, engine.player)
+
+
+def _visible_examine_targets(engine) -> List:
+    """视野内可查看的 actor（除玩家；含敌对与契约兽），按距离排序。"""
+    gamemap = engine.gamemap
+    targets = [
+        actor
+        for actor in gamemap.actors
+        if actor is not engine.player and gamemap.visible[actor.x, actor.y]
+    ]
+    targets.sort(key=engine.player.distance_to)
+    return targets
+
+
+class ExamineEventHandler(EventHandler):
+    """查看模式：视野内怪物/契约兽属性卡。Tab 循环 / 鼠标点击 / Esc 或 X 关闭，不耗回合。"""
+
+    def __init__(self, engine) -> None:
+        super().__init__(engine)
+        self.targets: List = _visible_examine_targets(engine)
+        self.index = 0
+
+    @property
+    def current_target(self):
+        if not self.targets:
+            return None
+        self.targets = [t for t in self.targets if t.is_alive]
+        if not self.targets:
+            return None
+        return self.targets[self.index % len(self.targets)]
+
+    def on_render(self, console) -> None:
+        super().on_render(console)
+        import render
+
+        target = self.current_target
+        if target is not None:
+            render.render_examine_card(console, self.engine, target)
+
+    def ev_keydown(self, event: tcod.event.KeyDown):
+        key = normalize_sym(event.sym)
+        if key == KeySym.ESCAPE or key == EXAMINE_KEY or key in CONFIRM_KEYS:
+            return CloseMenuAction()
+        if key == TAB_KEY:
+            if self.targets:
+                self.index = (self.index + 1) % len(self.targets)
+            return None
+        return None
+
+    def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown):
+        # tcod 21：经 context.convert_event 后 position 即格坐标（tile 属性已废弃）
+        if event.button == 1 and event.position is not None:
+            tx, ty = int(event.position[0]), int(event.position[1])
+            for i, actor in enumerate(self.targets):
+                if actor.is_alive and (actor.x, actor.y) == (tx, ty):
+                    self.index = i
+                    return None  # 点击即切换查看对象，不关闭
+        return None
 
 
 class DirectionSelectEventHandler(EventHandler):
