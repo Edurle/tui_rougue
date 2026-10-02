@@ -45,6 +45,7 @@ class GameMap:
         self.map_type = map_type
         self.realm_id = realm_id
         self.realm_depth = realm_depth
+        self.theme_key: Optional[str] = None  # 秘境配色主题（theme.realm_themes 键）
         self.fov_radius = FOV_RADIUS
         self.entities: Set[Entity] = set()
         self.downstairs_xy: Tuple[int, int] = (-1, -1)
@@ -95,6 +96,13 @@ class GameMap:
         for item in self.items:
             if item.x == x and item.y == y:
                 return item
+        return None
+
+    def get_realm_gate_at(self, x: int, y: int) -> Optional[Entity]:
+        """指定格上的秘境入口实体（世界地图专用）。"""
+        for entity in self.entities:
+            if entity.x == x and entity.y == y and "realm_gate" in entity.tags:
+                return entity
         return None
 
     # ---- 地图几何 ----

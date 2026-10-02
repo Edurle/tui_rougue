@@ -344,5 +344,183 @@
       220,
       240
     ]
+  },
+  "realm_themes": {
+    "jade": {
+      "floor_light": [
+        110,
+        180,
+        150
+      ],
+      "floor_dark": [
+        40,
+        72,
+        62
+      ],
+      "wall_light": [
+        214,
+        196,
+        120
+      ],
+      "wall_dark": [
+        84,
+        76,
+        48
+      ]
+    },
+    "charm": {
+      "floor_light": [
+        188,
+        128,
+        138
+      ],
+      "floor_dark": [
+        70,
+        48,
+        54
+      ],
+      "wall_light": [
+        236,
+        210,
+        220
+      ],
+      "wall_dark": [
+        88,
+        66,
+        74
+      ]
+    },
+    "thunder": {
+      "floor_light": [
+        140,
+        128,
+        190
+      ],
+      "floor_dark": [
+        52,
+        48,
+        74
+      ],
+      "wall_light": [
+        150,
+        190,
+        250
+      ],
+      "wall_dark": [
+        56,
+        70,
+        96
+      ]
+    },
+    "stone": {
+      "floor_light": [
+        162,
+        150,
+        122
+      ],
+      "floor_dark": [
+        62,
+        58,
+        46
+      ],
+      "wall_light": [
+        120,
+        200,
+        160
+      ],
+      "wall_dark": [
+        46,
+        78,
+        62
+      ]
+    },
+    "water": {
+      "floor_light": [
+        104,
+        160,
+        194
+      ],
+      "floor_dark": [
+        42,
+        64,
+        80
+      ],
+      "wall_light": [
+        240,
+        170,
+        140
+      ],
+      "wall_dark": [
+        94,
+        66,
+        54
+      ]
+    },
+    "ice": {
+      "floor_light": [
+        168,
+        206,
+        232
+      ],
+      "floor_dark": [
+        66,
+        88,
+        106
+      ],
+      "wall_light": [
+        232,
+        240,
+        250
+      ],
+      "wall_dark": [
+        92,
+        104,
+        120
+      ]
+    },
+    "dark": {
+      "floor_light": [
+        124,
+        114,
+        140
+      ],
+      "floor_dark": [
+        48,
+        44,
+        58
+      ],
+      "wall_light": [
+        176,
+        158,
+        130
+      ],
+      "wall_dark": [
+        68,
+        60,
+        48
+      ]
+    },
+    "abyss": {
+      "floor_light": [
+        104,
+        84,
+        132
+      ],
+      "floor_dark": [
+        40,
+        32,
+        52
+      ],
+      "wall_light": [
+        200,
+        90,
+        90
+      ],
+      "wall_dark": [
+        78,
+        36,
+        40
+      ]
+    }
   }
 }

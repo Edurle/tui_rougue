@@ -1,0 +1,136 @@
+{
+  "_schema": {
+    "说明": "秘境定义：大世界入口通往的地牢。难度 = 所属区域 base_difficulty + (层深-1)*2。击杀底层 BOSS 即封印（入口永久关闭，不可重复进入）。theme 对应 theme.json realm_themes 的配色键。",
+    "字段": {
+      "id": "秘境标识",
+      "name": "秘境名（可本地化）",
+      "intro": "入口叙事（可本地化）",
+      "theme": "配色主题键（theme.realm_themes）",
+      "region": "所属区域 id（入口撒在该区域；难度基准）",
+      "depth": "层数（2-5）",
+      "boss": "底层 BOSS 的 monsters.json id"
+    }
+  },
+  "realms": [
+    {
+      "id": "yaoshan_gudong",
+      "name": {
+        "zh_CN": "药山古洞",
+        "en_US": "Herb Hollow"
+      },
+      "intro": {
+        "zh_CN": "洞中草药幽香，蛇翼振风之声隐隐可闻。",
+        "en_US": "Herbal fragrance drifts from the hollow; faint wings of a serpent stir within."
+      },
+      "theme": "jade",
+      "region": "zhongshanjing",
+      "depth": 2,
+      "boss": "boss_mingshe"
+    },
+    {
+      "id": "qingqiu_huxue",
+      "name": {
+        "zh_CN": "青丘狐穴",
+        "en_US": "Qingqiu Fox Den"
+      },
+      "intro": {
+        "zh_CN": "九曲回廊尽处，婴儿啼声时远时近。",
+        "en_US": "Deep in the winding den, an infant's cry echoes near and far."
+      },
+      "theme": "charm",
+      "region": "nanshanjing",
+      "depth": 3,
+      "boss": "boss_tianhu"
+    },
+    {
+      "id": "zhaoyao_leiku",
+      "name": {
+        "zh_CN": "招摇雷窟",
+        "en_US": "Zhaoyao Thunder Grotto"
+      },
+      "intro": {
+        "zh_CN": "窟中金石铮鸣，雕唳裂空。",
+        "en_US": "Metallic echoes ring in the grotto; an eagle's shriek splits the air."
+      },
+      "theme": "thunder",
+      "region": "nanshanjing",
+      "depth": 3,
+      "boss": "boss_gudiaowang"
+    },
+    {
+      "id": "huashan_difei",
+      "name": {
+        "zh_CN": "华山地肺",
+        "en_US": "Mt. Hua Underworld"
+      },
+      "intro": {
+        "zh_CN": "山腹之中，神陆吾的爪痕犹在石上。",
+        "en_US": "In the mountain's core, the warden's claw marks still scar the stone."
+      },
+      "theme": "stone",
+      "region": "xishanjing",
+      "depth": 3,
+      "boss": "boss_luwujun"
+    },
+    {
+      "id": "tianchi_longgong",
+      "name": {
+        "zh_CN": "天池龙宫",
+        "en_US": "Tianchi Dragon Palace"
+      },
+      "intro": {
+        "zh_CN": "水下宫阙森然，九首之影在碧波深处游弋。",
+        "en_US": "A sunken palace looms; a nine-headed shadow coils in the deep."
+      },
+      "theme": "water",
+      "region": "xishanjing",
+      "depth": 4,
+      "boss": "boss_xiangliu_ying"
+    },
+    {
+      "id": "danhu_bingjiao",
+      "name": {
+        "zh_CN": "单狐冰窖",
+        "en_US": "Shanhu Ice Cellar"
+      },
+      "intro": {
+        "zh_CN": "寒气砭骨，豹吼之声在冰壁间往复激荡。",
+        "en_US": "The cold cuts to the bone; a leopard's roar ricochets between ice walls."
+      },
+      "theme": "ice",
+      "region": "beishanjing",
+      "depth": 4,
+      "boss": "boss_zhuduwang"
+    },
+    {
+      "id": "taishan_youfu",
+      "name": {
+        "zh_CN": "泰山幽府",
+        "en_US": "Mt. Tai Nether Halls"
+      },
+      "intro": {
+        "zh_CN": "幽府长阶向下，虎身人面者踞坐尽头。",
+        "en_US": "Steps descend into the nether halls, where a tiger-bodied warden sits at the end."
+      },
+      "theme": "dark",
+      "region": "dongshanjing",
+      "depth": 4,
+      "boss": "boss_mafuling"
+    },
+    {
+      "id": "dahuang_yuancheng",
+      "name": {
+        "zh_CN": "大荒渊城",
+        "en_US": "Abyssal City of the Waste"
+      },
+      "intro": {
+        "zh_CN": "渊底之城灯火幽幽，烛龙睁眼之处，昼夜轮转。",
+        "en_US": "Ghostly lights burn in the abyssal city; where the dragon's eye opens, day and night turn."
+      },
+      "theme": "abyss",
+      "region": "dahuangjing",
+      "depth": 5,
+      "boss": "boss_zhulongzhen"
+    }
+  ]
+}

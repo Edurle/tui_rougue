@@ -163,9 +163,9 @@ class UnequipAction(Action):
 
 
 class TakeStairsAction(Action):
-    """山径：站在下行山径（金）上按 > 深入，站在上行山径（青）上按 < 回返。
+    """山径交互：大世界上 = 踏入秘境之门（>）；秘境内 = 层间移动（> 深入 / < 回返）。
 
-    大世界上没有山径（秘境入口单独交互）；Phase 2 起此动作用于秘境层间移动。
+    秘境第 1 层的上行山径（<）即出口，回世界入口坐标。
     """
 
     def __init__(self, entity: "Actor", direction: str = "down") -> None:
@@ -174,18 +174,41 @@ class TakeStairsAction(Action):
 
     def perform(self, engine: "Engine") -> None:
         strings = engine.content.strings
-        if engine.gamemap.map_type != "realm":
-            raise exceptions.Impossible(
-                strings["not_on_stairs"] if self.direction == "down" else strings["not_on_up_stairs"]
-            )
+        gamemap = engine.gamemap
         here = (self.entity.x, self.entity.y)
+
+        if gamemap.map_type == "world":
+            if self.direction != "down":
+                raise exceptions.Impossible(strings["not_on_up_stairs"])
+            gate = gamemap.get_realm_gate_at(*here)
+            if gate is None:
+                raise exceptions.Impossible(strings["not_on_stairs"])
+            if "sealed" in gate.tags:
+                raise exceptions.Impossible(strings["realm_sealed"])
+            realm_id = next(t for t in gate.tags if t not in ("realm_gate", "sealed"))
+            engine.enter_realm(realm_id, here)
+            realm_def = engine.content.realm_def(realm_id)
+            engine.message_log.add_message(
+                strings["realm_enter"].format(
+                    realm=engine.content.realm_name(realm_id),
+                    intro=engine.content._(realm_def["intro"]),
+                ),
+                "descend",
+            )
+            return
+
+        # ---- 秘境内 ----
         if self.direction == "down":
-            if here != engine.gamemap.downstairs_xy:
+            if here != gamemap.downstairs_xy:
                 raise exceptions.Impossible(strings["not_on_stairs"])
             engine.next_floor()
-            engine.message_log.add_message(strings["descend_plain"], "descend")
+            engine.message_log.add_message(strings["realm_descend"], "descend")
         else:
-            if here != engine.gamemap.upstairs_xy:
+            if here != gamemap.upstairs_xy:
                 raise exceptions.Impossible(strings["not_on_up_stairs"])
+            was_first_floor = gamemap.realm_depth <= 1
             engine.previous_floor()
-            engine.message_log.add_message(strings["ascend_plain"], "descend")
+            if was_first_floor:
+                engine.message_log.add_message(strings["realm_exit"], "descend")
+            else:
+                engine.message_log.add_message(strings["realm_ascend"], "descend")

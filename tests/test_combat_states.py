@@ -215,8 +215,11 @@ def test_targeting_mouse_click_selects():
     engine.gamemap.update_fov(player.x, player.y)
     skill = engine.content.skill_for_slot("leifa", 1)
     handler = ih.TargetingEventHandler(engine, skill, 1)
+    from render import viewport_offset
+
+    off_x, off_y = viewport_offset(engine)
     click = tcod.event.MouseButtonDown(
-        button=1, position=tcod.event.Point(monster.x, monster.y)
+        button=1, position=tcod.event.Point(monster.x + off_x, monster.y + off_y)
     )
     action = handler.dispatch(click)
     assert type(action).__name__ == "CastSkillAction"

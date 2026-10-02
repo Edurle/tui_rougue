@@ -57,13 +57,14 @@ def viewport_offset(engine: "Engine") -> Tuple[int, int]:
     return -cam_x + shake_x, -cam_y + shake_y
 
 
-# terrain id → 字符/明暗色查找表（按 theme 对象缓存，内容加载一次）
-_TERRAIN_LUT_CACHE: list = []  # [theme 引用, (ch_lut, light_lut, dark_lut)]
+# terrain id → 字符/明暗色查找表（按 theme+配色主题缓存，内容加载一次）
+_TERRAIN_LUT_CACHE: dict = {}  # (id(theme), theme_key) -> (ch_lut, light_lut, dark_lut)
 
 
-def _terrain_luts(theme: dict):
-    if _TERRAIN_LUT_CACHE and _TERRAIN_LUT_CACHE[0] is theme:
-        return _TERRAIN_LUT_CACHE[1]
+def _terrain_luts(theme: dict, palette_key=None):
+    cache_key = (id(theme), palette_key)
+    if cache_key in _TERRAIN_LUT_CACHE:
+        return _TERRAIN_LUT_CACHE[cache_key]
     n = tile_types.N_TERRAINS
     ch_lut = np.zeros(n, dtype=np.int32)
     light_lut = np.zeros((n, 3), dtype=np.float64)
@@ -74,8 +75,15 @@ def _terrain_luts(theme: dict):
         ch_lut[tid] = ord(cfg["char"])
         light_lut[tid] = np.array(cfg["light"], dtype=np.float64)
         dark_lut[tid] = np.array(cfg["dark"], dtype=np.float64)
+    # 秘境配色主题：覆盖地面/石壁的明暗色
+    palette = theme.get("realm_themes", {}).get(palette_key) if palette_key else None
+    if palette is not None:
+        light_lut[tile_types.T_FLOOR] = np.array(palette["floor_light"], dtype=np.float64)
+        dark_lut[tile_types.T_FLOOR] = np.array(palette["floor_dark"], dtype=np.float64)
+        light_lut[tile_types.T_WALL] = np.array(palette["wall_light"], dtype=np.float64)
+        dark_lut[tile_types.T_WALL] = np.array(palette["wall_dark"], dtype=np.float64)
     luts = (ch_lut, light_lut, dark_lut)
-    _TERRAIN_LUT_CACHE[:] = [theme, luts]
+    _TERRAIN_LUT_CACHE[cache_key] = luts
     return luts
 
 
@@ -114,7 +122,7 @@ def _render_map(
     light = visible
     dark = explored & ~visible
 
-    ch_lut, light_lut, dark_lut = _terrain_luts(theme)
+    ch_lut, light_lut, dark_lut = _terrain_luts(theme, gamemap.theme_key)
     ch = np.full(terrain.shape, 32, dtype=np.int32)
     ch[known] = ch_lut[terrain[known]]
     # 秘境石壁用邻接线框字符覆盖
@@ -257,7 +265,11 @@ def _render_sidebar(console: tcod.console.Console, engine: "Engine") -> None:
         )
 
     gamemap = engine.gamemap
-    if gamemap.map_type == "world" and gamemap.region_ids is not None:
+    if gamemap.map_type == "realm" and gamemap.realm_id:
+        location = strings["hud_realm"].format(
+            realm=content.realm_name(gamemap.realm_id), depth=gamemap.realm_depth
+        )
+    elif gamemap.map_type == "world" and gamemap.region_ids is not None:
         region = content.regions[int(gamemap.region_ids[player.x, player.y])]
         location = content._(region["name"])
         landmark = gamemap.nearest_landmark(player.x, player.y)
@@ -288,10 +300,19 @@ def _render_hints(console, engine, strings, theme, layout) -> None:
     here = (player.x, player.y)
 
     hints = []
-    if here == gamemap.downstairs_xy:
-        hints.append((">", strings["hint_descend"]))
-    elif here == gamemap.upstairs_xy and gamemap.floor_number > 1:
-        hints.append(("<", strings["hint_ascend"]))
+    if gamemap.map_type == "world":
+        gate = gamemap.get_realm_gate_at(*here)
+        if gate is not None:
+            if "sealed" not in gate.tags:
+                hints.append((">", strings["hint_enter_realm"].format(name=gate.name)))
+    else:
+        if here == gamemap.downstairs_xy:
+            hints.append((">", strings["hint_descend"]))
+        elif here == gamemap.upstairs_xy:
+            if gamemap.realm_depth <= 1:
+                hints.append(("<", strings["hint_realm_exit"]))
+            else:
+                hints.append(("<", strings["hint_realm_ascend"]))
     item_here = gamemap.get_item_at(player.x, player.y)
     if item_here is not None:
         hints.append(("G", strings["hint_pickup"].format(item=item_here.name)))

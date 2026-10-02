@@ -131,11 +131,40 @@ def _stairs_glow() -> np.ndarray:
     return m
 
 
+def _realm_gate() -> np.ndarray:
+    """秘境之门：同心漩涡。"""
+    m = _canvas()
+    m[1, 3:9] = True
+    m[2, 2] = m[2, 9] = True
+    m[3, 1] = m[3, 10] = True
+    m[4, 1] = m[4, 10] = True
+    m[7, 1] = m[7, 10] = True
+    m[8, 1] = m[8, 10] = True
+    m[9, 2] = m[9, 9] = True
+    m[10, 3:9] = True
+    m[3, 4] = m[4, 3] = m[3, 7] = m[4, 8] = True
+    m[7, 3] = m[8, 4] = m[7, 8] = m[8, 7] = True
+    m[5:7, 5:7] = True
+    return m
+
+
+def _realm_gate_sealed() -> np.ndarray:
+    """封印之门：门框 + 十字封条。"""
+    m = _realm_gate()
+    m[5, 2:10] = True
+    m[6, 2:10] = True
+    for y in range(2, 10):
+        m[y, 5] = m[y, 6] = True
+    return m
+
+
 ART_REGISTRY: dict[str, Callable[[], np.ndarray]] = {
     "thunder_talisman": _thunder_talisman,
     "lingzhi": _lingzhi,
     "corpse": _corpse,
     "stairs_glow": _stairs_glow,
+    "realm_gate": _realm_gate,
+    "realm_gate_sealed": _realm_gate_sealed,
 }
 
 

@@ -124,5 +124,17 @@
   "examine_none": "Nothing in sight to examine.",
   "descend_plain": "You descend; the way grows darker.",
   "ascend_plain": "You climb back; daylight brightens.",
-  "region_enter": "You enter the realm of {region}."
+  "region_enter": "You enter the realm of {region}.",
+  "realm_enter": "You step into {realm}. {intro}",
+  "realm_exit": "You emerge back into the open wilds.",
+  "realm_descend": "You descend deeper into darkness.",
+  "realm_ascend": "You climb back one floor.",
+  "realm_sealed": "This realm is sealed; the gate stands shut.",
+  "realm_sealed_suffix": " (Sealed)",
+  "realm_boss_slain": "{boss} collapses! The realm's power disperses and its gate is sealed forever.",
+  "realm_boss_drop": "{item} lies amid the remains of {boss}.",
+  "hud_realm": "{realm} - Depth {depth}",
+  "hint_enter_realm": "Enter {name}",
+  "hint_realm_exit": "Return to the wilds",
+  "hint_realm_ascend": "Climb up a floor"
 }

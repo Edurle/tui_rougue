@@ -384,8 +384,12 @@ class TargetingEventHandler(EventHandler):
 
     def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown):
         # tcod 21：经 context.convert_event 后 position 即格坐标（tile 属性已废弃）
+        # position 为视口屏幕坐标，需按摄像机偏移换算回地图坐标
         if event.button == 1 and event.position is not None:
-            tx, ty = int(event.position[0]), int(event.position[1])
+            from render import viewport_offset
+
+            off_x, off_y = viewport_offset(self.engine)
+            tx, ty = int(event.position[0]) - off_x, int(event.position[1]) - off_y
             for i, actor in enumerate(self.targets):
                 if actor.is_alive and (actor.x, actor.y) == (tx, ty):
                     self.index = i
@@ -450,12 +454,16 @@ class ExamineEventHandler(EventHandler):
 
     def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown):
         # tcod 21：经 context.convert_event 后 position 即格坐标（tile 属性已废弃）
+        # position 为视口屏幕坐标，需按摄像机偏移换算回地图坐标
         if event.button == 1 and event.position is not None:
-            tx, ty = int(event.position[0]), int(event.position[1])
+            from render import viewport_offset
+
+            off_x, off_y = viewport_offset(self.engine)
+            tx, ty = int(event.position[0]) - off_x, int(event.position[1]) - off_y
             for i, actor in enumerate(self.targets):
                 if actor.is_alive and (actor.x, actor.y) == (tx, ty):
-                    self.index = i
-                    return None  # 点击即切换查看对象，不关闭
+                    self.index = i  # 点击即切换查看对象，不关闭
+                    return None
         return None
 
 

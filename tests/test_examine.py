@@ -80,9 +80,12 @@ def test_tab_cycles_targets_and_click_switches():
     assert action is None
     assert handler.current_target is far
 
-    # 鼠标点击近怪切回
+    # 鼠标点击近怪切回（position 为视口坐标 = 地图坐标 + 摄像机偏移）
+    from render import viewport_offset
+
+    off_x, off_y = viewport_offset(engine)
     click = tcod.event.MouseButtonDown(
-        button=1, position=tcod.event.Point(near.x, near.y)
+        button=1, position=tcod.event.Point(near.x + off_x, near.y + off_y)
     )
     assert handler.dispatch(click) is None
     assert handler.current_target is near

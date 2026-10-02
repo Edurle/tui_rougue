@@ -125,5 +125,17 @@
   "examine_none": "视野之内没有可查看的目标。",
   "descend_plain": "你循径深入，前路愈发幽暗。",
   "ascend_plain": "你循径回返，天光渐明。",
-  "region_enter": "你踏入{region}地界。"
+  "region_enter": "你踏入{region}地界。",
+  "realm_enter": "你踏入「{realm}」。{intro}",
+  "realm_exit": "你循光而返，重回山川之间。",
+  "realm_descend": "你循径深入，愈发幽暗。",
+  "realm_ascend": "你循径回返上一层。",
+  "realm_sealed": "此间秘境已被封印，山门紧闭。",
+  "realm_sealed_suffix": "（封印）",
+  "realm_boss_slain": "「{boss}」轰然陨落！秘境之力溃散，山门就此封印。",
+  "realm_boss_drop": "「{boss}」的遗蜕中现出{item}。",
+  "hud_realm": "{realm}·第{depth}层",
+  "hint_enter_realm": "踏入{name}",
+  "hint_realm_exit": "回返尘世",
+  "hint_realm_ascend": "回返上层"
 }

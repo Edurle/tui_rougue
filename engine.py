@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import random
+from typing import Optional, Tuple
 
 import exceptions
 import procgen
@@ -33,7 +34,11 @@ class Engine:
         self.effects = Effects(content.theme["effects"])
         self.rng = random.Random()
         self.game_over = False
-        self.floors: dict = {}  # 楼层历史：floor_number -> GameMap，支持上行返回
+        # 两级地图模型：大世界常驻 + 秘境按 (realm_id, depth) 缓存
+        self.realms: dict = {}  # realm_id -> {depth: GameMap}
+        self.current_realm: Optional[str] = None
+        self.realm_cleared: set = set()  # 已封印（通关）的秘境 id
+        self.world_return_xy: Tuple[int, int] = (0, 0)  # 出秘境回世界的落点（入口坐标）
         self.active_page = 0  # 技能页：0 主职业 / 1 副职业（Tab 切换）
 
         # 玩家实体在世界生成后创建一次，此后跨地图复用（保留状态）
@@ -207,34 +212,105 @@ class Engine:
             "loot",
         )
 
-    # ---- 楼层 ----
+    # ---- 秘境流转 ----
 
-    def next_floor(self) -> None:
-        self.floors[self.gamemap.floor_number] = self.gamemap
-        next_number = self.gamemap.floor_number + 1
-        if next_number in self.floors:
-            self.gamemap = self.floors[next_number]
+    def enter_realm(self, realm_id: str, return_xy: Tuple[int, int]) -> None:
+        """踏入秘境第 1 层；缓存存在则复用（保留探索过的层）。"""
+        self.world_return_xy = return_xy
+        floors = self.realms.setdefault(realm_id, {})
+        if 1 in floors:
+            self.gamemap = floors[1]
             self.player.place(self.gamemap, *self.gamemap.upstairs_xy)
         else:
-            self.gamemap = procgen.generate_dungeon(self, next_number, self.rng)
+            self.gamemap = self._generate_realm_floor(realm_id, 1)
+        self.current_realm = realm_id
+        self.effects.clear()
+        self.update_fov()
+
+    def exit_realm(self) -> None:
+        """从秘境回世界，落在入口坐标。"""
+        if self.current_realm is None:
+            return
+        self.realms.setdefault(self.current_realm, {})[self.gamemap.realm_depth] = self.gamemap
+        self.gamemap = self.world
+        self.player.place(self.world, *self.world_return_xy)
+        self.current_realm = None
+        self.effects.clear()
+        self.update_fov()
+
+    def _generate_realm_floor(self, realm_id: str, depth: int) -> GameMap:
+        realm_def = self.content.realm_def(realm_id)
+        difficulty = self.content.realm_difficulty(realm_id, depth)
+        is_boss_floor = depth >= int(realm_def["depth"])
+        return procgen.generate_dungeon(
+            self,
+            difficulty,
+            self.rng,
+            realm_id=realm_id,
+            realm_depth=depth,
+            boss_id=realm_def["boss"] if is_boss_floor else None,
+        )
+
+    def next_floor(self) -> None:
+        """秘境内沿山径下行一层（难度递增，下行真气全复）。"""
+        realm_id = self.gamemap.realm_id
+        depth = self.gamemap.realm_depth
+        if realm_id is None or depth >= int(self.content.realm_def(realm_id)["depth"]):
+            return  # 已是最深层（BOSS 层无下行山径，防御性兜底）
+        floors = self.realms.setdefault(realm_id, {})
+        floors[depth] = self.gamemap
+        if depth + 1 in floors:
+            self.gamemap = floors[depth + 1]
+            self.player.place(self.gamemap, *self.gamemap.upstairs_xy)
+        else:
+            self.gamemap = self._generate_realm_floor(realm_id, depth + 1)
         self.effects.clear()
         if self.player.is_alive:
-            # 抵达新山：气脉与山川共鸣，真气全复
+            # 层层深入，气脉与山川共鸣，真气全复
             self.player.fighter.mp = self.player.fighter.max_mp
         self.update_fov()
 
     def previous_floor(self) -> None:
-        if self.gamemap.floor_number <= 1:
+        """秘境内回上层；已在第 1 层则回世界。"""
+        if self.gamemap.realm_depth <= 1:
+            self.exit_realm()
             return
-        above = self.floors.get(self.gamemap.floor_number - 1)
+        realm_id = self.gamemap.realm_id
+        above = self.realms.get(realm_id, {}).get(self.gamemap.realm_depth - 1)
         if above is None:
-            # 楼层历史已清空（如改过显示设置），来路不存在——给提示而非崩溃
             raise exceptions.Impossible(self.content.strings["no_floor_above"])
-        self.floors[self.gamemap.floor_number] = self.gamemap
+        self.realms.setdefault(realm_id, {})[self.gamemap.realm_depth] = self.gamemap
         self.gamemap = above
         self.player.place(self.gamemap, *self.gamemap.downstairs_xy)
         self.effects.clear()
         self.update_fov()
+
+    def on_boss_slain(self, boss) -> None:
+        """BOSS 陨落：保底掉宝 + 封印秘境入口。"""
+        if self.current_realm is None:
+            return
+        strings = self.content.strings
+        realm_id = self.current_realm
+        self.realm_cleared.add(realm_id)
+        # 保底掉宝：高于本层难度一档的装备
+        difficulty = self.content.realm_difficulty(realm_id, self.gamemap.realm_depth)
+        item_id = self.content.random_equipment_id(difficulty + 4, self.rng)
+        if item_id is not None:
+            item = self.content.build_item(item_id, self.gamemap, boss.x, boss.y)
+            self.message_log.add_message(
+                strings["realm_boss_drop"].format(boss=boss.name, item=item.name), "loot"
+            )
+        self.message_log.add_message(
+            strings["realm_boss_slain"].format(boss=boss.name), "levelup"
+        )
+        # 世界入口封印：换图块/颜色，标记不可再入
+        for entity in self.world.entities:
+            if realm_id in entity.tags and "realm_gate" in entity.tags:
+                entity.art = "realm_gate_sealed"
+                entity.tags.append("sealed")
+                entity.color = (110, 104, 124)
+                entity.name = entity.name + strings["realm_sealed_suffix"]
+        self.effects.spawn_aoe_ring(boss.x, boss.y, 3.0)
 
     def apply_layout(self) -> None:
         """显示设置变更后应用新几何：仅更新日志参数。

@@ -84,11 +84,28 @@ def generate_dungeon(
     rng: random.Random,
     width: Optional[int] = None,
     height: Optional[int] = None,
+    realm_id: Optional[str] = None,
+    realm_depth: int = 1,
+    boss_id: Optional[str] = None,
 ) -> GameMap:
+    """生成秘境地牢一层。floor_number 语义 = 投放难度（统一难度轴）。
+
+    boss_id 非空时为最深层：最后房间中央盘踞 BOSS，不设下行山径。
+    """
     content = engine.content
     width = DUNGEON_WIDTH if width is None else width
     height = DUNGEON_HEIGHT if height is None else height
-    gamemap = GameMap(engine, width, height, floor_number=floor_number)
+    gamemap = GameMap(
+        engine,
+        width,
+        height,
+        floor_number=floor_number,
+        map_type="realm",
+        realm_id=realm_id,
+        realm_depth=realm_depth,
+    )
+    if realm_id is not None:
+        gamemap.theme_key = content.realm_def(realm_id)["theme"]
 
     rooms: List[Rect] = []
     player_start = None
@@ -119,10 +136,25 @@ def generate_dungeon(
 
     player_x, player_y = player_start  # type: ignore[misc]
     engine.player.place(gamemap, player_start[0], player_start[1])
-    gamemap.upstairs_xy = player_start  # 上行楼梯在抵达点（出生房间中心）
+    gamemap.upstairs_xy = player_start  # 上行山径在抵达点（出生房间中心）
 
-    stairs_x, stairs_y = rooms[-1].center
-    gamemap.downstairs_xy = (stairs_x, stairs_y)
+    if boss_id is not None:
+        # BOSS 层：末房清场后中央盘踞 BOSS，无下行山径
+        boss_room = rooms[-1]
+        for entity in list(gamemap.entities):
+            if entity is engine.player:
+                continue
+            if (
+                boss_room.x1 <= entity.x <= boss_room.x2
+                and boss_room.y1 <= entity.y <= boss_room.y2
+            ):
+                gamemap.entities.discard(entity)
+        bx, by = boss_room.center
+        content.build_monster(boss_id, gamemap, bx, by)
+        gamemap.downstairs_xy = (-1, -1)
+    else:
+        stairs_x, stairs_y = rooms[-1].center
+        gamemap.downstairs_xy = (stairs_x, stairs_y)
 
     gamemap.rebuild_wall_glyphs()
 

@@ -353,8 +353,46 @@ def generate_world(engine: "Engine", rng: random.Random) -> GameMap:
     # ---- 11. 投放：游荡异兽与散落物品 ----
     _populate_world(gamemap, content, rng, spawn)
 
+    # ---- 12. 秘境入口（可达约束 + 按区域难度控制远近）----
+    reached = _flood_reachable(terrain, spawn)
+    _place_realm_gates(gamemap, content, rng, spawn, reached)
+
     gamemap.spawn_xy = spawn
     return gamemap
+
+
+def _place_realm_gates(
+    gamemap: GameMap, content, rng: random.Random, spawn: Tuple[int, int], reached: np.ndarray
+) -> None:
+    """把 realms.json 的秘境入口撒到所属区域的可达格上。
+
+    距离约束：难度越高的区域，入口离出生点越远（14 + 基础难度*2 曼哈顿距离）。
+    """
+    placed: List[Tuple[int, int]] = []
+    region_index = {r["id"]: i for i, r in enumerate(content.regions)}
+    for rid, realm in content.realms.items():
+        idx = region_index[realm["region"]]
+        base = int(content.regions[idx]["base_difficulty"])
+        min_dist = 14 + base * 2
+        mask = (
+            (gamemap.region_ids == idx)
+            & reached
+            & gamemap.tiles["walkable"]
+        )
+        xs, ys = np.where(mask)
+        coords = [
+            (int(x), int(y))
+            for x, y in zip(xs.tolist(), ys.tolist())
+            if abs(x - spawn[0]) + abs(y - spawn[1]) >= min_dist
+        ]
+        if not coords:  # 兜底：放宽距离约束
+            coords = [(int(x), int(y)) for x, y in zip(xs.tolist(), ys.tolist())]
+        rng.shuffle(coords)
+        for x, y in coords:
+            if all(abs(x - px) + abs(y - py) >= 12 for px, py in placed):
+                content.build_realm_gate(rid, gamemap, x, y)
+                placed.append((x, y))
+                break
 
 
 def _region_center_hint(zone: str, w: int, h: int, dist: np.ndarray) -> Tuple[int, int]:

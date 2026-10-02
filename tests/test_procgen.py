@@ -133,14 +133,17 @@ def test_combat_and_death_flow():
 def test_stairs_descend_increments_floor():
     content = make_content()
     engine = make_engine(content)
-    # 世界地图无山径：直接切到秘境式地牢验证层间语义
-    engine.gamemap = procgen.generate_dungeon(engine, 1, engine.rng)
+    # 世界地图无山径：直接进入秘境验证层间语义
+    engine.gamemap = procgen.generate_dungeon(
+        engine, 1, engine.rng, realm_id="yaoshan_gudong", realm_depth=1
+    )
+    engine.current_realm = "yaoshan_gudong"
     sx, sy = engine.gamemap.downstairs_xy
     engine.player.x, engine.player.y = sx, sy
     from actions import TakeStairsAction
 
     TakeStairsAction(engine.player).perform(engine)
-    assert engine.gamemap.floor_number == 2
+    assert engine.gamemap.realm_depth == 2
 
 
 def test_pickup_and_use_heal():

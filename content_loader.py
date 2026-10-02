@@ -126,6 +126,9 @@ class Content:
         self.player_def: dict = _load_json(directory / "player.json")
         self.theme: dict = _load_json(directory / "theme.json")
         self.regions: List[dict] = _load_json(directory / "regions.json")["regions"]
+        self.realms: Dict[str, dict] = {
+            r["id"]: r for r in _load_json(directory / "realms.json")["realms"]
+        }
         self.monsters: Dict[str, dict] = {
             k: v for k, v in monsters_raw.items() if not k.startswith("_")
         }
@@ -146,6 +149,7 @@ class Content:
         self._validate()
         self._validate_theme()
         self._validate_regions()
+        self._validate_realms()
         self._validate_classes_skills()
 
     def _validate_regions(self) -> None:
@@ -182,6 +186,59 @@ class Content:
 
     def region_name(self, region_id: str) -> str:
         return self._(self.region_by_id(region_id)["name"])
+
+    # ---- 秘境 ----
+
+    def _validate_realms(self) -> None:
+        region_ids = {r["id"] for r in self.regions}
+        theme_keys = set(self.theme.get("realm_themes", {}))
+        for rid, realm in self.realms.items():
+            for field_name in ("name", "intro", "theme", "region", "depth", "boss"):
+                _require(realm, field_name, f"秘境 {rid}")
+            if realm["region"] not in region_ids:
+                raise ContentError(f"秘境 {rid} 引用了不存在的区域 '{realm['region']}'")
+            if realm["theme"] not in theme_keys:
+                raise ContentError(
+                    f"秘境 {rid} 的 theme '{realm['theme']}' 未在 theme.realm_themes 配置"
+                )
+            if not isinstance(realm["depth"], int) or not 2 <= realm["depth"] <= 5:
+                raise ContentError(f"秘境 {rid} 的 depth 必须是 2-5 的整数")
+            if realm["boss"] not in self.monsters:
+                raise ContentError(f"秘境 {rid} 引用了不存在的 BOSS '{realm['boss']}'")
+            if "boss" not in self.monsters[realm["boss"]].get("tags", []):
+                raise ContentError(f"秘境 {rid} 的 BOSS '{realm['boss']}' 缺少 boss 标签")
+        for region_id in region_ids:
+            if not any(r["region"] == region_id for r in self.realms.values()):
+                raise ContentError(f"区域 {region_id} 没有任何秘境")
+
+    def realm_def(self, realm_id: str) -> dict:
+        return self.realms[realm_id]
+
+    def realm_name(self, realm_id: str) -> str:
+        return self._(self.realms[realm_id]["name"])
+
+    def realm_difficulty(self, realm_id: str, depth: int) -> int:
+        """秘境层难度 = 所属区域基础难度 + (层深-1)*2。"""
+        base = int(self.region_by_id(self.realms[realm_id]["region"])["base_difficulty"])
+        return base + (depth - 1) * 2
+
+    def build_realm_gate(self, realm_id: str, gamemap, x: int, y: int, sealed: bool = False):
+        """秘境入口实体（不挡路，走上去按 > 进入）。"""
+        from entity import Entity
+
+        realm = self.realms[realm_id]
+        return Entity(
+            gamemap=gamemap,
+            x=x,
+            y=y,
+            char="Ω",
+            color=(120, 110, 160) if sealed else (170, 130, 230),
+            name=self._(realm["name"]),
+            blocks_movement=False,
+            tags=["realm_gate", realm_id] + (["sealed"] if sealed else []),
+            lore=self._(realm["intro"]),
+            art="realm_gate_sealed" if sealed else "realm_gate",
+        )
 
     # ---- 校验 ----
 

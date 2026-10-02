@@ -384,5 +384,299 @@
       "thunder": 60,
       "fire": 60
     }
+  },
+  "boss_mingshe": {
+    "name": {
+      "zh_CN": "鸣蛇",
+      "en_US": "Singing Serpent"
+    },
+    "char": "s",
+    "color": [
+      150,
+      220,
+      190
+    ],
+    "tags": [
+      "shanhaijing",
+      "zhongshanjing",
+      "serpent",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "鲜山……鸣蛇，其状如蛇而四翼，其音如磬，见则其邑大旱。",
+      "en_US": "On Mt. Xian lives the Singing Serpent - a snake with four wings whose voice chimes like jade; wherever it appears, drought follows."
+    },
+    "components": {
+      "fighter": {
+        "hp": 26,
+        "power": 6,
+        "defense": 1,
+        "xp_reward": 300
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    }
+  },
+  "boss_tianhu": {
+    "name": {
+      "zh_CN": "九尾天狐",
+      "en_US": "Nine-Tail Prime"
+    },
+    "char": "H",
+    "color": [
+      255,
+      170,
+      200
+    ],
+    "tags": [
+      "shanhaijing",
+      "nanshanjing",
+      "beast",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "青丘之山，有兽焉，其状如狐而九尾，其音如婴儿，能食人；食者不蛊。",
+      "en_US": "On Mt. Qingqiu dwells a fox of nine tails that cries like an infant and devours people; those who eat it are immune to evil."
+    },
+    "components": {
+      "fighter": {
+        "hp": 55,
+        "power": 10,
+        "defense": 3,
+        "xp_reward": 800
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    },
+    "resistances": {
+      "fire": 40
+    },
+    "attack_tags": [
+      "fire"
+    ]
+  },
+  "boss_gudiaowang": {
+    "name": {
+      "zh_CN": "蛊雕王",
+      "en_US": "Gu Diao Alpha"
+    },
+    "char": "D",
+    "color": [
+      210,
+      170,
+      90
+    ],
+    "tags": [
+      "shanhaijing",
+      "nanshanjing",
+      "bird",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "鹿吴之山……有兽名曰蛊雕，其状如雕而有角，其音如婴儿之音，是食人。",
+      "en_US": "On Mt. Luwu lives the Gu Diao - an eagle with horns that cries like an infant and preys upon people."
+    },
+    "components": {
+      "fighter": {
+        "hp": 48,
+        "power": 9,
+        "defense": 3,
+        "xp_reward": 700
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    }
+  },
+  "boss_luwujun": {
+    "name": {
+      "zh_CN": "陆吾·神陆",
+      "en_US": "Lu Wu the Warden"
+    },
+    "char": "K",
+    "color": [
+      230,
+      210,
+      140
+    ],
+    "tags": [
+      "shanhaijing",
+      "xishanjing",
+      "beast",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "昆仑之丘，是实惟帝之下都，神陆吾司之。其神状虎身而九尾，人面而虎爪。",
+      "en_US": "Mt. Kunlun is the lower capital of Heaven, warded by the god Lu Wu - tiger-bodied, nine-tailed, with a human face and tiger claws."
+    },
+    "components": {
+      "fighter": {
+        "hp": 60,
+        "power": 10,
+        "defense": 4,
+        "xp_reward": 900
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    },
+    "resistances": {
+      "stun": 40
+    }
+  },
+  "boss_xiangliu_ying": {
+    "name": {
+      "zh_CN": "相柳之影",
+      "en_US": "Shade of Xiangliu"
+    },
+    "char": "Y",
+    "color": [
+      120,
+      200,
+      230
+    ],
+    "tags": [
+      "shanhaijing",
+      "xishanjing",
+      "serpent",
+      "boss",
+      "water"
+    ],
+    "lore": {
+      "zh_CN": "共工之臣曰相柳氏，九首，以食于九山。其所厌之泽，即为深渊。",
+      "en_US": "Xiangliu, minister of Gonggong, bears nine heads and devours nine mountains; every swamp he touches sinks into abyss."
+    },
+    "components": {
+      "fighter": {
+        "hp": 70,
+        "power": 12,
+        "defense": 4,
+        "xp_reward": 1100
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    },
+    "resistances": {
+      "poison": 50,
+      "stun": 30
+    },
+    "attack_tags": [
+      "poison"
+    ]
+  },
+  "boss_zhuduwang": {
+    "name": {
+      "zh_CN": "诸犊·凶王",
+      "en_US": "Zhu Du the Fierce"
+    },
+    "char": "W",
+    "color": [
+      200,
+      120,
+      90
+    ],
+    "tags": [
+      "shanhaijing",
+      "beishanjing",
+      "beast",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "北山……有兽焉，其状如豹而长尾，人首牛耳，一目，名曰诸犊，善吒。",
+      "en_US": "In the Northern Mountains lives Zhu Du - leopard-bodied with a long tail, a human head, ox ears and a single eye, ever roaring."
+    },
+    "components": {
+      "fighter": {
+        "hp": 62,
+        "power": 12,
+        "defense": 4,
+        "xp_reward": 1000
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    }
+  },
+  "boss_mafuling": {
+    "name": {
+      "zh_CN": "马腹·凶灵",
+      "en_US": "Ma Fu Wraith"
+    },
+    "char": "F",
+    "color": [
+      180,
+      90,
+      120
+    ],
+    "tags": [
+      "shanhaijing",
+      "dongshanjing",
+      "beast",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "曼渠之山……有兽焉，名曰马腹，其状人面虎身，其音如婴儿，是食人。",
+      "en_US": "On Mt. Manqu dwells Ma Fu - a human-faced, tiger-bodied beast that cries like an infant and devours people."
+    },
+    "components": {
+      "fighter": {
+        "hp": 72,
+        "power": 13,
+        "defense": 5,
+        "xp_reward": 1300
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    },
+    "resistances": {
+      "fire": 30
+    },
+    "attack_tags": [
+      "fire"
+    ]
+  },
+  "boss_zhulongzhen": {
+    "name": {
+      "zh_CN": "烛龙真身",
+      "en_US": "Zhulong Awakened"
+    },
+    "char": "R",
+    "color": [
+      255,
+      120,
+      80
+    ],
+    "tags": [
+      "shanhaijing",
+      "dahuangjing",
+      "dragon",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "钟山之神，名曰烛阴。视为昼，瞑为夜，吹为冬，呼为夏……是烛九阴，是谓烛龙。",
+      "en_US": "The god of Mt. Zhong is called Candle Dragon: its open eyes are day, its closed eyes night; its breath is winter and summer."
+    },
+    "components": {
+      "fighter": {
+        "hp": 100,
+        "power": 16,
+        "defense": 6,
+        "xp_reward": 2000
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    },
+    "resistances": {
+      "fire": 60,
+      "stun": 50
+    },
+    "attack_tags": [
+      "fire"
+    ]
   }
 }

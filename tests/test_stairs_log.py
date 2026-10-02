@@ -20,7 +20,11 @@ from settings import Settings  # noqa: E402
 
 def make_engine() -> Engine:
     engine = Engine(load_content(), Settings())
-    engine.gamemap = procgen.generate_dungeon(engine, 1, engine.rng)
+    # 模拟进入单狐冰窖秘境第 1 层（4 层深，层间移动语义）
+    engine.gamemap = procgen.generate_dungeon(
+        engine, 7, engine.rng, realm_id="danhu_bingjiao", realm_depth=1
+    )
+    engine.current_realm = "danhu_bingjiao"
     return engine
 
 
@@ -31,12 +35,12 @@ def test_descend_then_ascend_roundtrip():
 
     engine.player.x, engine.player.y = floor1.downstairs_xy
     TakeStairsAction(engine.player, "down").perform(engine)
-    assert engine.gamemap.floor_number == 2
+    assert engine.gamemap.realm_depth == 2
     assert id(engine.gamemap) != floor1_map
 
     engine.player.x, engine.player.y = engine.gamemap.upstairs_xy
     TakeStairsAction(engine.player, "up").perform(engine)
-    assert engine.gamemap.floor_number == 1
+    assert engine.gamemap.realm_depth == 1
     assert id(engine.gamemap) == floor1_map  # 楼层保留：同一张地图对象
     assert (engine.player.x, engine.player.y) == floor1.downstairs_xy  # 落回下行楼梯口
 
@@ -68,17 +72,20 @@ def test_revisit_descended_floor_keeps_map():
     floor2 = engine.gamemap
     engine.player.x, engine.player.y = floor2.downstairs_xy
     TakeStairsAction(engine.player, "down").perform(engine)  # 下到 3 层
-    assert engine.gamemap.floor_number == 3
+    assert engine.gamemap.realm_depth == 3
     engine.player.x, engine.player.y = engine.gamemap.upstairs_xy
     TakeStairsAction(engine.player, "up").perform(engine)  # 回 2 层（已存在）
     assert id(engine.gamemap) == id(floor2)
 
 
-def test_ascend_on_floor1_impossible_hint():
+def test_ascend_on_floor1_returns_to_world():
     engine = make_engine()
+    engine.world_return_xy = engine.world.spawn_xy
     engine.player.x, engine.player.y = engine.gamemap.upstairs_xy
-    TakeStairsAction(engine.player, "up").perform(engine)  # 第 1 层无上方：静默不动
-    assert engine.gamemap.floor_number == 1
+    TakeStairsAction(engine.player, "up").perform(engine)  # 第 1 层上行 = 回世界
+    assert engine.gamemap is engine.world
+    assert engine.current_realm is None
+    assert (engine.player.x, engine.player.y) == engine.world.spawn_xy
 
 
 def test_ascend_after_layout_change_keeps_history():
@@ -89,7 +96,7 @@ def test_ascend_after_layout_change_keeps_history():
     engine.apply_layout()  # 改显示设置：地图与楼层历史完整保留
     engine.player.x, engine.player.y = engine.gamemap.upstairs_xy
     TakeStairsAction(engine.player, "up").perform(engine)
-    assert engine.gamemap.floor_number == 2  # 上行仍可回到上一层
+    assert engine.gamemap.realm_depth == 2  # 上行仍可回到上一层
 
 
 def test_wrong_spot_ascend_raises():

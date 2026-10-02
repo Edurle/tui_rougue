@@ -263,6 +263,8 @@ class Fighter(BaseComponent):
             self.engine.player.level.add_xp(self.xp_reward)
         self.engine.effects.spawn_pickup(self.parent.x, self.parent.y)
         self.engine.roll_drop(self.parent.x, self.parent.y, source=self.parent)
+        if "boss" in getattr(self.parent, "tags", []):
+            self.engine.on_boss_slain(self.parent)
         self.parent.char = "%"
         self.parent.color = tuple(theme["corpse_color"])
         self.parent.name = strings["corpse_name"].format(name=self.parent.name)
