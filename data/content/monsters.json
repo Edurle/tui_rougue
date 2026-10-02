@@ -1,45 +1,153 @@
 {
   "_schema": {
-    "说明": "山海经异兽定义。components 里的键对应代码中的组件注册表（content_loader.py），新增行为=新组件类+注册+此处引用。tags 为预留扩展字段：五行/阴阳/出处典籍，首版不消费。",
+    "说明": "山海经异兽定义。components 里的键对应代码中的组件注册表（content_loader.py），新增行为=新组件类+注册+此处引用。tags 为预留扩展字段：五行/阴阳/出处卷目（卷目 tag 与 regions.json 对应，供投放匹配）。name/lore 支持两种写法：字符串（所有语言同值）或 {\"zh_CN\": …, \"en_US\": …}，缺失语言回退 zh_CN。",
     "字段": {
-      "name": "显示名",
+      "name": "显示名（可本地化）",
       "char": "地图字符",
       "color": "[R, G, B]",
-      "tags": "扩展标签（shanhaijing=山海经, 五行, 典籍篇目等）",
+      "tags": "扩展标签（shanhaijing=山海经, 卷目, 五行等）",
+      "lore": "典故出处（可本地化）",
       "components.fighter": "战斗组件：hp/power/defense/xp_reward",
       "components.ai": "AI 行为，type 对应 ai.py 注册表"
     }
   },
   "xingxing": {
-    "name": "狌狌",
+    "name": { "zh_CN": "狌狌", "en_US": "Xingxing" },
     "char": "x",
-    "color": [191, 122, 58],
+    "color": [236, 112, 72],
     "tags": ["shanhaijing", "nanshanjing", "beast", "wood"],
-    "lore": "《南山经》：招摇之山，有兽焉，其状如禺而白耳，伏行人走，其名曰狌狌，食之善走。",
+    "lore": {
+      "zh_CN": "《南山经》：招摇之山，有兽焉，其状如禺而白耳，伏行人走，其名曰狌狌，食之善走。",
+      "en_US": "Southern Mountains: On Zhaoyao Mountain lives a beast shaped like an ape with white ears that walks upright. Eating it makes one a swift runner."
+    },
     "components": {
       "fighter": { "hp": 8, "power": 3, "defense": 0, "xp_reward": 30 },
       "ai": { "type": "hostile" }
     }
   },
   "gudiao": {
-    "name": "蛊雕",
+    "name": { "zh_CN": "蛊雕", "en_US": "Gudiao" },
     "char": "d",
-    "color": [214, 76, 52],
+    "color": [250, 182, 62],
     "tags": ["shanhaijing", "nanshanjing", "bird", "metal"],
-    "lore": "《南山经》：鹿吴之山，泽更之水出焉。有兽焉，名曰蛊雕，其状如雕而有角，其音如婴儿之音，是食人。",
+    "lore": {
+      "zh_CN": "《南山经》：鹿吴之山，泽更之水出焉。有兽焉，名曰蛊雕，其状如雕而有角，其音如婴儿之音，是食人。",
+      "en_US": "Southern Mountains: The Gudiao looks like an eagle with horns and cries like a human infant. It preys on people."
+    },
     "components": {
       "fighter": { "hp": 14, "power": 5, "defense": 1, "xp_reward": 90 },
       "ai": { "type": "hostile" }
     }
   },
   "jiuweihu": {
-    "name": "九尾狐",
+    "name": { "zh_CN": "九尾狐", "en_US": "Nine-Tailed Fox" },
     "char": "h",
-    "color": [235, 160, 207],
-    "tags": ["shanhaijing", "nanshanjing", "beast", "fire"],
-    "lore": "《南山经》：青丘之山，有兽焉，其状如狐而九尾，其音如婴儿，能食人；食者不蛊。",
+    "color": [255, 122, 172],
+    "tags": ["shanhaijing", "nanshanjing", "dahuangjing", "beast", "fire"],
+    "lore": {
+      "zh_CN": "《南山经》：青丘之山，有兽焉，其状如狐而九尾，其音如婴儿，能食人；食者不蛊。",
+      "en_US": "Southern Mountains: On Qingqiu Mountain lives a fox with nine tails that cries like an infant. Its flesh wards off evil poison."
+    },
     "components": {
       "fighter": { "hp": 22, "power": 7, "defense": 2, "xp_reward": 220 },
+      "ai": { "type": "hostile" }
+    }
+  },
+  "luwu": {
+    "name": { "zh_CN": "陆吾", "en_US": "Luwu" },
+    "char": "L",
+    "color": [232, 202, 148],
+    "tags": ["shanhaijing", "xishanjing", "beast", "earth"],
+    "lore": {
+      "zh_CN": "《西山经》：昆仑之丘，是实惟帝之下都，神陆吾司之。其神状虎身而九尾，人面而虎爪。",
+      "en_US": "Western Mountains: On the Kunlun mound, the earthly capital of the Divine, dwells the god Luwu — tiger-bodied with nine tails, a human face and tiger claws."
+    },
+    "components": {
+      "fighter": { "hp": 18, "power": 6, "defense": 2, "xp_reward": 160 },
+      "ai": { "type": "hostile" }
+    }
+  },
+  "bifang": {
+    "name": { "zh_CN": "毕方", "en_US": "Bifang" },
+    "char": "B",
+    "color": [240, 116, 56],
+    "tags": ["shanhaijing", "xishanjing", "bird", "fire"],
+    "lore": {
+      "zh_CN": "《西山经》：章莪之山，有鸟焉，其状如鹤而一足，赤文青质而白喙，名曰毕方，见则其邑有讹火。",
+      "en_US": "Western Mountains: The Bifang is a one-legged crane with crimson markings. Wherever it appears, strange fires break out in the town."
+    },
+    "components": {
+      "fighter": { "hp": 14, "power": 7, "defense": 1, "xp_reward": 150 },
+      "ai": { "type": "hostile" }
+    }
+  },
+  "zhudu": {
+    "name": { "zh_CN": "诸犊", "en_US": "Zhudu" },
+    "char": "Z",
+    "color": [172, 138, 94],
+    "tags": ["shanhaijing", "beishanjing", "beast", "earth"],
+    "lore": {
+      "zh_CN": "《北山经》：单张之山，有兽焉，其状如豹而长尾，人首而牛耳，一目，名曰诸犊，善吒，行则衔其尾，居则蟠其尾。",
+      "en_US": "Northern Mountains: The Zhudu has a leopard's body and long tail, a human head with ox ears and a single eye. It howls fiercely, carrying its tail in its mouth as it walks."
+    },
+    "components": {
+      "fighter": { "hp": 20, "power": 7, "defense": 2, "xp_reward": 200 },
+      "ai": { "type": "hostile" }
+    }
+  },
+  "qiuyu": {
+    "name": { "zh_CN": "犰狳", "en_US": "Qiuyu" },
+    "char": "Q",
+    "color": [196, 172, 116],
+    "tags": ["shanhaijing", "dongshanjing", "beast", "earth"],
+    "lore": {
+      "zh_CN": "《东山经》：余峨之山，有兽焉，其状如菟而鸟喙，鸱目蛇尾，见则螽蝗为败。",
+      "en_US": "Eastern Mountains: The Qiuyu looks like a hare with a bird's beak, an owl's eyes and a snake's tail. Where it appears, locusts ravage the harvest."
+    },
+    "components": {
+      "fighter": { "hp": 22, "power": 8, "defense": 2, "xp_reward": 260 },
+      "ai": { "type": "hostile" }
+    }
+  },
+  "mafu": {
+    "name": { "zh_CN": "马腹", "en_US": "Mafu" },
+    "char": "M",
+    "color": [204, 92, 60],
+    "tags": ["shanhaijing", "zhongshanjing", "beast", "fire"],
+    "lore": {
+      "zh_CN": "《中山经》：蔓渠之山，有兽焉，其名曰马腹，其状人面虎身，其音如婴儿，是食人。",
+      "en_US": "Central Mountains: The Mafu has a human face and a tiger's body, and cries like an infant. It preys on people."
+    },
+    "components": {
+      "fighter": { "hp": 26, "power": 9, "defense": 3, "xp_reward": 340 },
+      "ai": { "type": "hostile" }
+    }
+  },
+  "xiangliu": {
+    "name": { "zh_CN": "相柳", "en_US": "Xiangliu" },
+    "char": "X",
+    "color": [116, 168, 146],
+    "tags": ["shanhaijing", "dahuangjing", "serpent", "water"],
+    "lore": {
+      "zh_CN": "《大荒北经》：共工之臣名曰相繇，九首蛇身，自环，食于九土，所扢之泽即为溪。",
+      "en_US": "Great Wilderness North: Xiangliu, minister of Gonggong, has nine snake heads and coils upon itself, devouring nine lands. Wherever it passes, land turns to mire."
+    },
+    "components": {
+      "fighter": { "hp": 34, "power": 10, "defense": 3, "xp_reward": 520 },
+      "ai": { "type": "hostile" }
+    }
+  },
+  "zhulong": {
+    "name": { "zh_CN": "烛龙", "en_US": "Zhulong" },
+    "char": "T",
+    "color": [255, 140, 60],
+    "tags": ["shanhaijing", "dahuangjing", "dragon", "fire"],
+    "lore": {
+      "zh_CN": "《大荒北经》：钟山之神，名曰烛阴，视为昼，瞑为夜，吹为冬，呼为夏，不食不寝不息。",
+      "en_US": "Great Wilderness North: The spirit of Mount Zhong — when its eyes open it is day, when they close it is night; its breath is winter and summer."
+    },
+    "components": {
+      "fighter": { "hp": 45, "power": 12, "defense": 4, "xp_reward": 800 },
       "ai": { "type": "hostile" }
     }
   }

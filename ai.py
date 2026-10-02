@@ -33,10 +33,17 @@ class BaseAI(BaseComponent):
 class HostileEnemy(BaseAI):
     """视野内 A* 追击，相邻则攻击；看不见则原地待命。"""
 
+    def __init__(self) -> None:
+        self.saw_player = False
+
     def perform(self) -> None:
         engine: Engine = self.engine
         target: Actor = engine.player
-        if not self.can_see_player:
+        sees = self.can_see_player
+        if sees and not self.saw_player:
+            engine.effects.spawn_notice(self.parent.x, self.parent.y)
+        self.saw_player = sees
+        if not sees:
             return  # 未见玩家，不动（将来可在此挂游荡/巡逻行为）
 
         # 代价数组：可行走为 1，被其他战斗单位占据的格子加高成本避免堵门

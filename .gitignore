@@ -8,3 +8,5 @@ build/
 tools/*.png
 tools/*.log
 tools/*.pid
+settings.json
+.zcode/

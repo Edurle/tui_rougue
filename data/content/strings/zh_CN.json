@@ -1,8 +1,9 @@
 {
   "_schema": {
-    "说明": "全部游戏内文案模板集中于此。{xxx} 为格式化占位符。整体润色、国风化改写只动此文件，不碰代码。"
+    "说明": "简体中文文案模板。{xxx} 为格式化占位符。整体润色只动此文件。新增语言 = 新建同结构文件。"
   },
-  "welcome": "你踏入了《山海行》的地界。状如禺而白耳的狌狌在暗处窥伺……",
+  "window_title": "山海行 — 字符 Roguelike",
+  "welcome": "你踏上《山海行》的山川之途。林深处，狌狌正窥伺着你……",
   "attack_hits": "{attacker} 击中了 {target}，造成 {damage} 点伤害。",
   "attack_blocked": "{attacker} 的攻击被 {target} 格挡，未造成伤害。",
   "player_hurt_warn": "警告：你的气血已不足三成！",
@@ -20,12 +21,25 @@
   "lightning_no_target": "四下无敌，天雷无处可落。",
   "inventory_empty": "行囊空空如也。",
   "inventory_title": "行囊（按字母使用，Esc 收起）",
-  "descend": "你循石阶下行，抵达第 {floor} 层。",
-  "not_on_stairs": "这里没有向下的石阶。",
+  "descend": "你循径深入，行至{region}·{mountain}。",
+  "not_on_stairs": "这里没有向前去的山径。",
   "corpse_name": "{name}尸骸",
   "hud_hp": "气血 {hp}/{max_hp}",
   "hud_hp_dead": "气血耗尽",
   "hud_level": "修为 第{level}重（{xp}/{next}）",
-  "hud_floor": "地下第{floor}层",
-  "game_over_tag": "已陨落"
+  "hud_floor": "{region}·{mountain}",
+  "game_over_tag": "已陨落",
+  "hud_inventory": "行囊 {count}/{cap}",
+  "size_large": "大",
+  "size_medium": "中",
+  "size_small": "小",
+  "ui_map_size": "画面已切换为「{size}」",
+  "ui_sidebar_size": "信息板已切换为「{size}」",
+  "ascend": "你循径回返，回到{region}·{mountain}。",
+  "not_on_up_stairs": "这里没有回返的山径。",
+  "no_floor_above": "来路已湮没，无处回返。",
+  "hint_descend": "深入下一座山",
+  "hint_ascend": "循径回返",
+  "hint_pickup": "拾取{item}",
+  "hint_heal": "行囊·疗伤"
 }

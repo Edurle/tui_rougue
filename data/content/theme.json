@@ -1,0 +1,180 @@
+{
+  "_schema": {
+    "说明": "国潮画面主题：墨底 / 鎏金 / 朱砂 / 青瓷 / 紫电 五色体系。全部颜色与光照/特效参数集中于此，代码零硬编码颜色。换肤=复制一份改色值。",
+    "颜色格式": "[R, G, B]，0-255"
+  },
+  "background": [
+    12,
+    12,
+    20
+  ],
+  "tiles": {
+    "floor_char": "·",
+    "wall_char_solo": "#",
+    "floor_light": [
+      92,
+      104,
+      128
+    ],
+    "floor_dark": [
+      42,
+      47,
+      62
+    ],
+    "wall_light": [
+      214,
+      176,
+      96
+    ],
+    "wall_dark": [
+      90,
+      72,
+      46
+    ]
+  },
+  "lighting": {
+    "inner_radius": 3,
+    "edge_falloff": 0.5
+  },
+  "effects": {
+    "light_pulse_amplitude": 0.05,
+    "light_pulse_speed": 2.2,
+    "hit_flash_strength": 0.35,
+    "hit_flash_decay": 3.5,
+    "shake_strength": 3,
+    "shake_decay": 9.0,
+    "float_speed": 3.5,
+    "float_lifetime": 0.9,
+    "notice_lifetime": 0.8,
+    "spark_lifetime": 0.7,
+    "spark_speed": 6.0
+  },
+  "stairs": {
+    "light": [
+      255,
+      214,
+      120
+    ],
+    "dark": [
+      112,
+      92,
+      50
+    ],
+    "up_light": [
+      122,
+      220,
+      208
+    ],
+    "up_dark": [
+      52,
+      96,
+      92
+    ]
+  },
+  "corpse_color": [
+    128,
+    50,
+    44
+  ],
+  "player_corpse_color": [
+    190,
+    52,
+    52
+  ],
+  "hud": {
+    "hp": [
+      232,
+      92,
+      92
+    ],
+    "xp": [
+      240,
+      202,
+      112
+    ],
+    "floor": [
+      122,
+      202,
+      190
+    ],
+    "dead_tag": [
+      244,
+      96,
+      96
+    ]
+  },
+  "ui": {
+    "frame": [
+      192,
+      162,
+      102
+    ]
+  },
+  "messages": {
+    "combat": [
+      236,
+      236,
+      240
+    ],
+    "combat_blocked": [
+      150,
+      152,
+      164
+    ],
+    "warn": [
+      255,
+      122,
+      92
+    ],
+    "death": [
+      240,
+      92,
+      92
+    ],
+    "kill": [
+      214,
+      182,
+      122
+    ],
+    "xp": [
+      238,
+      206,
+      118
+    ],
+    "levelup": [
+      255,
+      222,
+      122
+    ],
+    "heal": [
+      112,
+      222,
+      182
+    ],
+    "lightning": [
+      186,
+      152,
+      255
+    ],
+    "loot": [
+      232,
+      204,
+      132
+    ],
+    "descend": [
+      132,
+      192,
+      232
+    ],
+    "system": [
+      216,
+      206,
+      168
+    ],
+    "info": [
+      164,
+      166,
+      176
+    ]
+  }
+}

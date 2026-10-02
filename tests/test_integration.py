@@ -15,13 +15,15 @@ import tcod  # noqa: E402
 from tcod.event import KeySym  # noqa: E402
 
 import input_handlers as ih  # noqa: E402
-from content_loader import load_content  # noqa: E402
+from content_loader import load_content
+from settings import Settings  # noqa: E402
 from engine import Engine  # noqa: E402
 
 
-def dispatch_key(handler, sym):
+def dispatch_key(handler, sym, shift=False):
     """构造合成 KeyDown 事件并派发，返回动作。"""
-    event = tcod.event.KeyDown(sym=sym, scancode=0, mod=tcod.event.Modifier.NONE, repeat=False)
+    mod = tcod.event.Modifier.SHIFT if shift else tcod.event.Modifier.NONE
+    event = tcod.event.KeyDown(sym=sym, scancode=0, mod=mod, repeat=False)
     return handler.dispatch(event)
 
 
@@ -43,7 +45,7 @@ def apply(handler, action, engine):
 
 def test_full_key_pipeline_combat_pickup_inventory_stairs():
     content = load_content()
-    engine = Engine(content)
+    engine = Engine(content, Settings())
     handler = ih.MainGameEventHandler(engine)
     player = engine.player
 
@@ -91,9 +93,86 @@ def test_full_key_pipeline_combat_pickup_inventory_stairs():
     assert player.gamemap is engine.gamemap
 
 
+def test_shift_comma_is_ascend_not_pickup():
+    """部分布局/输入法把 Shift+逗号 上报为 逗号+Shift 修饰：应为上楼而非拾取。"""
+    from actions import PickupAction, TakeStairsAction
+
+    content = load_content()
+    engine = Engine(content, Settings())
+    handler = ih.MainGameEventHandler(engine)
+
+    action = dispatch_key(handler, KeySym.COMMA, shift=True)
+    assert isinstance(action, TakeStairsAction) and action.direction == "up"
+
+    action = dispatch_key(handler, KeySym.COMMA)
+    assert isinstance(action, PickupAction)
+
+    action = dispatch_key(handler, KeySym.PERIOD, shift=True)
+    assert isinstance(action, TakeStairsAction) and action.direction == "down"
+
+    action = dispatch_key(handler, KeySym.PERIOD)
+    assert type(action).__name__ == "WaitAction"
+
+    action = dispatch_key(handler, KeySym.LESS)
+    assert isinstance(action, TakeStairsAction) and action.direction == "up"
+
+    action = dispatch_key(handler, KeySym.GREATER)
+    assert isinstance(action, TakeStairsAction) and action.direction == "down"
+
+
+def test_caps_lock_and_uppercase_tolerance():
+    """Caps Lock 场景：字母键码保持小写值（tcod 归一未知值为 UNKNOWN），
+    CAPS 修饰不影响绑定；normalize_sym 对大写值做防御性归一。"""
+    from actions import BumpAction, PickupAction
+
+    content = load_content()
+    engine = Engine(content, Settings())
+    handler = ih.MainGameEventHandler(engine)
+
+    caps_event = tcod.event.KeyDown(
+        sym=KeySym.H, scancode=0, mod=tcod.event.Modifier.CAPS, repeat=False
+    )
+    action = handler.dispatch(caps_event)
+    assert isinstance(action, BumpAction) and (action.dx, action.dy) == (-1, 0)
+
+    assert ih.normalize_sym(KeySym.G) == int(KeySym.G)
+    assert ih.normalize_sym(72) == 104 and ih.normalize_sym(65) == 97  # 防御性大写归一
+    assert ih.normalize_sym(KeySym.PERIOD) == int(KeySym.PERIOD)  # 非字母不变
+
+    action = dispatch_key(handler, KeySym.G)
+    assert isinstance(action, PickupAction)
+
+
+def test_brackets_scroll_log_and_space_waits():
+    from actions import WaitAction
+
+    content = load_content()
+    engine = Engine(content, Settings())
+    handler = ih.MainGameEventHandler(engine)
+
+    for i in range(30):
+        engine.message_log.add_message(f"消息{i}", "info")
+    engine.message_log.scroll(100)
+    top_before = engine.message_log.visible_window().start
+
+    action = dispatch_key(handler, KeySym.RIGHTBRACKET)  # ] 回到底部方向
+    assert action is None
+    assert engine.message_log.visible_window().start > top_before
+
+    engine.message_log.scroll(100)
+    action = dispatch_key(handler, KeySym.LEFTBRACKET)  # [ 向上翻
+    assert action is None
+
+    action = dispatch_key(handler, KeySym.SPACE)
+    assert type(action).__name__ == "WaitAction"
+
+    action = dispatch_key(handler, KeySym.RETURN)
+    assert action is None  # 回车在主模式不绑定
+
+
 def test_player_death_and_restart():
     content = load_content()
-    engine = Engine(content)
+    engine = Engine(content, Settings())
     player = engine.player
     handler = ih.MainGameEventHandler(engine)
 
@@ -114,6 +193,6 @@ def test_player_death_and_restart():
     handler = ih.GameOverEventHandler(engine)
     action = dispatch_key(handler, KeySym.RETURN)
     assert isinstance(action, ih.RestartAction)
-    engine2 = Engine(content)
+    engine2 = Engine(content, Settings())
     assert engine2.gamemap.floor_number == 1
     assert engine2.player.is_alive

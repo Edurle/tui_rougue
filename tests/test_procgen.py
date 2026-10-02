@@ -14,7 +14,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import procgen  # noqa: E402
 from content_loader import Content, ContentError, load_content  # noqa: E402
-from engine import Engine  # noqa: E402
+from engine import Engine
+from settings import Settings  # noqa: E402
 
 
 def make_content() -> Content:
@@ -22,7 +23,7 @@ def make_content() -> Content:
 
 
 def make_engine(content: Content) -> Engine:
-    return Engine(content)
+    return Engine(content, Settings())
 
 
 # ---- 内容数据 ----
@@ -81,7 +82,7 @@ def test_generated_maps_are_connected():
     for seed in range(30):
         engine = make_engine(content)
         engine.rng = random.Random(seed)
-        gamemap = procgen.generate_dungeon(engine, floor_number=seed + 1, rng=engine.rng)
+        gamemap = procgen.generate_dungeon(engine, floor_number=seed + 1, rng=engine.rng, width=26, height=22)
         start = (engine.player.x, engine.player.y)
         reachable = _bfs_reachable(gamemap, start)
         assert gamemap.downstairs_xy in reachable, f"seed={seed} 楼梯不可达"
@@ -99,7 +100,7 @@ def test_first_room_is_safe():
     content = make_content()
     engine = make_engine(content)
     rng = random.Random(3)
-    gamemap = gm_module.GameMap(engine, procgen.MAP_WIDTH, procgen.MAP_HEIGHT)
+    gamemap = gm_module.GameMap(engine, 26, 22)
     room = Rect(5, 5, 8, 8)
     for x, y in room.inner():
         gamemap.tiles[x, y] = __import__("tile_types").FLOOR

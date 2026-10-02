@@ -1,28 +1,56 @@
 {
   "_schema": {
-    "说明": "物品定义。consumable.type 对应 consumable.py 的效果注册表；新效果=新类+注册+此处引用。tags 为五行/出处扩展预留。",
-    "字段": {
-      "name": "显示名",
-      "char": "地图字符",
-      "color": "[R, G, B]",
-      "tags": "扩展标签",
-      "consumable": "可消耗效果：type 对应注册表，其余为效果参数"
-    }
+    "说明": "物品定义。consumable.type 对应 consumable.py 的效果注册表；新效果=新类+注册+此处引用。tags 为五行/出处扩展预留。name/lore 可本地化（同 monsters.json 规则）。"
   },
   "lingzhi": {
-    "name": "灵芝",
+    "name": {
+      "zh_CN": "灵芝",
+      "en_US": "Lingzhi"
+    },
     "char": "!",
-    "color": [206, 68, 68],
-    "tags": ["herb", "wood"],
-    "lore": "山川精气所结，服之养气疗伤。",
-    "consumable": { "type": "heal", "amount": 12 }
+    "art": "lingzhi",
+    "color": [
+      232,
+      72,
+      74
+    ],
+    "tags": [
+      "herb",
+      "wood"
+    ],
+    "lore": {
+      "zh_CN": "山川精气所结，服之养气疗伤。",
+      "en_US": "A growth of mountain essence; eating it mends wounds."
+    },
+    "consumable": {
+      "type": "heal",
+      "amount": 12
+    }
   },
   "wulei_fu": {
-    "name": "五雷符",
+    "name": {
+      "zh_CN": "五雷符",
+      "en_US": "Thunder Talisman"
+    },
     "char": "?",
-    "color": [240, 214, 92],
-    "tags": ["talisman", "metal"],
-    "lore": "雷部符箓，祭出时引天雷落在近前妖邪身上。",
-    "consumable": { "type": "lightning", "damage": 14, "max_range": 8 }
+    "art": "thunder_talisman",
+    "color": [
+      190,
+      152,
+      255
+    ],
+    "tags": [
+      "talisman",
+      "metal"
+    ],
+    "lore": {
+      "zh_CN": "雷部符箓，祭出时引天雷落在近前妖邪身上。",
+      "en_US": "A charm of the Thunder Ministry; summons a bolt onto the nearest fiend."
+    },
+    "consumable": {
+      "type": "lightning",
+      "damage": 14,
+      "max_range": 8
+    }
   }
 }

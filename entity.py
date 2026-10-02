@@ -34,6 +34,7 @@ class Entity:
         blocks_movement: bool = False,
         tags: Optional[List[str]] = None,
         lore: str = "",
+        art: Optional[str] = None,
     ) -> None:
         self.x = x
         self.y = y
@@ -43,6 +44,7 @@ class Entity:
         self.blocks_movement = blocks_movement
         self.tags = tags or []
         self.lore = lore
+        self.art = art
         self.gamemap = gamemap
         if gamemap:
             gamemap.entities.add(self)

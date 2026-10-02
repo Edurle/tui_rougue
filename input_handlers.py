@@ -51,6 +51,7 @@ MOVE_KEYS = {
 
 WAIT_KEYS = {
     KeySym.PERIOD,
+    KeySym.SPACE,
     KeySym.KP_5,
 }
 
@@ -62,6 +63,18 @@ CONFIRM_KEYS = {
 INVENTORY_TOGGLE_KEY = KeySym.I
 PICKUP_KEYS = {KeySym.G, KeySym.COMMA}
 DESCEND_KEY = KeySym.GREATER  # Shift + 句号
+ASCEND_KEY = KeySym.LESS  # Shift + 逗号
+
+SCROLL_UP_KEYS = {KeySym.LEFTBRACKET}
+SCROLL_DOWN_KEYS = {KeySym.RIGHTBRACKET}
+
+
+def normalize_sym(sym) -> int:
+    """字母键码统一为小写：Caps Lock / 部分布局会上报大写键码（65-90）。"""
+    value = int(sym)
+    if 65 <= value <= 90:
+        return value + 32
+    return value
 
 INVENTORY_LETTER_KEYS = (
     KeySym.A,
@@ -93,6 +106,13 @@ class RestartAction(SwitchHandlerAction):
     pass
 
 
+class ChangeSizeAction:
+    """显示设置切换标记（kind: map / sidebar），不消耗回合。由主循环重建窗口。"""
+
+    def __init__(self, kind: str) -> None:
+        self.kind = kind
+
+
 class EventHandler(tcod.event.EventDispatch):
     """基类：持有引擎，渲染主画面；子类可叠加覆盖层与各自按键表。"""
 
@@ -111,30 +131,57 @@ class EventHandler(tcod.event.EventDispatch):
         """窗口尺寸变化时保持安静（tcod 会自动缩放点阵画面）。"""
 
 
-class MainGameEventHandler(EventHandler):
+class LogScrollMixin:
+    """主模式可用的日志回看：鼠标滚轮滚动事件日志（视图操作，不消耗回合）。"""
+
+    def ev_mousewheel(self, event: tcod.event.MouseWheel):
+        if event.y:
+            self.engine.message_log.scroll(int(event.y))
+        return None
+
+
+class MainGameEventHandler(LogScrollMixin, EventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown):
         engine = self.engine
         player = engine.player
 
-        key = event.sym
+        key = normalize_sym(event.sym)
+        shift_held = bool(event.mod & tcod.event.Modifier.SHIFT)
+
         if key in MOVE_KEYS and player.is_alive:
             dx, dy = MOVE_KEYS[key]
             return actions.BumpAction(player, dx, dy)
+        # 部分布局/输入法下 Shift+句号/逗号 上报为 基础键+Shift 修饰而非 >/< 键位，
+        # 因此带 Shift 的句号/逗号一律解释为下楼/上楼，且先于等待/拾取判定。
+        if player.is_alive and shift_held and (key == KeySym.PERIOD or key == DESCEND_KEY):
+            return actions.TakeStairsAction(player, "down")
+        if player.is_alive and shift_held and (key == KeySym.COMMA or key == ASCEND_KEY):
+            return actions.TakeStairsAction(player, "up")
         if key in WAIT_KEYS and player.is_alive:
             return actions.WaitAction()
         if key in PICKUP_KEYS and player.is_alive:
             return actions.PickupAction(player)
         if key == DESCEND_KEY and player.is_alive:
-            return actions.TakeStairsAction(player)
+            return actions.TakeStairsAction(player, "down")
+        if key == ASCEND_KEY and player.is_alive:
+            return actions.TakeStairsAction(player, "up")
+        if key in SCROLL_UP_KEYS and player.is_alive:
+            engine.message_log.scroll(3)
+            return None
+        if key in SCROLL_DOWN_KEYS and player.is_alive:
+            engine.message_log.scroll(-3)
+            return None
         if key == INVENTORY_TOGGLE_KEY and player.is_alive:
             if player.inventory.items:
                 return OpenInventoryAction()
-            engine.message_log.add_message(
-                engine.content.strings["inventory_empty"], (160, 160, 160)
-            )
+            engine.message_log.add_message(engine.content.strings["inventory_empty"], "info")
             return None
         if key == KeySym.ESCAPE:
             return actions.EscapeAction()
+        if key == KeySym.F1:
+            return ChangeSizeAction("map")
+        if key == KeySym.F2:
+            return ChangeSizeAction("sidebar")
         return None
 
 
@@ -147,7 +194,7 @@ class InventoryEventHandler(EventHandler):
 
     def ev_keydown(self, event: tcod.event.KeyDown):
         engine = self.engine
-        key = event.sym
+        key = normalize_sym(event.sym)
         if key == KeySym.ESCAPE or key == INVENTORY_TOGGLE_KEY:
             return CloseMenuAction()
         if key in INVENTORY_LETTER_KEYS:

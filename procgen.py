@@ -14,11 +14,9 @@ from game_map import GameMap
 if TYPE_CHECKING:
     from engine import Engine
 
-MAX_ROOMS = 30
+MAX_ROOMS = 10
 ROOM_MIN_SIZE = 6
-ROOM_MAX_SIZE = 10
-MAP_WIDTH = 80
-MAP_HEIGHT = 42  # 下方 3 行留给消息日志与 HUD
+ROOM_MAX_SIZE = 8
 
 
 class Rect:
@@ -76,9 +74,9 @@ def _walk_line(x1: int, y1: int, x2: int, y2: int) -> Iterator[Tuple[int, int]]:
         yield x, y
 
 
-def generate_dungeon(engine: "Engine", floor_number: int, rng: random.Random) -> GameMap:
+def generate_dungeon(engine: "Engine", floor_number: int, rng: random.Random, width: int, height: int) -> GameMap:
     content = engine.content
-    gamemap = GameMap(engine, MAP_WIDTH, MAP_HEIGHT, floor_number=floor_number)
+    gamemap = GameMap(engine, width, height, floor_number=floor_number)
 
     rooms: List[Rect] = []
     player_start = None
@@ -106,10 +104,13 @@ def generate_dungeon(engine: "Engine", floor_number: int, rng: random.Random) ->
         rooms.append(new_room)
 
     player_x, player_y = player_start  # type: ignore[misc]
-    engine.player.place(gamemap, player_x, player_y)
+    engine.player.place(gamemap, player_start[0], player_start[1])
+    gamemap.upstairs_xy = player_start  # 上行楼梯在抵达点（出生房间中心）
 
     stairs_x, stairs_y = rooms[-1].center
     gamemap.downstairs_xy = (stairs_x, stairs_y)
+
+    gamemap.rebuild_wall_glyphs()
 
     return gamemap
 

@@ -37,7 +37,7 @@ class Level(BaseComponent):
             return
         self.current_xp += xp
         strings = self.engine.content.strings
-        self.engine.message_log.add_message(strings["gain_xp"].format(xp=xp), (200, 200, 120))
+        self.engine.message_log.add_message(strings["gain_xp"].format(xp=xp), "xp")
         if self.requires_level_up:
             self.current_level += 1
             fighter = self.parent.fighter
@@ -47,5 +47,6 @@ class Level(BaseComponent):
             fighter.power += self.bonuses.get("power", 0)
             fighter.defense += self.bonuses.get("defense", 0)
             self.engine.message_log.add_message(
-                strings["level_up"].format(level=self.current_level), (240, 220, 120)
+                strings["level_up"].format(level=self.current_level), "levelup"
             )
+            self.engine.effects.spawn_level_up(self.parent.x, self.parent.y)

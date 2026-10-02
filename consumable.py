@@ -39,9 +39,8 @@ class HealConsumable(Consumable):
         if player.fighter.hp >= player.fighter.max_hp:
             raise exceptions.Impossible(strings["heal_full"])
         healed = player.fighter.heal(self.amount)
-        self.engine.message_log.add_message(
-            strings["heal_used"].format(amount=healed), (150, 230, 150)
-        )
+        self.engine.message_log.add_message(strings["heal_used"].format(amount=healed), "heal")
+        self.engine.effects.spawn_heal(player.x, player.y, healed)
         self.consume()
 
 
@@ -67,9 +66,10 @@ class LightningConsumable(Consumable):
         if target is None:
             raise exceptions.Impossible(strings["lightning_no_target"])
         engine.message_log.add_message(
-            strings["lightning_used"].format(target=target.name, damage=self.damage),
-            (250, 220, 100),
+            strings["lightning_used"].format(target=target.name, damage=self.damage), "lightning"
         )
+        bolt_color = tuple(engine.content.theme["messages"]["lightning"])
+        engine.effects.spawn_lightning(target.x, target.y, self.damage, bolt_color)
         target.fighter.hp -= self.damage
         self.consume()
 

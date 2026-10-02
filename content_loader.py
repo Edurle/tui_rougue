@@ -22,8 +22,12 @@ from fighter import Fighter
 from inventory import Inventory
 from level import Level
 from paths import resource_path
+from tileset_art import ART_REGISTRY
 
 CONTENT_DIR = "data/content"
+
+SUPPORTED_LANGS = ("zh_CN", "en_US")
+DEFAULT_LANG = "zh_CN"
 
 
 class ContentError(Exception):
@@ -50,20 +54,51 @@ def _rgb(value: Any, owner: str) -> tuple:
     return tuple(int(c) for c in value)
 
 
+class TextResolver:
+    """name/lore 等文本字段解析：字符串=全语言同值；dict=按语言取，缺语言回退 zh_CN。"""
+
+    def __init__(self, lang: str) -> None:
+        self.lang = lang
+
+    def __call__(self, value: Any) -> str:
+        if not isinstance(value, dict):
+            return str(value)
+        if self.lang in value:
+            return str(value[self.lang])
+        if DEFAULT_LANG in value:
+            return str(value[DEFAULT_LANG])
+        return str(next(iter(value.values())))
+
+
 class Content:
     """已加载的全部内容数据 + 实体工厂。整个进程加载一次。"""
 
-    def __init__(self, directory: Path) -> None:
+    def __init__(self, directory: Path, lang: str = DEFAULT_LANG) -> None:
+        if lang not in SUPPORTED_LANGS:
+            raise ContentError(f"不支持的语言 '{lang}'，可用：{SUPPORTED_LANGS}")
+        self.lang = lang
+        self._ = TextResolver(lang)
         self.directory = directory
 
         monsters_raw = _load_json(directory / "monsters.json")
         items_raw = _load_json(directory / "items.json")
         spawn_raw = _load_json(directory / "spawn_tables.json")
-        self.strings: Dict[str, str] = {
-            k: v for k, v in _load_json(directory / "strings.json").items() if not k.startswith("_")
-        }
+
+        def load_strings(lang_code: str) -> Dict[str, str]:
+            return {
+                k: v
+                for k, v in _load_json(directory / "strings" / f"{lang_code}.json").items()
+                if not k.startswith("_")
+            }
+
+        self.strings: Dict[str, str] = load_strings(lang)
+        base = load_strings(DEFAULT_LANG)
+        for key, value in base.items():
+            self.strings.setdefault(key, value)
 
         self.player_def: dict = _load_json(directory / "player.json")
+        self.theme: dict = _load_json(directory / "theme.json")
+        self.regions: List[dict] = _load_json(directory / "regions.json")["regions"]
         self.monsters: Dict[str, dict] = {
             k: v for k, v in monsters_raw.items() if not k.startswith("_")
         }
@@ -73,6 +108,39 @@ class Content:
         self.per_room: dict = spawn_raw["per_room"]
 
         self._validate()
+        self._validate_theme()
+        self._validate_regions()
+
+    def _validate_regions(self) -> None:
+        expected_floor = 1
+        for region in sorted(self.regions, key=lambda r: r["min_floor"]):
+            if region["min_floor"] != expected_floor:
+                raise ContentError(f"regions.json 楼层不连续：期望第 {expected_floor} 层开始，实际 {region['min_floor']}")
+            if not region["mountains"]:
+                raise ContentError(f"区域 {region['id']} 山名列表为空")
+            if region["max_floor"] is not None and region["max_floor"] < region["min_floor"]:
+                raise ContentError(f"区域 {region['id']} 的楼层区间非法")
+            if region["max_floor"] is None:
+                expected_floor = 10**9
+            else:
+                expected_floor = region["max_floor"] + 1
+
+    # ---- 山川游历区域 ----
+
+    def region_for_floor(self, floor: int) -> dict:
+        for region in self.regions:
+            if region["min_floor"] <= floor and (region["max_floor"] is None or floor <= region["max_floor"]):
+                return region
+        raise ContentError(f"第 {floor} 层不在任何区域内")
+
+    def region_name_for_floor(self, floor: int) -> str:
+        return self._(self.region_for_floor(floor)["name"])
+
+    def mountain_for_floor(self, floor: int) -> str:
+        region = self.region_for_floor(floor)
+        mountains = region["mountains"]
+        index = (floor - region["min_floor"]) % len(mountains)
+        return self._(mountains[index])
 
     # ---- 校验 ----
 
@@ -100,6 +168,13 @@ class Content:
                 raise ContentError(
                     f"物品 {iid} 的 consumable.type '{ctype}' 未注册，可用：{sorted(CONSUMABLE_TYPES)}"
                 )
+        for pool_name, pool in (("怪物", self.monsters), ("物品", self.items), ("玩家", {"player": self.player_def})):
+            for eid, edef in pool.items():
+                art = edef.get("art")
+                if art is not None and art not in ART_REGISTRY:
+                    raise ContentError(
+                        f"{pool_name} {eid} 的 art '{art}' 未注册，可用：{sorted(ART_REGISTRY)}"
+                    )
         for kind, table, pool in (
             ("monsters", self.spawn_monsters, self.monsters),
             ("items", self.spawn_items, self.items),
@@ -114,6 +189,29 @@ class Content:
                 raise ContentError(f"第 {floor} 层没有任何可投放怪物")
             if not self.item_ids_for_floor(floor):
                 raise ContentError(f"第 {floor} 层没有任何可投放物品")
+
+    def _validate_theme(self) -> None:
+        theme = self.theme
+        for key in ("background", "tiles", "lighting", "stairs", "corpse_color", "player_corpse_color", "hud", "messages"):
+            if key not in theme:
+                raise ContentError(f"theme.json 缺少必需字段 '{key}'")
+        for key in ("floor_light", "floor_dark", "wall_light", "wall_dark"):
+            _rgb(theme["tiles"][key], f"theme.tiles.{key}")
+        for key in ("inner_radius", "edge_falloff"):
+            value = theme["lighting"][key]
+            if not isinstance(value, (int, float)) or value < 0:
+                raise ContentError(f"theme.lighting.{key} 必须是非负数")
+        for key, mapping in (("hud", ("hp", "xp", "floor", "dead_tag")),):
+            for sub in mapping:
+                _rgb(theme[key][sub], f"theme.{key}.{sub}")
+        for key in ("background", "corpse_color", "player_corpse_color", "stairs.light", "stairs.dark"):
+            value = theme
+            for part in key.split("."):
+                value = value[part]
+            _rgb(value, f"theme.{key}")
+        _rgb(theme["ui"]["frame"], "theme.ui.frame")
+        for kind, value in theme["messages"].items():
+            _rgb(value, f"theme.messages.{kind}")
 
     # ---- 投放 ----
 
@@ -162,10 +260,11 @@ class Content:
             y=y,
             char=mdef["char"],
             color=_rgb(mdef["color"], f"怪物 {monster_id}"),
-            name=mdef["name"],
+            name=self._(mdef["name"]),
             blocks_movement=True,
             tags=list(mdef.get("tags", [])),
-            lore=mdef.get("lore", ""),
+            lore=self._(mdef.get("lore", "")),
+            art=mdef.get("art"),
         )
         actor.fighter = Fighter(
             hp=fighter_data["hp"],
@@ -187,9 +286,10 @@ class Content:
             y=y,
             char=idef["char"],
             color=_rgb(idef["color"], f"物品 {item_id}"),
-            name=idef["name"],
+            name=self._(idef["name"]),
             tags=list(idef.get("tags", [])),
-            lore=idef.get("lore", ""),
+            lore=self._(idef.get("lore", "")),
+            art=idef.get("art"),
         )
         consumable_cls = CONSUMABLE_TYPES[cons_data["type"]]
         kwargs = {k: v for k, v in cons_data.items() if k != "type"}
@@ -208,7 +308,7 @@ class Content:
             y=y,
             char=pdef["char"],
             color=_rgb(pdef["color"], "player.json"),
-            name=pdef["name"],
+            name=self._(pdef["name"]),
             blocks_movement=True,
             tags=list(pdef.get("tags", [])),
         )
@@ -229,5 +329,5 @@ class Content:
         return player
 
 
-def load_content() -> Content:
-    return Content(resource_path(CONTENT_DIR))
+def load_content(lang: str = DEFAULT_LANG) -> Content:
+    return Content(resource_path(CONTENT_DIR), lang=lang)

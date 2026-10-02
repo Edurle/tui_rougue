@@ -92,9 +92,8 @@ class PickupAction(Action):
             raise exceptions.Impossible(strings["inventory_full"].format(item=item.name))
         engine.gamemap.entities.discard(item)
         # 注意：不清空 item.gamemap——行囊中的物品组件仍需经它回溯到 engine
-        engine.message_log.add_message(
-            strings["pickup"].format(item=item.name), (200, 220, 180)
-        )
+        engine.effects.spawn_pickup(self.entity.x, self.entity.y)
+        engine.message_log.add_message(strings["pickup"].format(item=item.name), "loot")
 
 
 class ItemAction(Action):
@@ -109,15 +108,35 @@ class ItemAction(Action):
 
 
 class TakeStairsAction(Action):
-    def __init__(self, entity: "Actor") -> None:
+    """山径：站在下行山径（金）上按 > 下行，站在上行山径（青）上按 < 上行。"""
+
+    def __init__(self, entity: "Actor", direction: str = "down") -> None:
         self.entity = entity
+        self.direction = direction
 
     def perform(self, engine: "Engine") -> None:
         strings = engine.content.strings
-        stairs_x, stairs_y = engine.gamemap.downstairs_xy
-        if (self.entity.x, self.entity.y) != (stairs_x, stairs_y):
-            raise exceptions.Impossible(strings["not_on_stairs"])
-        engine.next_floor()
-        engine.message_log.add_message(
-            strings["descend"].format(floor=engine.gamemap.floor_number), (180, 200, 230)
-        )
+        content = engine.content
+        here = (self.entity.x, self.entity.y)
+        if self.direction == "down":
+            if here != engine.gamemap.downstairs_xy:
+                raise exceptions.Impossible(strings["not_on_stairs"])
+            engine.next_floor()
+            floor = engine.gamemap.floor_number
+            engine.message_log.add_message(
+                strings["descend"].format(
+                    region=content.region_name_for_floor(floor), mountain=content.mountain_for_floor(floor)
+                ),
+                "descend",
+            )
+        else:
+            if here != engine.gamemap.upstairs_xy:
+                raise exceptions.Impossible(strings["not_on_up_stairs"])
+            engine.previous_floor()
+            floor = engine.gamemap.floor_number
+            engine.message_log.add_message(
+                strings["ascend"].format(
+                    region=content.region_name_for_floor(floor), mountain=content.mountain_for_floor(floor)
+                ),
+                "descend",
+            )
