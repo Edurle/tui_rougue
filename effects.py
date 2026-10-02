@@ -184,7 +184,8 @@ class Effects:
 
     # ---- 渲染 ----
 
-    def render(self, console, map_width: int, map_height: int) -> None:
+    def render(self, console, map_width: int, map_height: int, off_x: int = 0, off_y: int = 0) -> None:
+        """叠加渲染；off 为地图坐标 → 视口坐标平移（摄像机+震屏）。"""
         now = self._clock()
 
         def blend(color: Tuple[int, int, int], ratio: float) -> Tuple[int, int, int]:
@@ -196,8 +197,8 @@ class Effects:
             age = now - f.born
             ratio = 1 - age / life_float
             dy = -age * speed
-            x = int(f.x)
-            y = int(f.y + dy)
+            x = int(f.x) + off_x
+            y = int(f.y + dy) + off_y
             if 0 <= x < map_width and 0 <= y < map_height:
                 console.print(x, y, f.text, fg=blend(f.color, ratio))
 
@@ -205,8 +206,8 @@ class Effects:
         for s in self.sparks:
             age = now - s.born
             ratio = 1 - age / life_spark
-            x = int(s.x + s.vx * age)
-            y = int(s.y + s.vy * age)
+            x = int(s.x + s.vx * age) + off_x
+            y = int(s.y + s.vy * age) + off_y
             if 0 <= x < map_width and 0 <= y < map_height:
                 console.print(x, y, s.char, fg=blend(s.color, ratio))
 
@@ -214,5 +215,6 @@ class Effects:
         for n in self.notices:
             age = now - n.born
             ratio = 1 - age / life_notice
-            if 0 <= n.x < map_width and 0 <= n.y - 1 < map_height:
-                console.print(n.x, n.y - 1, n.char, fg=blend(n.color, ratio))
+            x, y = n.x + off_x, n.y - 1 + off_y
+            if 0 <= x < map_width and 0 <= y < map_height:
+                console.print(x, y, n.char, fg=blend(n.color, ratio))

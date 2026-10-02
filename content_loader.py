@@ -356,12 +356,25 @@ class Content:
         return None
 
     def _validate_theme(self) -> None:
+        import tile_types
+
         theme = self.theme
-        for key in ("background", "tiles", "lighting", "stairs", "corpse_color", "player_corpse_color", "hud", "messages"):
+        for key in ("background", "tiles", "terrains", "lighting", "stairs", "corpse_color", "player_corpse_color", "hud", "messages"):
             if key not in theme:
                 raise ContentError(f"theme.json 缺少必需字段 '{key}'")
         for key in ("floor_light", "floor_dark", "wall_light", "wall_dark"):
             _rgb(theme["tiles"][key], f"theme.tiles.{key}")
+        terrains_cfg = theme["terrains"]
+        for tdef in tile_types.TERRAIN_DEFS.values():
+            if tdef.key not in terrains_cfg:
+                raise ContentError(
+                    f"theme.terrains 缺少地形 '{tdef.key}'（tile_types 注册表要求全配）"
+                )
+            cfg = terrains_cfg[tdef.key]
+            if not isinstance(cfg.get("char"), str) or not cfg["char"]:
+                raise ContentError(f"theme.terrains.{tdef.key}.char 必须是非空字符")
+            _rgb(cfg["light"], f"theme.terrains.{tdef.key}.light")
+            _rgb(cfg["dark"], f"theme.terrains.{tdef.key}.dark")
         for key in ("inner_radius", "edge_falloff"):
             value = theme["lighting"][key]
             if not isinstance(value, (int, float)) or value < 0:

@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, List, Tuple
 import numpy as np
 import tcod
 
+import tile_types
 from entity import Actor, Item
 from equipment import SLOT_ORDER
 from settings import sidebar_layout
@@ -34,6 +35,50 @@ COLOR_EQUIP = (182, 202, 222)
 COLOR_HEADER = (222, 190, 120)
 
 
+def camera_origin(gamemap, player, map_cols: int, map_rows: int) -> Tuple[int, int]:
+    """摄像机：视口左上角对应的地图坐标。玩家居中、贴边 clamp、小图居中。"""
+    if gamemap.width <= map_cols:
+        cam_x = -(map_cols - gamemap.width) // 2  # 地图小于视口：居中（负值）
+    else:
+        cam_x = max(0, min(player.x - map_cols // 2, gamemap.width - map_cols))
+    if gamemap.height <= map_rows:
+        cam_y = -(map_rows - gamemap.height) // 2
+    else:
+        cam_y = max(0, min(player.y - map_rows // 2, gamemap.height - map_rows))
+    return cam_x, cam_y
+
+
+def viewport_offset(engine: "Engine") -> Tuple[int, int]:
+    """地图坐标 → 屏（视口）坐标的总平移：屏幕 = 地图 + offset（含震屏）。"""
+    cam_x, cam_y = camera_origin(
+        engine.gamemap, engine.player, engine.settings.map_cols, engine.settings.map_rows
+    )
+    shake_x, shake_y = engine.effects.shake_offset
+    return -cam_x + shake_x, -cam_y + shake_y
+
+
+# terrain id → 字符/明暗色查找表（按 theme 对象缓存，内容加载一次）
+_TERRAIN_LUT_CACHE: list = []  # [theme 引用, (ch_lut, light_lut, dark_lut)]
+
+
+def _terrain_luts(theme: dict):
+    if _TERRAIN_LUT_CACHE and _TERRAIN_LUT_CACHE[0] is theme:
+        return _TERRAIN_LUT_CACHE[1]
+    n = tile_types.N_TERRAINS
+    ch_lut = np.zeros(n, dtype=np.int32)
+    light_lut = np.zeros((n, 3), dtype=np.float64)
+    dark_lut = np.zeros((n, 3), dtype=np.float64)
+    terrains = theme["terrains"]
+    for tid, tdef in tile_types.TERRAIN_DEFS.items():
+        cfg = terrains[tdef.key]
+        ch_lut[tid] = ord(cfg["char"])
+        light_lut[tid] = np.array(cfg["light"], dtype=np.float64)
+        dark_lut[tid] = np.array(cfg["dark"], dtype=np.float64)
+    luts = (ch_lut, light_lut, dark_lut)
+    _TERRAIN_LUT_CACHE[:] = [theme, luts]
+    return luts
+
+
 def render_all(console: tcod.console.Console, engine: "Engine") -> None:
     theme = engine.content.theme
     console.clear(fg=(236, 236, 240), bg=tuple(theme["background"]))
@@ -49,39 +94,39 @@ def render_all(console: tcod.console.Console, engine: "Engine") -> None:
     pulse = 1.0 + effects_cfg["light_pulse_amplitude"] * np.sin(t * effects_cfg["light_pulse_speed"])
     factors = np.clip(factors * pulse, 0.0, 1.0)
 
-    shake_x, shake_y = engine.effects.shake_offset
-    _render_map(console, engine, factors, shake_x, shake_y)
-    _render_entities(console, engine, factors, shake_x, shake_y)
+    off_x, off_y = viewport_offset(engine)
+    _render_map(console, engine, factors, off_x, off_y)
+    _render_entities(console, engine, factors, off_x, off_y)
     _render_sidebar(console, engine)
-    engine.effects.render(console, engine.settings.map_cols, engine.settings.map_rows)
+    engine.effects.render(console, engine.settings.map_cols, engine.settings.map_rows, off_x, off_y)
 
 
-def _render_map(console: tcod.console.Console, engine: "Engine", factors, shake_x: int, shake_y: int) -> None:
+def _render_map(
+    console: tcod.console.Console, engine: "Engine", factors, off_x: int, off_y: int
+) -> None:
     gamemap = engine.gamemap
     theme = engine.content.theme
 
-    walkable = gamemap.tiles["walkable"]
+    terrain = gamemap.terrain
     visible = gamemap.visible
     explored = gamemap.explored
     known = visible | explored
-
-    floor_char = ord(theme["tiles"]["floor_char"])
-    ch = np.full(walkable.shape, 32, dtype=np.int32)
-    ch[walkable & known] = floor_char
-    ch[~walkable & known] = gamemap.wall_glyphs[~walkable & known]
-
-    fg = np.zeros(walkable.shape + (3,), dtype=np.float64)
     light = visible
     dark = explored & ~visible
-    floor_l = np.array(theme["tiles"]["floor_light"], dtype=np.float64)
-    wall_l = np.array(theme["tiles"]["wall_light"], dtype=np.float64)
-    scaled = factors[..., None]
-    fg[light & walkable] = floor_l * scaled[light & walkable]
-    fg[light & ~walkable] = wall_l * scaled[light & ~walkable]
-    fg[dark & walkable] = np.array(theme["tiles"]["floor_dark"], dtype=np.float64)
-    fg[dark & ~walkable] = np.array(theme["tiles"]["wall_dark"], dtype=np.float64)
 
-    bg = np.zeros(walkable.shape + (3,), dtype=np.float64)
+    ch_lut, light_lut, dark_lut = _terrain_luts(theme)
+    ch = np.full(terrain.shape, 32, dtype=np.int32)
+    ch[known] = ch_lut[terrain[known]]
+    # 秘境石壁用邻接线框字符覆盖
+    wall_known = (terrain == tile_types.T_WALL) & known
+    ch[wall_known] = gamemap.wall_glyphs[wall_known]
+
+    fg = np.zeros(terrain.shape + (3,), dtype=np.float64)
+    scaled = factors[..., None]
+    fg[light] = light_lut[terrain[light]] * scaled[light]
+    fg[dark] = dark_lut[terrain[dark]]
+
+    bg = np.zeros(terrain.shape + (3,), dtype=np.float64)
     bg[...] = np.array(theme["background"], dtype=np.float64)
 
     flash = engine.effects.hit_flash
@@ -90,7 +135,7 @@ def _render_map(console: tcod.console.Console, engine: "Engine", factors, shake_
         bg[known] = bg[known] * (1 - flash * 0.6) + np.array([120, 16, 16], dtype=np.float64) * (flash * 0.6)
 
     sx, sy = gamemap.downstairs_xy
-    if known[sx, sy]:
+    if gamemap.in_bounds(sx, sy) and known[sx, sy]:
         ch[sx, sy] = art_codepoint("stairs_glow")
         if visible[sx, sy]:
             fg[sx, sy] = np.array(theme["stairs"]["light"], dtype=np.float64) * factors[sx, sy]
@@ -98,20 +143,20 @@ def _render_map(console: tcod.console.Console, engine: "Engine", factors, shake_
             fg[sx, sy] = np.array(theme["stairs"]["dark"], dtype=np.float64)
 
     ux, uy = gamemap.upstairs_xy
-    if known[ux, uy]:
+    if gamemap.in_bounds(ux, uy) and known[ux, uy]:
         ch[ux, uy] = art_codepoint("stairs_glow")
         if visible[ux, uy]:
             fg[ux, uy] = np.array(theme["stairs"]["up_light"], dtype=np.float64) * factors[ux, uy]
         else:
             fg[ux, uy] = np.array(theme["stairs"]["up_dark"], dtype=np.float64)
 
-    width, height = walkable.shape
+    width, height = terrain.shape
     map_cols = engine.settings.map_cols
     map_rows = engine.settings.map_rows
-    x0, x1 = max(0, shake_x), min(map_cols, width + shake_x)
-    y0, y1 = max(0, shake_y), min(map_rows, height + shake_y)
-    src_x = x0 - shake_x
-    src_y = y0 - shake_y
+    x0, x1 = max(0, off_x), min(map_cols, off_x + width)
+    y0, y1 = max(0, off_y), min(map_rows, off_y + height)
+    src_x = x0 - off_x
+    src_y = y0 - off_y
     span_x = x1 - x0
     span_y = y1 - y0
     region = console.rgb[x0:x1, y0:y1]
@@ -120,15 +165,23 @@ def _render_map(console: tcod.console.Console, engine: "Engine", factors, shake_
     region["bg"] = bg[src_x : src_x + span_x, src_y : src_y + span_y].astype(np.uint8)
 
 
-def _render_entities(console: tcod.console.Console, engine: "Engine", factors, shake_x: int, shake_y: int) -> None:
+def _render_entities(
+    console: tcod.console.Console, engine: "Engine", factors, off_x: int, off_y: int
+) -> None:
     gamemap = engine.gamemap
+    map_cols = engine.settings.map_cols
+    map_rows = engine.settings.map_rows
     for entity in sorted(gamemap.entities, key=_render_order):
         if not gamemap.visible[entity.x, entity.y]:
+            continue
+        sx = entity.x + off_x
+        sy = entity.y + off_y
+        if not (0 <= sx < map_cols and 0 <= sy < map_rows):
             continue
         f = factors[entity.x, entity.y]
         color = tuple(int(c * f) for c in entity.color)
         glyph = chr(art_codepoint(entity.art)) if entity.art else entity.char
-        console.print(entity.x + shake_x, entity.y + shake_y, glyph, fg=color)
+        console.print(sx, sy, glyph, fg=color)
 
 
 def _render_order(entity) -> int:
@@ -508,7 +561,8 @@ def render_targeting_overlay(console: tcod.console.Console, engine: "Engine", ta
     strings = engine.content.strings
     import skills as skills_module
 
-    tx, ty = target.x, target.y
+    off_x, off_y = viewport_offset(engine)
+    tx, ty = target.x + off_x, target.y + off_y
     if 0 <= tx < engine.settings.map_cols and 0 <= ty < engine.settings.map_rows:
         cell = console.rgb[tx, ty]
         console.print(tx, ty, chr(int(cell["ch"])), fg=(16, 12, 8), bg=(255, 226, 130))
@@ -533,7 +587,8 @@ def render_direction_overlay(console: tcod.console.Console, engine: "Engine", sk
     import skills as skills_module
 
     landing = skills_module.teleport_landing(engine, engine.player, skill, dx, dy)
-    lx, ly = landing
+    off_x, off_y = viewport_offset(engine)
+    lx, ly = landing[0] + off_x, landing[1] + off_y
     if 0 <= lx < engine.settings.map_cols and 0 <= ly < engine.settings.map_rows:
         cell = console.rgb[lx, ly]
         console.print(lx, ly, chr(int(cell["ch"])), fg=(255, 226, 130), bg=(90, 80, 40))
@@ -551,7 +606,8 @@ def render_examine_card(console: tcod.console.Console, engine: "Engine", target)
     from fighter import RESIST_KINDS
 
     # 地图上目标格高亮（与瞄准态同款反色）
-    tx, ty = target.x, target.y
+    off_x, off_y = viewport_offset(engine)
+    tx, ty = target.x + off_x, target.y + off_y
     if 0 <= tx < engine.settings.map_cols and 0 <= ty < engine.settings.map_rows:
         cell = console.rgb[tx, ty]
         console.print(tx, ty, chr(int(cell["ch"])), fg=(16, 12, 8), bg=(255, 226, 130))

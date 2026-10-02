@@ -37,11 +37,9 @@ class Engine:
 
         # 玩家实体在第 1 层生成时创建一次，此后跨层复用（保留状态）
         self.player = None  # type: ignore[assignment]
-        self.gamemap: GameMap = GameMap(self, settings.map_cols, settings.map_rows, floor_number=1)
+        self.gamemap: GameMap = GameMap(self, 1, 1, floor_number=1)
         self.player = content.build_player(self.gamemap, 0, 0, class_ids)
-        self.gamemap = procgen.generate_dungeon(
-            self, floor_number=1, rng=self.rng, width=settings.map_cols, height=settings.map_rows
-        )
+        self.gamemap = procgen.generate_dungeon(self, floor_number=1, rng=self.rng)
         self.update_fov()
         self.message_log.add_message(content.strings["welcome"], "system")
 
@@ -217,13 +215,7 @@ class Engine:
             self.gamemap = self.floors[next_number]
             self.player.place(self.gamemap, *self.gamemap.upstairs_xy)
         else:
-            self.gamemap = procgen.generate_dungeon(
-                self,
-                next_number,
-                self.rng,
-                width=self.settings.map_cols,
-                height=self.settings.map_rows,
-            )
+            self.gamemap = procgen.generate_dungeon(self, next_number, self.rng)
         self.effects.clear()
         if self.player.is_alive:
             # 抵达新山：气脉与山川共鸣，真气全复
@@ -244,18 +236,12 @@ class Engine:
         self.update_fov()
 
     def apply_layout(self) -> None:
-        """显示设置变更后应用新几何：日志参数更新并按当前层数重生成地牢。"""
+        """显示设置变更后应用新几何：仅更新日志参数。
+
+        地图尺寸与视口已解耦（摄像机适配），进度完整保留。
+        """
         log = self.message_log
         log.x = self.settings.content_x
         log.width = self.settings.content_w
         log.height = self.settings.log_height
         log.scroll_offset = 0
-        self.floors.clear()
-        self.gamemap = procgen.generate_dungeon(
-            self,
-            self.gamemap.floor_number,
-            self.rng,
-            width=self.settings.map_cols,
-            height=self.settings.map_rows,
-        )
-        self.update_fov()

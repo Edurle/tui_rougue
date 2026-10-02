@@ -75,21 +75,15 @@ def test_ascend_on_floor1_impossible_hint():
     assert engine.gamemap.floor_number == 1
 
 
-def test_ascend_after_layout_change_gives_hint_not_crash():
-    import exceptions
-
+def test_ascend_after_layout_change_keeps_history():
     engine = make_engine()
     for _ in range(2):
         engine.player.x, engine.player.y = engine.gamemap.downstairs_xy
         TakeStairsAction(engine.player, "down").perform(engine)
-    engine.apply_layout()  # 模拟改显示设置：楼层历史清空
+    engine.apply_layout()  # 改显示设置：地图与楼层历史完整保留
     engine.player.x, engine.player.y = engine.gamemap.upstairs_xy
-    try:
-        TakeStairsAction(engine.player, "up").perform(engine)
-    except exceptions.Impossible as exc:
-        assert "湮没" in str(exc)
-    else:
-        raise AssertionError("历史清空后上楼应提示 Impossible 而非 KeyError 崩溃")
+    TakeStairsAction(engine.player, "up").perform(engine)
+    assert engine.gamemap.floor_number == 2  # 上行仍可回到上一层
 
 
 def test_wrong_spot_ascend_raises():

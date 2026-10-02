@@ -1,4 +1,9 @@
-"""游戏地图：瓦片网格、视野（FOV）、邻接墙字符、实体容器与查询。"""
+"""游戏地图：地形网格、视野（FOV）、邻接墙字符、实体容器与查询。
+
+地图尺寸与屏幕视口解耦：世界地图远大于视口（渲染层做摄像机滚动），
+秘境地牢固定尺寸。terrain 数组存地形 id（见 tile_types），walkable/
+transparent 是其派生缓存，改动地形后须调 refresh_tile_flags()。
+"""
 
 from __future__ import annotations
 
@@ -12,27 +17,43 @@ import tile_types
 from entity import Actor, Entity, Item
 from tileset_art import WALL_GLYPHS
 
-FOV_RADIUS = 8
+FOV_RADIUS = 8  # 默认视野半径（秘境）；世界地图在生成时另行设置
 
 # 邻接墙字符：索引 = 上*1 + 下*2 + 左*4 + 右*8（邻居为墙记 1，边界外视为墙）
 _WALL_CODEPOINTS = np.array([ord(c) for c in WALL_GLYPHS], dtype=np.int32)
 
 
 class GameMap:
-    def __init__(self, engine: "Entity", width: int, height: int, floor_number: int = 1) -> None:
+    def __init__(
+        self,
+        engine: "Engine",
+        width: int,
+        height: int,
+        floor_number: int = 1,
+        map_type: str = "realm",
+        realm_id: Optional[str] = None,
+        realm_depth: int = 1,
+        default_terrain: int = tile_types.T_WALL,
+    ) -> None:
         from engine import Engine
 
         self.engine: Engine = engine  # type: ignore[assignment]
         self.width = width
         self.height = height
         self.floor_number = floor_number
+        # "world" = 大世界常驻地图；"realm" = 秘境地牢（realm_id/realm_depth 标识）
+        self.map_type = map_type
+        self.realm_id = realm_id
+        self.realm_depth = realm_depth
+        self.fov_radius = FOV_RADIUS
         self.entities: Set[Entity] = set()
         self.downstairs_xy: Tuple[int, int] = (0, 0)
         self.upstairs_xy: Tuple[int, int] = (0, 0)
 
         # order="F" 保证 [x, y] 索引与 tcod FOV 接口一致
+        self.terrain = np.full((width, height), default_terrain, dtype=np.uint8, order="F")
         self.tiles = np.zeros((width, height), dtype=tile_types.tile_dtype, order="F")
-        self.tiles[...] = tile_types.WALL
+        self.refresh_tile_flags()
 
         self.explored = np.zeros((width, height), dtype=np.bool_, order="F")
         self.visible = np.zeros((width, height), dtype=np.bool_, order="F")
@@ -76,9 +97,17 @@ class GameMap:
     def in_bounds(self, x: int, y: int) -> bool:
         return 0 <= x < self.width and 0 <= y < self.height
 
+    def refresh_tile_flags(self) -> None:
+        """按 terrain 重建 walkable/transparent 派生缓存（地形改动后调用）。"""
+        self.tiles["walkable"] = tile_types.WALKABLE_LUT[self.terrain]
+        self.tiles["transparent"] = tile_types.TRANSPARENT_LUT[self.terrain]
+
     def rebuild_wall_glyphs(self) -> None:
-        """按四邻居是否墙计算每格墙字符，生成/挖掘后调用。"""
-        walls = ~self.tiles["walkable"]
+        """按四邻居是否石壁（T_WALL）计算每格墙字符，生成/挖掘后调用。
+
+        仅秘境石壁参与线框连接；世界地形（山/水/渊）各有独立字形。
+        """
+        walls = self.terrain == tile_types.T_WALL
         w, h = walls.shape
         ones_col = np.ones((w, 1), dtype=bool)
         ones_row = np.ones((1, h), dtype=bool)
@@ -91,12 +120,12 @@ class GameMap:
 
     # ---- 视野 ----
 
-    def update_fov(self, pov_x: int, pov_y: int, radius: int = FOV_RADIUS) -> None:
+    def update_fov(self, pov_x: int, pov_y: int, radius: Optional[int] = None) -> None:
         """对称阴影 FOV；走过之处保留 explored 记忆。"""
         self.visible = tcod.map.compute_fov(
             self.tiles["transparent"],
             (pov_x, pov_y),
-            radius=radius,
+            radius=self.fov_radius if radius is None else radius,
             algorithm=libtcodpy.FOV_SYMMETRIC_SHADOWCAST,
         )
         self.explored |= self.visible
@@ -106,5 +135,5 @@ class GameMap:
         xs = np.arange(self.width, dtype=np.float32)[:, None]
         ys = np.arange(self.height, dtype=np.float32)[None, :]
         dist = np.hypot(xs - pov_x, ys - pov_y)
-        t = np.clip((dist - inner_radius) / max(1e-6, FOV_RADIUS - inner_radius), 0.0, 1.0)
+        t = np.clip((dist - inner_radius) / max(1e-6, self.fov_radius - inner_radius), 0.0, 1.0)
         return 1.0 - t * edge_falloff

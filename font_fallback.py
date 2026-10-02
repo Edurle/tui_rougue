@@ -63,6 +63,9 @@ def content_characters(content) -> set[str]:
         chars.update(collect_text(region["name"]))
         chars.update(collect_text(region["mountains"]))
     chars.update(collect_text(content.player_def.get("name", "")))
+    # 地形字形（theme.terrains 的 char，如 ♣▲≈▼）进字形管线
+    for terrain in content.theme.get("terrains", {}).values():
+        chars.update(collect_text(terrain.get("char", "")))
     chars.update("0123456789")
     return {c for c in chars if not c.isspace()}
 

@@ -230,16 +230,13 @@ def run(lang: Optional[str], smoke_output: Optional[str] = None) -> None:
             if changed == "restart":
                 selected = None  # 转世重修：回到职业选择
             elif changed == "map":
-                engine = new_engine(
-                    content, settings, selected, previous_messages=engine.message_log.messages
-                )
+                # 地图尺寸与视口解耦：改几何不丢进度，仅更新日志布局
+                engine.apply_layout()
                 engine.message_log.add_message(
                     strings["ui_map_size"].format(size=strings[f"size_{settings.map_size}"]), "info"
                 )
             elif changed == "sidebar":
-                engine = new_engine(
-                    content, settings, selected, previous_messages=engine.message_log.messages
-                )
+                engine.apply_layout()
                 engine.message_log.add_message(
                     strings["ui_sidebar_size"].format(size=strings[f"size_{settings.sidebar_size}"]), "info"
                 )

@@ -21,8 +21,9 @@ from font_fallback import collect_text, content_characters  # noqa: E402
 
 def _small_map(engine) -> GameMap:
     gm = GameMap(engine, 10, 10)
-    gm.tiles[...] = tile_types.WALL
-    gm.tiles[3:7, 3:7] = tile_types.FLOOR
+    gm.terrain[...] = tile_types.T_WALL
+    gm.terrain[3:7, 3:7] = tile_types.T_FLOOR
+    gm.refresh_tile_flags()
     gm.rebuild_wall_glyphs()
     return gm
 
@@ -50,7 +51,7 @@ def test_wall_glyph_shape_matches_tiles():
     gm = _small_map(engine)
     assert gm.wall_glyphs.shape == (10, 10)
     assert gm.wall_glyphs.dtype == np.int32
-    for codepoint in gm.wall_glyphs[~gm.tiles["walkable"]].tolist():
+    for codepoint in gm.wall_glyphs[gm.terrain == tile_types.T_WALL].tolist():
         assert chr(codepoint) in "#─│┌┐└┘├┤┬┴┼"
 
 

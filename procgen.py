@@ -1,12 +1,13 @@
-"""程序化地牢生成：随机房间 + L 形走廊 + 按投放表填充怪物与物品。
+"""程序化秘境地牢生成：随机房间 + L 形走廊 + 按投放表填充怪物与物品。
 
 生成参数（尺寸、数量）为机制常量；投放什么由 spawn_tables.json 决定。
+地牢尺寸与屏幕视口解耦（渲染层摄像机适配任意地图大小）。
 """
 
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Iterator, List, Tuple
+from typing import TYPE_CHECKING, Iterator, List, Optional, Tuple
 
 import tile_types
 from game_map import GameMap
@@ -17,6 +18,9 @@ if TYPE_CHECKING:
 MAX_ROOMS = 10
 ROOM_MIN_SIZE = 6
 ROOM_MAX_SIZE = 8
+# 秘境地牢固定尺寸（大于等于最大视口，保证探索感）
+DUNGEON_WIDTH = 44
+DUNGEON_HEIGHT = 30
 
 
 class Rect:
@@ -74,34 +78,44 @@ def _walk_line(x1: int, y1: int, x2: int, y2: int) -> Iterator[Tuple[int, int]]:
         yield x, y
 
 
-def generate_dungeon(engine: "Engine", floor_number: int, rng: random.Random, width: int, height: int) -> GameMap:
+def generate_dungeon(
+    engine: "Engine",
+    floor_number: int,
+    rng: random.Random,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+) -> GameMap:
     content = engine.content
+    width = DUNGEON_WIDTH if width is None else width
+    height = DUNGEON_HEIGHT if height is None else height
     gamemap = GameMap(engine, width, height, floor_number=floor_number)
 
     rooms: List[Rect] = []
     player_start = None
 
     for _ in range(MAX_ROOMS):
-        width = rng.randint(ROOM_MIN_SIZE, ROOM_MAX_SIZE)
-        height = rng.randint(ROOM_MIN_SIZE, ROOM_MAX_SIZE)
-        x = rng.randint(1, gamemap.width - width - 2)
-        y = rng.randint(1, gamemap.height - height - 2)
-        new_room = Rect(x, y, width, height)
+        room_w = rng.randint(ROOM_MIN_SIZE, ROOM_MAX_SIZE)
+        room_h = rng.randint(ROOM_MIN_SIZE, ROOM_MAX_SIZE)
+        x = rng.randint(1, gamemap.width - room_w - 2)
+        y = rng.randint(1, gamemap.height - room_h - 2)
+        new_room = Rect(x, y, room_w, room_h)
 
         if any(new_room.intersects(room) for room in rooms):
             continue
 
         for px, py in new_room.inner():
-            gamemap.tiles[px, py] = tile_types.FLOOR
+            gamemap.terrain[px, py] = tile_types.T_FLOOR
 
         if rooms:
             for px, py in tunnel_between(rooms[-1].center, new_room.center, rng):
-                gamemap.tiles[px, py] = tile_types.FLOOR
+                gamemap.terrain[px, py] = tile_types.T_FLOOR
         else:
             player_start = new_room.center
 
         _populate_room(gamemap, new_room, floor_number, content, rng, skip_first=not rooms)
         rooms.append(new_room)
+
+    gamemap.refresh_tile_flags()
 
     player_x, player_y = player_start  # type: ignore[misc]
     engine.player.place(gamemap, player_start[0], player_start[1])
