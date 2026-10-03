@@ -191,5 +191,18 @@
   "lang_en_US": "English",
   "settings_saved": "设置已保存。",
   "settings_headline": "设置",
-  "settings_hint": "←→ 调整 · Esc 返回"
+  "settings_hint": "←→ 调整 · Esc 返回",
+  "examine_targets": "视野目标",
+  "examine_threat_label": "威胁",
+  "threat_high": "高",
+  "threat_mid": "中",
+  "threat_low": "低",
+  "kind_boss": "首领",
+  "kind_dragon": "龙",
+  "kind_serpent": "蛇",
+  "kind_bird": "鸟",
+  "kind_beast": "兽",
+  "examine_lore_show": "L 展开山海经典故",
+  "examine_hint_full": "Tab/1-9 换目标 · L 典故 · Esc 关闭",
+  "examine_dist": "距"
 }

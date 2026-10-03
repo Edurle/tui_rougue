@@ -433,24 +433,29 @@ def skills_visible_enemies(engine) -> List:
 
 
 def _visible_examine_targets(engine) -> List:
-    """视野内可查看的 actor（除玩家；含敌对与契约兽），按距离排序。"""
+    """视野内可查看的 actor（除玩家；含敌对与契约兽），距离近者优先，等距按名稳定。"""
     gamemap = engine.gamemap
     targets = [
         actor
         for actor in gamemap.actors
         if actor is not engine.player and gamemap.visible[actor.x, actor.y]
     ]
-    targets.sort(key=engine.player.distance_to)
+    targets.sort(key=lambda a: (engine.player.distance_to(a), a.name))
     return targets
 
 
 class ExamineEventHandler(EventHandler):
-    """查看模式：视野内怪物/契约兽属性卡。Tab 循环 / 鼠标点击 / Esc 或 X 关闭，不耗回合。"""
+    """查看模式：视野内怪物/契约兽属性卡。
+
+    Tab/数字键(1-9)/鼠标点击 换目标，L 展开/收起典故，Esc/X/回车 关闭。
+    均不耗回合。
+    """
 
     def __init__(self, engine) -> None:
         super().__init__(engine)
         self.targets: List = _visible_examine_targets(engine)
         self.index = 0
+        self.show_lore = False  # 典故默认收起（L 切换）
 
     @property
     def current_target(self):
@@ -467,7 +472,7 @@ class ExamineEventHandler(EventHandler):
 
         target = self.current_target
         if target is not None:
-            render.render_examine_card(console, self.engine, target)
+            render.render_examine_card(console, self.engine, target, self)
 
     def ev_keydown(self, event: tcod.event.KeyDown):
         key = normalize_sym(event.sym)
@@ -476,6 +481,14 @@ class ExamineEventHandler(EventHandler):
         if key == TAB_KEY:
             if self.targets:
                 self.index = (self.index + 1) % len(self.targets)
+            return None
+        if key == KeySym.L:
+            self.show_lore = not self.show_lore
+            return None
+        if key in SLOT_KEYS and self.targets:  # 数字 1-9 直达目标
+            n = SLOT_KEYS.index(key)
+            if n < len(self.targets):
+                self.index = n
             return None
         return None
 

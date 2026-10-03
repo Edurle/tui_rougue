@@ -190,5 +190,18 @@
   "lang_en_US": "English",
   "settings_saved": "Settings saved.",
   "settings_headline": "Settings",
-  "settings_hint": "Left/Right to adjust · Esc to go back"
+  "settings_hint": "Left/Right to adjust · Esc to go back",
+  "examine_targets": "Targets",
+  "examine_threat_label": "Threat",
+  "threat_high": "High",
+  "threat_mid": "Mid",
+  "threat_low": "Low",
+  "kind_boss": "BOSS",
+  "kind_dragon": "Dragon",
+  "kind_serpent": "Serpent",
+  "kind_bird": "Bird",
+  "kind_beast": "Beast",
+  "examine_lore_show": "[L] Show lore",
+  "examine_hint_full": "Tab/1-9 switch target · L lore · Esc close",
+  "examine_dist": "Dist"
 }

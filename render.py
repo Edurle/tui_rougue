@@ -715,87 +715,186 @@ def render_direction_overlay(console: tcod.console.Console, engine: "Engine", sk
     )
 
 
-def render_examine_card(console: tcod.console.Console, engine: "Engine", target) -> None:
-    """查看模式属性卡：居中弹窗（属性/抗性/爪击/山海经典故）+ 目标格反色高亮。"""
+def _assess_threat(player, target) -> str:
+    """按双方攻防估算互换刀数：low=稳操胜券 / mid=五五开 / high=凶多吉少。"""
+    from math import ceil
+
+    my_dmg = max(1, player.fighter.power - target.fighter.defense)
+    its_dmg = max(0, target.fighter.power - player.fighter.defense)
+    my_hits = ceil(target.fighter.hp / my_dmg)
+    its_hits = ceil(player.fighter.hp / its_dmg) if its_dmg > 0 else 99
+    ratio = its_hits / max(1, my_hits)
+    if ratio < 0.9:
+        return "high"
+    if ratio < 1.4:
+        return "mid"
+    return "low"
+
+
+_KIND_TAG_COLORS = {"boss": (255, 222, 130)}
+
+
+def _kind_badges(strings, target) -> list:
+    """种类标签（首领/鸟/兽/蛇/龙），按已知 tags 映射。"""
+    badges = []
+    for tag in ("boss", "dragon", "serpent", "bird", "beast"):
+        if tag in getattr(target, "tags", []):
+            key = f"kind_{tag}"
+            if key in strings:
+                badges.append((strings[key], _KIND_TAG_COLORS.get(tag, (160, 172, 186))))
+    return badges
+
+
+def _target_corner_markers(console, tx: int, ty: int, map_cols: int, map_rows: int) -> None:
+    """当前查看目标的四角框（比反色更醒目，不越界）。"""
+    color = (255, 226, 130)
+    corners = (
+        (tx - 1, ty - 1, "┌"), (tx + 1, ty - 1, "┐"),
+        (tx - 1, ty + 1, "└"), (tx + 1, ty + 1, "┘"),
+    )
+    for cx, cy, glyph in corners:
+        if 0 <= cx < map_cols and 0 <= cy < map_rows:
+            console.print(cx, cy, glyph, fg=color)
+
+
+def render_examine_card(console, engine, target, handler=None) -> None:
+    """查看模式属性卡：目标清单 + 血条/威胁/距离 + 抗性/爪击 + 典故（L 展开）。
+
+    卡片自动避开目标格；目标格反色 + 四角框高亮。
+    """
     strings = engine.content.strings
     theme = engine.content.theme
     from fighter import RESIST_KINDS
 
-    # 地图上目标格高亮（与瞄准态同款反色）
+    map_cols = engine.settings.map_cols
+    map_rows = engine.settings.map_rows
+
+    # 目标格高亮（反色 + 四角框），坐标换算到视口
     off_x, off_y = viewport_offset(engine)
     tx, ty = target.x + off_x, target.y + off_y
-    if 0 <= tx < engine.settings.map_cols and 0 <= ty < engine.settings.map_rows:
+    if 0 <= tx < map_cols and 0 <= ty < map_rows:
         cell = console.rgb[tx, ty]
         console.print(tx, ty, chr(int(cell["ch"])), fg=(16, 12, 8), bg=(255, 226, 130))
+        _target_corner_markers(console, tx, ty, map_cols, map_rows)
 
     fighter = target.fighter
-    lore_lines = _wrap_cjk(target.lore, width=44)
-    inner_lines = 3 + (1 if fighter else 0)
+    show_lore = getattr(handler, "show_lore", True) if handler is not None else True
+    lore_lines = _wrap_cjk(target.lore, width=32) if show_lore else []
+
+    # 内容行数
+    inner = 3  # 气血行 + 属性行 + 威胁行
     resist_parts = [
         strings[f"resist_{kind}"].format(v=fighter.resistance(kind)).replace("+", "")
         for kind in RESIST_KINDS
         if fighter is not None and fighter.resistance(kind) > 0
     ]
-    inner_lines += 1  # 抗性行：有则列项，无则显示"抗性：无"
+    inner += 1  # 抗性行
     element_names = [strings[f"element_{t}"] for t in target.attack_tags]
     if element_names:
-        inner_lines += 1
+        inner += 1
     if lore_lines:
-        inner_lines += 1 + len(lore_lines)  # 空行 + lore 折行
+        inner += 1 + len(lore_lines)  # 空行 + lore 折行
+    else:
+        inner += 1  # [L] 典故提示行
 
-    map_cols = engine.settings.map_cols
-    map_rows = engine.settings.map_rows
-    menu_width = min(50, map_cols - 2)
-    menu_height = inner_lines + 4
+    menu_width = min(36, map_cols - 2)
+    menu_height = inner + 4
+    # 避让目标格：居中若遮挡则左右让位，再不行下移
     x = max(0, (map_cols - menu_width) // 2)
     y = max(0, (map_rows - menu_height) // 2)
+    if x - 1 <= tx < x + menu_width + 1 and y - 1 <= ty < y + menu_height + 1:
+        x = max(0, tx - menu_width - 2)  # 目标左侧
+        if x + menu_width > map_cols - 1 or (x - 1 <= tx and tx < x + menu_width + 1):
+            x = min(map_cols - menu_width - 1, tx + 3)  # 目标右侧
+        if x < 0 or (x - 1 <= tx and tx < x + menu_width + 1):
+            x = max(0, (map_cols - menu_width) // 2)
+            y = min(map_rows - menu_height - 1, ty + 3)  # 目标下方
+            if y - 1 <= ty and ty < y + menu_height + 1:
+                y = max(0, ty - menu_height - 2)  # 目标上方
 
+    badges = _kind_badges(strings, target)
+    title = target.name + ("·" + "·".join(b[0] for b in badges) if badges else "")
     console.draw_frame(
-        x=x,
-        y=y,
-        width=menu_width,
-        height=menu_height,
-        title=f" {target.name} · {strings['examine_title']} ",
+        x=x, y=y, width=menu_width, height=menu_height,
+        title=f" {title} ",
         clear=True,
         fg=tuple(theme["ui"]["frame"]),
         bg=tuple(theme["background"]),
     )
+
     row = y + 2
-    if fighter:
-        console.print(
-            x + 2,
-            row,
-            strings["examine_stats"].format(
-                hp=fighter.hp,
-                max_hp=fighter.max_hp,
-                power=fighter.power,
-                defense=fighter.defense,
-                xp=fighter.xp_reward,
-            )[: menu_width - 4],
-            fg=COLOR_NAME,
-        )
-        row += 1
+    bar_w = max(8, menu_width - 18)
+    # 气血：百分比条 + 数值
+    filled = round(bar_w * fighter.hp / max(1, fighter.max_hp))
+    console.print(x + 2, row, strings["hud_hp"].format(hp=fighter.hp, max_hp=fighter.max_hp)[: menu_width - bar_w - 4], fg=tuple(theme["hud"]["hp"]))
+    console.print(x + menu_width - bar_w - 2, row, BAR_FILLED * filled + BAR_EMPTY * (bar_w - filled), fg=tuple(theme["hud"]["hp"]))
+    row += 1
+    console.print(
+        x + 2, row,
+        strings["examine_stats"].format(
+            hp=fighter.hp, max_hp=fighter.max_hp, power=fighter.power,
+            defense=fighter.defense, xp=fighter.xp_reward,
+        )[: menu_width - 4],
+        fg=COLOR_NAME,
+    )
+    row += 1
+    # 威胁 + 距离
+    threat = _assess_threat(engine.player, target)
+    threat_colors = {"high": (244, 96, 96), "mid": (255, 222, 130), "low": (122, 232, 190)}
+    dist = int(engine.player.distance_to(target))
+    threat_text = strings[f"threat_{threat}"]
+    line = f"{strings['examine_threat_label']} {threat_text}   {strings['examine_dist']} {dist}"
+    console.print(x + 2, row, line, fg=threat_colors[threat])
+    row += 1
+    # 抗性
     if resist_parts:
-        console.print(
-            x + 2, row, strings["examine_resist"].format(resists=" ".join(resist_parts)),
-            fg=(150, 200, 160),
-        )
+        console.print(x + 2, row, strings["examine_resist"].format(resists=" ".join(resist_parts)), fg=(150, 200, 160))
     else:
         console.print(x + 2, row, strings["examine_no_resist"], fg=(150, 150, 158))
     row += 1
     if element_names:
-        console.print(
-            x + 2,
-            row,
-            strings["examine_attack"].format(elements="、".join(element_names)),
-            fg=(240, 160, 110),
-        )
+        console.print(x + 2, row, strings["examine_attack"].format(elements="、".join(element_names)), fg=(240, 160, 110))
         row += 1
     if lore_lines:
-        row += 1  # 典故前空一行
+        row += 1  # 典故前空行
         for line in lore_lines:
-            console.print(x + 2, row, line, fg=(168, 168, 178))
+            console.print(x + 2, row, line[: menu_width - 4], fg=(168, 168, 178))
             row += 1
+    else:
+        console.print(x + 2, row, strings["examine_lore_show"], fg=(130, 130, 140))
+
+    # 目标清单（多目标时）：卡片上方竖排
+    targets = list(handler.targets) if handler is not None else []
+    if len(targets) > 1:
+        list_h = len(targets) + 2
+        list_y = y - list_h - 1
+        if list_y < 0:
+            list_y = min(map_rows - list_h, y + menu_height + 1)
+        if 0 <= list_y and list_y + list_h <= map_rows:
+            console.draw_frame(
+                x=x, y=list_y, width=menu_width, height=list_h,
+                title=f" {strings['examine_targets']} ",
+                clear=True,
+                fg=tuple(theme["ui"]["frame"]),
+                bg=tuple(theme["background"]),
+            )
+            for i, t in enumerate(targets[:9]):  # 清单最多 9 项（数字键 1-9 直达）
+                current = (i == handler.index % len(targets))
+                mini = 6
+                mini_filled = round(mini * t.fighter.hp / max(1, t.fighter.max_hp))
+                mark = "►" if current else " "
+                number = str(i + 1) if i < 9 else " "
+                color = COLOR_NAME if current else (150, 150, 158)
+                console.print(x + 2, list_y + 1 + i, f"{mark}{number} {t.name}"[: menu_width - mini - 6], fg=color)
+                console.print(
+                    x + menu_width - mini - 2, list_y + 1 + i,
+                    BAR_FILLED * mini_filled + BAR_EMPTY * (mini - mini_filled),
+                    fg=tuple(theme["hud"]["hp"]) if current else (90, 60, 60),
+                )
+
+    # 底部按键提示
+    hint = strings["examine_hint_full"]
+    console.print(max(0, (map_cols - len(hint)) // 2), map_rows - 1, hint, fg=(130, 130, 140))
 
 
 def _wrap_cjk(text: str, width: int) -> List[str]:

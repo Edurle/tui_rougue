@@ -144,7 +144,18 @@ def test_examine_card_renders_stats_resist_lore():
     assert "气血" in text and "攻" in text and "防" in text  # 属性行
     assert "雷抗60%" in text.replace(" ", "") and "火抗60%" in text.replace(" ", "")
     assert "雷" in text and "爪击" in text  # 元素爪击行
-    assert "钟山之神" in text  # 山海经典故
+    assert "威胁" in text and ("高" in text or "中" in text or "低" in text)  # 威胁度
+    assert "距" in text  # 距离
+    # 典故默认收起，按 L 展开
+    assert "钟山之神" not in text
+    assert "L" in text  # 展开提示
+    dispatch_key(handler, KeySym.L)
+    handler.on_render(console)
+    text = card_text(console, engine)
+    assert "钟山之神" in text
+    dispatch_key(handler, KeySym.L)  # 再按收起
+    handler.on_render(console)
+    assert "钟山之神" not in card_text(console, engine)
 
 
 def test_examine_card_plain_monster_no_resist_line():
@@ -160,4 +171,28 @@ def test_examine_card_plain_monster_no_resist_line():
     text = card_text(console, engine)
     assert "狌狌" in text
     assert "抗性：无" in text.replace(" ", "")
-    assert "招摇之山" in text  # lore 仍在
+    dispatch_key(handler, KeySym.L)
+    handler.on_render(console)
+    assert "招摇之山" in card_text(console, engine)  # 展开后 lore 可见
+
+
+def test_examine_target_list_and_number_jump():
+    """多目标：卡片旁显示视野目标清单，数字键直达。"""
+    import render
+
+    engine = make_engine()
+    put_monster(engine, 2, 0, "xingxing")
+    put_monster(engine, -2, 0, "gudiao")
+    handler = ih.ExamineEventHandler(engine)
+    assert len(handler.targets) == 2
+    console = tcod.console.Console(
+        engine.settings.total_cols, engine.settings.total_rows, order="F"
+    )
+    handler.on_render(console)
+    text = card_text(console, engine)
+    assert "视野目标" in text and "狌狌" in text and "蛊雕" in text
+
+    dispatch_key(handler, KeySym.N2)  # 数字 2 → 清单第 2 项
+    assert handler.index == 1 and handler.current_target is handler.targets[1]
+    dispatch_key(handler, KeySym.N1)
+    assert handler.current_target is handler.targets[0]
