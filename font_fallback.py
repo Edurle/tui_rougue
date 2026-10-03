@@ -77,6 +77,23 @@ EXTRA_RUNTIME_CHARS = set(
 )
 
 
+def _draw_centered(ch: str, font, tile_size: int) -> "Image.Image":
+    """按字形实际 bbox 居中绘制：带下伸部（g/p/q/y 等）与超宽字形不会被画布裁剪。"""
+    img = Image.new("L", (tile_size, tile_size), 0)
+    bbox = font.getbbox(ch)
+    if bbox is None:
+        return img
+    x0, y0, x1, y1 = bbox
+    w, h = x1 - x0, y1 - y0
+    if w <= 0 or h <= 0:
+        return img
+    # PIL text 坐标默认以左上（含 ascent 的布局顶）为原点，与 getbbox 同系
+    x_off = (tile_size - w) // 2 - x0
+    y_off = (tile_size - h) // 2 - y0
+    ImageDraw.Draw(img).text((x_off, y_off), ch, font=font, fill=255)
+    return img
+
+
 def rasterize_glyphs(tileset, font_path: Path, chars: set[str], tile_size: int, font_size: int) -> int:
     """PIL 重渲字形并注入 tileset（白色 + alpha，fg 调制），返回注入数量。"""
     import numpy as np
@@ -87,13 +104,7 @@ def rasterize_glyphs(tileset, font_path: Path, chars: set[str], tile_size: int, 
         cp = ord(ch)
         if cp < 32:
             continue
-        img = Image.new("L", (tile_size, tile_size), 0)
-        draw = ImageDraw.Draw(img)
-        try:
-            draw.text((tile_size // 2, tile_size // 2), ch, font=font, fill=255, anchor="mm")
-        except Exception:
-            continue
-        alpha = np.array(img)
+        alpha = np.array(_draw_centered(ch, font, tile_size))
         if alpha.max() < 40:
             continue  # 字体无此字形，交由回退处理
         rgba = np.zeros((tile_size, tile_size, 4), dtype=np.uint8)
@@ -116,9 +127,7 @@ def _load_fallback_font(tile_size: int):
 
 
 def _rasterize(ch: str, font, tile_size: int) -> "object":
-    img = Image.new("L", (tile_size, tile_size), 0)
-    ImageDraw.Draw(img).text((0, 0), ch, font=font, fill=255)
-    return img
+    return _draw_centered(ch, font, tile_size)
 
 
 def apply_font_pipeline(tileset, content, main_font_path: Path, tile_size: int) -> None:
