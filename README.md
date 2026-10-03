@@ -104,7 +104,7 @@ dist\shanhai_rogue.exe
 
 所有内容在 `data/content/`：
 
-- **monsters.json** — 异兽定义（字符、颜色、战斗数值、AI 类型、tags、出处卷目、多语言名）
+- **monsters.json** — 异兽定义（字符、颜色、战斗数值、AI 类型、tags、出处卷目、多语言名）；**54 只异兽**覆盖六大经与全难度带（狰/帝江/窫窳/九凤/驺吾/巴蛇等 32 只新考据异兽）
 - **classes.json** — 10 职业定义（气血/攻/防/真气、双语名与简介）
 - **skills.json** — 80 技能（前置树、耗气、效果参数、tags、双语名）；`tools/gen_skill_data.py` 为生成脚本
 - **regions.json** — 山川游历区域表（空间 zone→经卷→难度→名山序列→首入叙事）

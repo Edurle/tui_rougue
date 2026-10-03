@@ -84,6 +84,186 @@
       "weight": 3,
       "min_difficulty": 16,
       "max_difficulty": null
+    },
+    {
+      "id": "wenlin",
+      "min_difficulty": 1,
+      "max_difficulty": 4,
+      "weight": 3
+    },
+    {
+      "id": "qinggeng",
+      "min_difficulty": 1,
+      "max_difficulty": 4,
+      "weight": 2
+    },
+    {
+      "id": "fuzhu",
+      "min_difficulty": 2,
+      "max_difficulty": 5,
+      "weight": 2
+    },
+    {
+      "id": "zhen",
+      "min_difficulty": 2,
+      "max_difficulty": 5,
+      "weight": 2
+    },
+    {
+      "id": "huashe",
+      "min_difficulty": 2,
+      "max_difficulty": 6,
+      "weight": 2
+    },
+    {
+      "id": "lushu",
+      "min_difficulty": 4,
+      "max_difficulty": 7,
+      "weight": 2
+    },
+    {
+      "id": "boyi",
+      "min_difficulty": 4,
+      "max_difficulty": 8,
+      "weight": 2
+    },
+    {
+      "id": "xuangui",
+      "min_difficulty": 4,
+      "max_difficulty": 8,
+      "weight": 2
+    },
+    {
+      "id": "guanguan",
+      "min_difficulty": 4,
+      "max_difficulty": 7,
+      "weight": 2
+    },
+    {
+      "id": "changyou",
+      "min_difficulty": 5,
+      "max_difficulty": 8,
+      "weight": 2
+    },
+    {
+      "id": "lili",
+      "min_difficulty": 4,
+      "max_difficulty": 7,
+      "weight": 2
+    },
+    {
+      "id": "dijiang",
+      "min_difficulty": 6,
+      "max_difficulty": 10,
+      "weight": 2
+    },
+    {
+      "id": "zheng",
+      "min_difficulty": 7,
+      "max_difficulty": 11,
+      "weight": 2
+    },
+    {
+      "id": "zhuyan",
+      "min_difficulty": 6,
+      "max_difficulty": 10,
+      "weight": 2
+    },
+    {
+      "id": "manman",
+      "min_difficulty": 5,
+      "max_difficulty": 9,
+      "weight": 2
+    },
+    {
+      "id": "wenyao",
+      "min_difficulty": 5,
+      "max_difficulty": 9,
+      "weight": 1
+    },
+    {
+      "id": "tiangou",
+      "min_difficulty": 6,
+      "max_difficulty": 10,
+      "weight": 2
+    },
+    {
+      "id": "lei",
+      "min_difficulty": 5,
+      "max_difficulty": 9,
+      "weight": 1
+    },
+    {
+      "id": "yayu",
+      "min_difficulty": 8,
+      "max_difficulty": 12,
+      "weight": 2
+    },
+    {
+      "id": "mengji",
+      "min_difficulty": 7,
+      "max_difficulty": 11,
+      "weight": 2
+    },
+    {
+      "id": "youyan",
+      "min_difficulty": 7,
+      "max_difficulty": 10,
+      "weight": 2
+    },
+    {
+      "id": "zuzi",
+      "min_difficulty": 7,
+      "max_difficulty": 11,
+      "weight": 2
+    },
+    {
+      "id": "suanyu",
+      "min_difficulty": 8,
+      "max_difficulty": 12,
+      "weight": 2
+    },
+    {
+      "id": "xiegou",
+      "min_difficulty": 10,
+      "max_difficulty": 13,
+      "weight": 2
+    },
+    {
+      "id": "congcong",
+      "min_difficulty": 10,
+      "max_difficulty": 14,
+      "weight": 2
+    },
+    {
+      "id": "youyou",
+      "min_difficulty": 11,
+      "max_difficulty": 15,
+      "weight": 2
+    },
+    {
+      "id": "tongtong",
+      "min_difficulty": 10,
+      "max_difficulty": 14,
+      "weight": 2
+    },
+    {
+      "id": "jiufeng",
+      "min_difficulty": 16,
+      "max_difficulty": null,
+      "weight": 3
+    },
+    {
+      "id": "zouwu",
+      "min_difficulty": 16,
+      "max_difficulty": null,
+      "weight": 2
+    },
+    {
+      "id": "bashe",
+      "min_difficulty": 16,
+      "max_difficulty": null,
+      "weight": 3
     }
   ],
   "items": [

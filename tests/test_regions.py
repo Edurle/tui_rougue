@@ -96,6 +96,19 @@ def test_world_landmarks_named_from_regions():
         )
 
 
+def test_bestiary_coverage():
+    """山海经图鉴：六大经齐备、各难度带均有投放、典故完整。"""
+    content = load_content()
+    for region in ("zhongshanjing", "nanshanjing", "xishanjing", "beishanjing", "dongshanjing", "dahuangjing"):
+        count = sum(1 for m in content.monsters.values() if region in m.get("tags", []))
+        assert count >= 5, f"{region} 异兽应≥5 只，实际 {count}"
+    for difficulty in range(1, 21):
+        assert content.monster_ids_for_difficulty(difficulty), f"难度 {difficulty} 无可投放异兽"
+    for mid, m in content.monsters.items():
+        assert m.get("lore", {}).get("zh_CN"), f"{mid} 缺山海经典故"
+        assert len(m["char"]) == 1, f"{mid} 字符须单宽"
+
+
 def test_world_terrain_and_spawn():
     import tile_types
 
