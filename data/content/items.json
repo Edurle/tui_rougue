@@ -1305,5 +1305,108 @@
         }
       ]
     }
+  },
+  "mat_elite_essence": {
+    "name": {
+      "zh_CN": "精魄",
+      "en_US": "Elite Essence"
+    },
+    "char": "&",
+    "color": [
+      255,
+      170,
+      80
+    ],
+    "tags": [
+      "material"
+    ],
+    "lore": {
+      "zh_CN": "精英异兽凝而不散的战魄，微光灼手，是突破桎梏的枢机。",
+      "en_US": "The unyielding battle-spirit of an elite beast, warm to the touch - the keystone of breakthroughs."
+    }
+  },
+  "pill_ninegold": {
+    "name": {
+      "zh_CN": "九转金丹",
+      "en_US": "Ninefold Golden Elixir"
+    },
+    "char": "!",
+    "color": [
+      255,
+      214,
+      120
+    ],
+    "tags": [
+      "consumable"
+    ],
+    "lore": {
+      "zh_CN": "以精魄为引、魔核为枢，九转而成。服之百脉俱通，起死人而肉白骨。",
+      "en_US": "Refined nine times with elite essence and a demon core; one pill mends what should be beyond mending."
+    },
+    "consumable": {
+      "type": "heal",
+      "amount": 60
+    }
+  },
+  "talisman_execlipse": {
+    "name": {
+      "zh_CN": "诛邪符",
+      "en_US": "Fiend-Banishing Talisman"
+    },
+    "char": "?",
+    "color": [
+      255,
+      130,
+      110
+    ],
+    "tags": [
+      "consumable",
+      "talisman"
+    ],
+    "lore": {
+      "zh_CN": "朱砂为骨、精魄为锋，符成之日雷火同行，诸邪辟易。",
+      "en_US": "Cinnabar for bones, elite essence for the edge; where this talisman lands, thunder and fire follow."
+    },
+    "consumable": {
+      "type": "lightning",
+      "damage": 30,
+      "max_range": 9
+    }
+  },
+  "w_xuanyuan": {
+    "name": {
+      "zh_CN": "上古·轩辕剑",
+      "en_US": "Xuanyuan, the Ancient Blade"
+    },
+    "char": "/",
+    "color": [
+      255,
+      240,
+      190
+    ],
+    "tags": [
+      "forged"
+    ],
+    "lore": {
+      "zh_CN": "以龙鳞淬锋、双魄铸魂，剑成之日风云变色，为天工开物之极。",
+      "en_US": "Quenched in dragon scale, soul-forged with twin essences - the summit of all craft."
+    },
+    "tier": 7,
+    "equipment": {
+      "slot": "weapon",
+      "bonuses": {
+        "power": 10
+      },
+      "affixes": [
+        {
+          "id": "thunder_damage",
+          "value": 30
+        },
+        {
+          "id": "kill_heal",
+          "value": 3
+        }
+      ]
+    }
   }
 }

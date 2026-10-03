@@ -30,10 +30,20 @@ def make_engine(class_ids=("leifa", "fushi")):
     return Engine(load_content(), Settings(), class_ids)
 
 
+def give_craft_materials(engine, material_ids, count):
+    """测试用：直接塞修习材料（大招/突破消耗）。"""
+    for mid in material_ids:
+        item = engine.content.build_item(mid, engine.gamemap, 0, 0)
+        engine.gamemap.entities.discard(item)
+        item.gamemap = None
+        item.stack = count
+        engine.player.inventory.add(item)
+
 def learn_all(engine, class_id=None):
     """按拓扑顺序学满当前（或指定）职业全部技能（测试用：点数管够）。"""
     player = engine.player
     player.skill_points = 99
+    give_craft_materials(engine, ("mat_demon_core", "mat_elite_essence"), 20)
     if class_id is None:
         class_ids = list(player.class_ids)
     else:
@@ -246,6 +256,7 @@ def test_ultimate_costs_two_points():
     engine = make_engine()
     player = engine.player
     player.skill_points = 5
+    give_craft_materials(engine, ("mat_demon_core",), 1)  # 大招修习另需魔核
     # 万雷引 requires 天雷破，先学链
     for sid in ("s_leifa_1", "s_leifa_3", "s_leifa_7"):
         engine.learn_skill(sid)
@@ -444,6 +455,8 @@ def test_skill_level_upgrade_to_max():
     engine = make_engine()
     player = engine.player
     player.skill_points = 30
+    # 5 重与 10 重突破共需精魄×2 + 魔核×1
+    give_craft_materials(engine, ("mat_demon_core", "mat_elite_essence"), 5)
     engine.learn_skill("s_leifa_1")  # 初学 1 点
     for _ in range(9):  # 升到 10 级
         engine.learn_skill("s_leifa_1")

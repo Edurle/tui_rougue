@@ -297,8 +297,9 @@ class Engine:
     def learn_skill(self, skill_id: str) -> None:
         """参悟/修习技能（不消耗回合）。
 
-        初学：前置检查 + 消耗技能点 cost（1-2 点）；升级：每级 1 点，
-        直至 SKILL_MAX_LEVEL 满级。每升一重境界获得 1 技能点。
+        初学：前置检查 + 技能点 cost（大招 2 点）+ 魔核×1；
+        升级：每级 1 点；升至第 5 重耗精魄×1，第 10 重（满级）耗精魄×1+魔核×1。
+        每升一重境界获得 1 技能点。
         """
         import skills as skills_module
 
@@ -323,14 +324,41 @@ class Engine:
             cost = 1  # 升级每级 1 点
         if player.skill_points < cost:
             raise exceptions.Impossible(strings["learn_no_points"])
+
+        # 材料门槛：大招初学耗魔核；5 重/10 重突破耗精魄（+魔核）
+        material_needs = skills_module.skill_material_cost(skill, level + 1)
+        lacking = []
+        for mid, count in material_needs:
+            have = player.inventory.count_material(mid, self.content)
+            if have < count:
+                lacking.append(
+                    f"{self.content._(self.content.items[mid]['name'])}×{count - have}"
+                )
+        if lacking:
+            raise exceptions.Impossible(
+                strings["learn_need_materials"].format(materials="、".join(lacking))
+            )
+
         player.skill_points -= cost
+        for mid, count in material_needs:
+            player.inventory.take_material(mid, count, self.content)
         player.skill_levels[skill_id] = level + 1
         name = self.content._(skill["name"])
+        spent = ""
+        if material_needs:
+            spent = strings["learn_materials_spent"].format(
+                materials="、".join(
+                    f"{self.content._(self.content.items[mid]['name'])}×{count}"
+                    for mid, count in material_needs
+                )
+            )
         if level == 0:
-            self.message_log.add_message(strings["learn_ok"].format(skill=name), "levelup")
+            self.message_log.add_message(
+                strings["learn_ok"].format(skill=name) + spent, "levelup"
+            )
         else:
             self.message_log.add_message(
-                strings["learn_upgrade"].format(skill=name, level=level + 1), "levelup"
+                strings["learn_upgrade"].format(skill=name, level=level + 1) + spent, "levelup"
             )
 
     # ---- 掉落 ----

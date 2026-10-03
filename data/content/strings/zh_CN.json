@@ -210,5 +210,8 @@
   "inventory_empty_page": "（此页无物）",
   "learn_mark_max": "✓MAX",
   "learn_upgrade": "「{skill}」修至第 {level} 重。",
-  "learn_max": "此术已臻化境（10 重）。"
+  "learn_max": "此术已臻化境（10 重）。",
+  "elite_prefix": "精英·",
+  "learn_need_materials": "修习此术尚需：{materials}。",
+  "learn_materials_spent": "（耗去：{materials}）"
 }

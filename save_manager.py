@@ -84,6 +84,7 @@ def _serialize_entities(gamemap, content) -> list:
                     "x": entity.x,
                     "y": entity.y,
                     "hp": entity.fighter.hp,
+                    "elite": "elite" in tags,
                     "dot": list(entity.fighter.dot),
                     "stun_turns": entity.fighter.stun_turns,
                     "buffs": {k: list(v) for k, v in entity.fighter.buffs.items()},
@@ -114,8 +115,11 @@ def _serialize_entities(gamemap, content) -> list:
 
 
 def _monster_id_of(entity, content) -> Optional[str]:
+    """按 (char, name) 反查怪物 id；精英怪带名前缀，先剥再匹配。"""
+    prefix = content.strings.get("elite_prefix", "")
+    bare = entity.name[len(prefix):] if prefix and entity.name.startswith(prefix) else entity.name
     for mid, mdef in content.monsters.items():
-        if mdef["char"] == entity.char and content._(mdef["name"]) == entity.name:
+        if mdef["char"] == entity.char and content._(mdef["name"]) == bare:
             return mid
     return None
 
@@ -274,7 +278,9 @@ def _restore_entities(engine, gamemap, entities: list) -> None:
         elif kind == "node":
             content.build_resource_node(entry["node"], gamemap, entry["x"], entry["y"])
         elif kind == "monster":
-            actor = content.build_monster(entry["id"], gamemap, entry["x"], entry["y"])
+            actor = content.build_monster(
+                entry["id"], gamemap, entry["x"], entry["y"], elite=bool(entry.get("elite", False))
+            )
             actor.fighter.hp = entry["hp"]
             actor.fighter.dot = list(entry["dot"])
             actor.fighter.stun_turns = entry["stun_turns"]

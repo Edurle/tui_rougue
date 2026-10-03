@@ -47,7 +47,8 @@ WORLD_MARGIN = 2
 # 河流与投放（机制常量）
 RIVER_SOURCES = 9
 RIVER_BRIDGE_EVERY = 9  # 河流每隔 N 格架桥，保证可渡
-MONSTER_DENSITY = 1 / 320  # 每 N 可走格一只游荡异兽（低密度，旅行可绕行）
+MONSTER_DENSITY = 1 / 320
+WORLD_ELITE_CHANCE = 0.08  # 世界游荡怪精英化概率  # 每 N 可走格一只游荡异兽（低密度，旅行可绕行）
 CENTER_MONSTER_DENSITY = 1 / 700  # 中山经腹地更安宁
 ITEM_DENSITY = 1 / 500
 SPAWN_CLEAR_RADIUS = 2  # 出生点安全清场半径
@@ -554,7 +555,8 @@ def _populate_world(gamemap: GameMap, content, rng: random.Random, spawn: Tuple[
         # 按区域密度预算节流：中心区投放更稀
         if monsters_left > 0 and not near_spawn and rng.random() < (monster_budget / MONSTER_DENSITY) * 0.7:
             content.build_monster(
-                content.random_monster_id(difficulty_at(x, y), rng), gamemap, x, y
+                content.random_monster_id(difficulty_at(x, y), rng), gamemap, x, y,
+                elite=rng.random() < WORLD_ELITE_CHANCE,
             )
             monsters_left -= 1
         elif items_left > 0 and not near_spawn:

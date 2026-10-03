@@ -189,9 +189,17 @@ def _populate_room(
             _place_at(gamemap, room, rng, content.random_item_id(floor_number, rng), content.build_item)
 
 
+REALM_ELITE_CHANCE = 0.1  # 秘境怪物精英化概率
+
+
 def _place_at(gamemap: GameMap, room: Rect, rng: random.Random, entity_id: str, builder) -> None:
+    """找空位投放；怪物 builder 按概率精英化（builder 需支持 elite 关键字）。"""
+    allow_elite = getattr(builder, "__name__", "") == "build_monster"
     for _ in range(16):  # 尝试若干次找空位，找不到就放弃该实体
         x, y = room.random_inner(rng)
         if gamemap.tiles["walkable"][x, y] and not gamemap.get_blocking_entity_at(x, y):
-            builder(entity_id, gamemap, x, y)
+            if allow_elite:
+                builder(entity_id, gamemap, x, y, elite=rng.random() < REALM_ELITE_CHANCE)
+            else:
+                builder(entity_id, gamemap, x, y)
             return

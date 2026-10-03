@@ -552,19 +552,31 @@ class Content:
 
     # ---- 实体工厂 ----
 
-    def build_monster(self, monster_id: str, gamemap, x: int, y: int) -> Actor:
+    def build_monster(self, monster_id: str, gamemap, x: int, y: int, elite: bool = False) -> Actor:
         mdef = self.monsters[monster_id]
         fighter_data = mdef["components"]["fighter"]
         ai_data = mdef["components"]["ai"]
+        name = self._(mdef["name"])
+        tags = list(mdef.get("tags", []))
+        color = _rgb(mdef["color"], f"怪物 {monster_id}")
+        if elite:
+            # 精英异兽：气血×1.8 / 攻×1.4 / 修为×3，名前缀+亮色，必掉精魄
+            fighter_data = dict(fighter_data)
+            fighter_data["hp"] = int(fighter_data["hp"] * 1.8)
+            fighter_data["power"] = int(fighter_data["power"] * 1.4)
+            fighter_data["xp_reward"] = int(fighter_data.get("xp_reward", 0) * 3)
+            name = self.strings["elite_prefix"] + name
+            tags.append("elite")
+            color = tuple(min(255, int(c * 1.35) + 30) for c in color)
         actor = Actor(
             gamemap=gamemap,
             x=x,
             y=y,
             char=mdef["char"],
-            color=_rgb(mdef["color"], f"怪物 {monster_id}"),
-            name=self._(mdef["name"]),
+            color=color,
+            name=name,
             blocks_movement=True,
-            tags=list(mdef.get("tags", [])),
+            tags=tags,
             lore=self._(mdef.get("lore", "")),
             art=mdef.get("art"),
         )

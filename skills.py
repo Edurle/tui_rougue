@@ -474,6 +474,19 @@ class MpRestore(SkillEffect):
         )
 
 
+def skill_material_cost(skill: dict, target_level: int) -> list:
+    """修习材料门槛：大招初学耗魔核×1；升至 5 重耗精魄×1；10 重耗精魄×1+魔核×1。"""
+    needs = []
+    if target_level == 1 and int(skill.get("cost", 1)) >= 2:
+        needs.append(("mat_demon_core", 1))
+    if target_level == 5:
+        needs.append(("mat_elite_essence", 1))
+    if target_level == SKILL_MAX_LEVEL:
+        needs.append(("mat_elite_essence", 1))
+        needs.append(("mat_demon_core", 1))
+    return needs
+
+
 def cast(engine: "Engine", player: "Actor", skill: dict, target=None) -> None:
     """统一施放入口：真气/气血检查 → 效果执行（按技能等级缩放）→ 扣耗。"""
     strings = engine.content.strings

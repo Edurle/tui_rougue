@@ -209,5 +209,8 @@
   "inventory_empty_page": "(empty)",
   "learn_mark_max": "MAX",
   "learn_upgrade": "{skill} reaches Rank {level}.",
-  "learn_max": "This art is already at its peak (Rank 10)."
+  "learn_max": "This art is already at its peak (Rank 10).",
+  "elite_prefix": "Elite ",
+  "learn_need_materials": "Requires materials: {materials}.",
+  "learn_materials_spent": "(consumed: {materials})"
 }

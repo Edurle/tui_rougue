@@ -14,6 +14,10 @@
       "id": "mat_demon_core",
       "chance": 1.0
     },
+    "elite": {
+      "id": "mat_elite_essence",
+      "chance": 1.0
+    },
     "serpent": {
       "id": "mat_serpent_scale",
       "chance": 0.55
@@ -395,6 +399,96 @@
       ],
       "output": {
         "id": "m_zhenyue",
+        "count": 1
+      }
+    },
+    {
+      "id": "alchemy_ninegold",
+      "kind": "alchemy",
+      "name": {
+        "zh_CN": "九转金丹",
+        "en_US": "Ninefold Golden Elixir"
+      },
+      "inputs": [
+        {
+          "id": "mat_spirit_herb",
+          "count": 4
+        },
+        {
+          "id": "mat_cinnabar",
+          "count": 2
+        },
+        {
+          "id": "mat_elite_essence",
+          "count": 1
+        },
+        {
+          "id": "mat_demon_core",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "pill_ninegold",
+        "count": 1
+      }
+    },
+    {
+      "id": "talisman_execlipse",
+      "kind": "talisman",
+      "name": {
+        "zh_CN": "摹诛邪符",
+        "en_US": "Fiend-Banishing Talisman"
+      },
+      "inputs": [
+        {
+          "id": "mat_talisman_paper",
+          "count": 2
+        },
+        {
+          "id": "mat_bird_feather",
+          "count": 2
+        },
+        {
+          "id": "mat_cinnabar",
+          "count": 2
+        },
+        {
+          "id": "mat_elite_essence",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "talisman_execlipse",
+        "count": 1
+      }
+    },
+    {
+      "id": "forge_xuanyuan",
+      "kind": "forge",
+      "name": {
+        "zh_CN": "锻·轩辕剑",
+        "en_US": "Forge Xuanyuan"
+      },
+      "inputs": [
+        {
+          "id": "mat_dark_ore",
+          "count": 5
+        },
+        {
+          "id": "mat_dragon_scale",
+          "count": 1
+        },
+        {
+          "id": "mat_elite_essence",
+          "count": 2
+        },
+        {
+          "id": "mat_demon_core",
+          "count": 2
+        }
+      ],
+      "output": {
+        "id": "w_xuanyuan",
         "count": 1
       }
     }
