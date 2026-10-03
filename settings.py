@@ -67,11 +67,11 @@ class Settings:
 
     # ---- 档位切换 ----
 
-    def cycle_map(self) -> None:
-        self.map_size = SIZE_ORDER[(SIZE_ORDER.index(self.map_size) + 1) % len(SIZE_ORDER)]
+    def cycle_map(self, delta: int = 1) -> None:
+        self.map_size = SIZE_ORDER[(SIZE_ORDER.index(self.map_size) + delta) % len(SIZE_ORDER)]
 
-    def cycle_sidebar(self) -> None:
-        self.sidebar_size = SIZE_ORDER[(SIZE_ORDER.index(self.sidebar_size) + 1) % len(SIZE_ORDER)]
+    def cycle_sidebar(self, delta: int = 1) -> None:
+        self.sidebar_size = SIZE_ORDER[(SIZE_ORDER.index(self.sidebar_size) + delta) % len(SIZE_ORDER)]
 
     # ---- 派生几何 ----
 

@@ -37,8 +37,6 @@
   "size_large": "大",
   "size_medium": "中",
   "size_small": "小",
-  "ui_map_size": "画面已切换为「{size}」",
-  "ui_sidebar_size": "信息板已切换为「{size}」",
   "ascend": "你循径回返，回到{region}·{mountain}。",
   "not_on_up_stairs": "这里没有回返的山径。",
   "no_floor_above": "来路已湮没，无处回返。",

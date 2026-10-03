@@ -61,15 +61,3 @@ def test_load_invalid_falls_back_to_large(tmp_path, monkeypatch):
     Path("settings.json").write_text('{"map_size": "giant"}', encoding="utf-8")
     s = Settings.load()
     assert s.map_size in ("large", "medium", "small"), "未知档位应回退到合法值"
-
-
-def test_engine_apply_layout_preserves_progress():
-    content = load_content()
-    engine = Engine(content, Settings())
-    engine.gamemap.floor_number = 3
-    map_before = id(engine.gamemap)
-    engine.apply_layout()
-    # 地图尺寸与视口解耦：改几何不丢进度
-    assert engine.gamemap.floor_number == 3
-    assert id(engine.gamemap) == map_before  # 同一张地图对象，不再重生成
-    assert engine.message_log.width == engine.settings.content_w

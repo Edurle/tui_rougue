@@ -88,17 +88,6 @@ def test_ascend_on_floor1_returns_to_world():
     assert (engine.player.x, engine.player.y) == engine.world.spawn_xy
 
 
-def test_ascend_after_layout_change_keeps_history():
-    engine = make_engine()
-    for _ in range(2):
-        engine.player.x, engine.player.y = engine.gamemap.downstairs_xy
-        TakeStairsAction(engine.player, "down").perform(engine)
-    engine.apply_layout()  # 改显示设置：地图与楼层历史完整保留
-    engine.player.x, engine.player.y = engine.gamemap.upstairs_xy
-    TakeStairsAction(engine.player, "up").perform(engine)
-    assert engine.gamemap.realm_depth == 2  # 上行仍可回到上一层
-
-
 def test_wrong_spot_ascend_raises():
     import exceptions
 

@@ -149,13 +149,6 @@ class LoadGameAction(SwitchHandlerAction):
     """读档：从存档重建引擎（由主循环解释）。"""
 
 
-class ChangeSizeAction:
-    """显示设置切换标记（kind: map / sidebar），不消耗回合。由主循环重建窗口。"""
-
-    def __init__(self, kind: str) -> None:
-        self.kind = kind
-
-
 class EventHandler(tcod.event.EventDispatch):
     """基类：持有引擎，渲染主画面；子类可叠加覆盖层与各自按键表。"""
 
@@ -241,10 +234,6 @@ class MainGameEventHandler(LogScrollMixin, EventHandler):
             return OpenInventoryAction()
         if key == KeySym.ESCAPE:
             return actions.EscapeAction()
-        if key == KeySym.F1:
-            return ChangeSizeAction("map")
-        if key == KeySym.F2:
-            return ChangeSizeAction("sidebar")
         if key == KeySym.F5 and player.is_alive:
             import save_manager
 
@@ -686,8 +675,6 @@ class SettingsMenuEventHandler(tcod.event.EventDispatch):
         return ["lang", "map", "sidebar", "back"]
 
     def _cycle(self, item: str, delta: int) -> None:
-        from settings import SIZE_ORDER
-
         if item == "back":
             self.done = True
             return
@@ -704,11 +691,10 @@ class SettingsMenuEventHandler(tcod.event.EventDispatch):
             self.content = load_content(langs[idx])  # 界面即时切换
             self.lang_changed = True
             return
-        order = list(SIZE_ORDER)
-        attr = "map_size" if item == "map" else "sidebar_size"
-        current = getattr(self.settings, attr)
-        idx = (order.index(current) + delta) % len(order)
-        setattr(self.settings, attr, order[idx])
+        if item == "map":
+            self.settings.cycle_map(delta)
+        else:  # sidebar
+            self.settings.cycle_sidebar(delta)
         self.settings.save()
         self.needs_resize = True
 

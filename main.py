@@ -2,9 +2,9 @@
 
 入口：python main.py [--lang zh_CN|en_US] [--map large|medium|small]
                      [--sidebar large|medium|small] [--smoke [输出路径]]
-语言优先级：--lang 参数 > 系统语言检测 > zh_CN
-显示设置：F1 循环画面大小（字号+格数），F2 循环信息板宽度；持久化到 settings.json
-开局：两段职业选择（主→副）构造双职业行者；转世重修回到选择界面
+语言优先级：--lang 参数 > 开始界面设置 > 系统语言检测 > zh_CN
+显示与语言设置集中在开始界面（设置子界面，即时生效并持久化）；对局中不可调整
+开局：开始界面 → 两段职业选择（主→副）；转世重修回开始界面
 """
 
 from __future__ import annotations
@@ -23,7 +23,6 @@ from content_loader import DEFAULT_LANG, SUPPORTED_LANGS, load_content
 from engine import Engine
 from font_fallback import apply_font_pipeline
 from input_handlers import (
-    ChangeSizeAction,
     ClassSelectEventHandler,
     CloseMenuAction,
     CraftEventHandler,
@@ -194,14 +193,6 @@ def game_loop(context, console, engine, content) -> str:
             context.convert_event(event)
             action = handler.dispatch(event)
 
-            if isinstance(action, ChangeSizeAction):
-                if action.kind == "map":
-                    engine.settings.cycle_map()
-                else:
-                    engine.settings.cycle_sidebar()
-                engine.settings.save()
-                return action.kind
-
             if isinstance(action, SwitchHandlerAction):
                 engine.traveling = None  # 切换输入模式即终止旅行
                 if isinstance(action, OpenInventoryAction):
@@ -328,17 +319,9 @@ def run(lang: Optional[str], smoke_output: Optional[str] = None) -> None:
                     "system",
                 )
 
-            changed = _run_session(context, console, engine, content)
+            _run_session(context, console, engine, content)
             selected = None  # 会话结束（退出存档后）回开始界面
-            if changed in ("map", "sidebar"):
-                engine.apply_layout()
-                engine.message_log.add_message(
-                    strings[f"ui_{changed}_size"].format(
-                        size=strings[f"size_{settings.map_size if changed == 'map' else settings.sidebar_size}"]
-                    ),
-                    "info",
-                )
-            # 循环回到顶部：以新设置重建窗口；旧 context 已由 with 退出时关闭
+            # 循环回到顶部：重建窗口；旧 context 已由 with 退出时关闭
 
 
 def main() -> None:

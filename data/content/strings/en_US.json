@@ -36,8 +36,6 @@
   "size_large": "Large",
   "size_medium": "Medium",
   "size_small": "Small",
-  "ui_map_size": "View size changed to {size}",
-  "ui_sidebar_size": "Panel size changed to {size}",
   "ascend": "You take the trail back to {region} — {mountain}.",
   "not_on_up_stairs": "There is no trail back here.",
   "no_floor_above": "The way back is lost.",
