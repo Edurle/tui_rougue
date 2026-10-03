@@ -223,6 +223,7 @@ class Engine:
             ),
             "system",
         )
+        self.autosave()  # 探索里程碑存档（大世界仅秘境事件存档的补充）
 
     # ---- 大世界旅行 ----
 
