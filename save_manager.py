@@ -176,7 +176,7 @@ def _serialize_player(player, content) -> dict:
         "level": player.level.current_level,
         "xp": player.level.current_xp,
         "skill_points": player.skill_points,
-        "learned_skills": sorted(player.learned_skills),
+        "skill_levels": {k: int(v) for k, v in player.skill_levels.items()},
         "inventory": [
             {"id": _item_id_of(i, content), "stack": i.stack} for i in player.inventory.items
         ],
@@ -299,7 +299,10 @@ def _restore_player(engine, data: dict):
     player.level.current_level = data["level"]
     player.level.current_xp = data["xp"]
     player.skill_points = data["skill_points"]
-    player.learned_skills = set(data["learned_skills"])
+    # 新档存 skill_levels（1-10 级）；旧档只有 learned_skills 列表 → 全部视为 1 级
+    player.skill_levels = {str(k): int(v) for k, v in data.get("skill_levels", {}).items()}
+    for legacy_id in data.get("learned_skills", []):
+        player.skill_levels.setdefault(str(legacy_id), 1)
     for entry in data["inventory"]:
         # 新档存 {id, stack}；旧档存纯 id（兼容）
         entry_id = entry["id"] if isinstance(entry, dict) else entry

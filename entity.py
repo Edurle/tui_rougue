@@ -93,13 +93,19 @@ class Actor(Entity):
         # 双职业与技能（玩家专用；召唤兽仅用到 team/summon_ttl）
         self.class_ids: tuple = ()
         self.skill_points: int = 0
-        self.learned_skills: set = set()
+        # 技能等级（1-10；0=未学），learned_skills 为其键集视图
+        self.skill_levels: dict = {}
         # 召唤时限（None=非召唤）；到 0 由引擎移除
         self.summon_ttl: Optional[int] = None
 
     @property
     def is_alive(self) -> bool:
         return self.fighter is not None
+
+    @property
+    def learned_skills(self) -> set:
+        """已解锁技能（skill_levels 的键集视图，供 in 判断等只读使用）。"""
+        return set(self.skill_levels)
 
 
 class Item(Entity):

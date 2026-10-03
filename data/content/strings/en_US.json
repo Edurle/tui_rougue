@@ -67,7 +67,7 @@
   "learn_no_points": "Not enough skill points.",
   "learn_locked": "Locked: missing {missing}.",
   "learn_title": "Study (Tab: page · arrows: pick · Enter: learn · Esc: close)",
-  "learn_mark_known": "✓",
+  "learn_mark_known": "L{level}/{max}",
   "learn_mark_ready": "·",
   "learn_mark_locked": "×",
   "learn_req": "needs {names}",
@@ -206,5 +206,8 @@
   "inv_page_consumable": "Consumables",
   "inv_page_equipment": "Gear",
   "inv_page_material": "Materials",
-  "inventory_empty_page": "(empty)"
+  "inventory_empty_page": "(empty)",
+  "learn_mark_max": "MAX",
+  "learn_upgrade": "{skill} reaches Rank {level}.",
+  "learn_max": "This art is already at its peak (Rank 10)."
 }

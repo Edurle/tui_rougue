@@ -377,7 +377,9 @@ def _render_skills(console, engine, layout) -> None:
             import skills as skills_module
 
             cost = skills_module.mp_cost(player, skill)
-            _sprint(console, x, row, f"{key} {name}", fg=color)
+            lv = int(player.skill_levels.get(skill["id"], 0))
+            name_lv = f"{name}·{lv}" if lv > 1 else name
+            _sprint(console, x, row, f"{key} {name_lv}", fg=color)
             cost_text = strings["skill_mp_cost"].format(mp=cost)
             if skill["effect"].get("hp_cost"):
                 cost_text += f"-{skill['effect']['hp_cost']}"
@@ -552,18 +554,24 @@ def render_skill_learn_menu(console: tcod.console.Console, engine: "Engine", pag
     header = f"{content.class_name(class_id)} · {strings['hud_skills_points'].format(points=player.skill_points)}"
     console.print(x + 2, y + 1, header, fg=COLOR_HEADER)
 
+    from skills import SKILL_MAX_LEVEL
+
     row = y + 3
     for i, skill in enumerate(skills_list):
         name = content._(skill["name"])
-        learned = skill["id"] in player.learned_skills
+        level = int(player.skill_levels.get(skill["id"], 0))
         missing = [
             content._(content.skills[r]["name"])
             for r in skill.get("requires", [])
             if r not in player.learned_skills
         ]
         mark = ">" if i == cursor else " "
-        if learned:
-            state = strings["learn_mark_known"]
+        if level >= SKILL_MAX_LEVEL:
+            state = strings["learn_mark_max"]
+            color = COLOR_HEADER
+            detail = ""
+        elif level > 0:
+            state = strings["learn_mark_known"].format(level=level, max=SKILL_MAX_LEVEL)
             color = COLOR_SKILL_READY
             detail = ""
         elif not missing:

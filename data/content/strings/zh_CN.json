@@ -68,7 +68,7 @@
   "learn_no_points": "技能点不足。",
   "learn_locked": "前置未齐：缺 {missing}。",
   "learn_title": "参悟（Tab 换页 · ↑↓ 选择 · 回车 学习 · Esc 关闭）",
-  "learn_mark_known": "✓",
+  "learn_mark_known": "✓{level}/{max}",
   "learn_mark_ready": "·",
   "learn_mark_locked": "×",
   "learn_req": "需 {names}",
@@ -207,5 +207,8 @@
   "inv_page_consumable": "消耗品",
   "inv_page_equipment": "装备",
   "inv_page_material": "材料",
-  "inventory_empty_page": "（此页无物）"
+  "inventory_empty_page": "（此页无物）",
+  "learn_mark_max": "✓MAX",
+  "learn_upgrade": "「{skill}」修至第 {level} 重。",
+  "learn_max": "此术已臻化境（10 重）。"
 }

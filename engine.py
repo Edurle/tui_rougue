@@ -295,29 +295,43 @@ class Engine:
         skills_module.cast(self, player, skill, target)
 
     def learn_skill(self, skill_id: str) -> None:
-        """参悟技能（不消耗回合）：前置、点数检查。"""
+        """参悟/修习技能（不消耗回合）。
+
+        初学：前置检查 + 消耗技能点 cost（1-2 点）；升级：每级 1 点，
+        直至 SKILL_MAX_LEVEL 满级。每升一重境界获得 1 技能点。
+        """
+        import skills as skills_module
+
         player = self.player
         strings = self.content.strings
         skill = self.content.skills[skill_id]
-        if skill_id in player.learned_skills:
-            raise exceptions.Impossible(strings["already_learned"])
-        missing = [
-            self.content._(self.content.skills[r]["name"])
-            for r in skill.get("requires", [])
-            if r not in player.learned_skills
-        ]
-        if missing:
-            raise exceptions.Impossible(
-                strings["learn_locked"].format(missing="、".join(missing))
-            )
-        cost = int(skill.get("cost", 1))
+        level = int(player.skill_levels.get(skill_id, 0))
+        if level >= skills_module.SKILL_MAX_LEVEL:
+            raise exceptions.Impossible(strings["learn_max"])
+        if level == 0:
+            missing = [
+                self.content._(self.content.skills[r]["name"])
+                for r in skill.get("requires", [])
+                if r not in player.learned_skills
+            ]
+            if missing:
+                raise exceptions.Impossible(
+                    strings["learn_locked"].format(missing="、".join(missing))
+                )
+            cost = int(skill.get("cost", 1))  # 初学费用（大招 2 点）
+        else:
+            cost = 1  # 升级每级 1 点
         if player.skill_points < cost:
             raise exceptions.Impossible(strings["learn_no_points"])
         player.skill_points -= cost
-        player.learned_skills.add(skill_id)
-        self.message_log.add_message(
-            strings["learn_ok"].format(skill=self.content._(skill["name"])), "levelup"
-        )
+        player.skill_levels[skill_id] = level + 1
+        name = self.content._(skill["name"])
+        if level == 0:
+            self.message_log.add_message(strings["learn_ok"].format(skill=name), "levelup")
+        else:
+            self.message_log.add_message(
+                strings["learn_upgrade"].format(skill=name, level=level + 1), "levelup"
+            )
 
     # ---- 掉落 ----
 

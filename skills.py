@@ -28,6 +28,40 @@ TAG_AFFIX_MAP = {
 
 SKILL_EFFECTS: dict[str, "SkillEffect"] = {}
 
+# 技能等级上限；效果数值每级 +20%（满级 ×2.8），只作用于强度字段
+SKILL_MAX_LEVEL = 10
+LEVEL_GROWTH = 0.2
+GROWTH_FIELDS = {
+    "power", "scale", "damage", "amount",
+    "aoe_power", "beast_hp", "beast_power", "duration",
+}
+
+
+def skill_effect_scaled(skill: dict, level: int) -> dict:
+    """按技能等级缩放效果强度字段（deep-copy 后处理，mp/radius/turns 等不变）。"""
+    if level <= 1:
+        return skill
+    mult = 1 + LEVEL_GROWTH * (level - 1)
+
+    def scale_value(value):
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            return max(1, int(round(value * mult)))
+        return value
+
+    def walk(node):
+        if isinstance(node, dict):
+            return {
+                k: (scale_value(v) if k in GROWTH_FIELDS else walk(v))
+                for k, v in node.items()
+            }
+        if isinstance(node, list):
+            return [walk(item) for item in node]
+        return node
+
+    scaled = dict(skill)
+    scaled["effect"] = walk(skill["effect"])
+    return scaled
+
 
 def register(cls):
     """效果类注册装饰器。"""
@@ -441,7 +475,7 @@ class MpRestore(SkillEffect):
 
 
 def cast(engine: "Engine", player: "Actor", skill: dict, target=None) -> None:
-    """统一施放入口：真气/气血检查 → 效果执行 → 扣耗。"""
+    """统一施放入口：真气/气血检查 → 效果执行（按技能等级缩放）→ 扣耗。"""
     strings = engine.content.strings
     cost = mp_cost(player, skill)
     if player.fighter.mp < cost:
@@ -449,8 +483,9 @@ def cast(engine: "Engine", player: "Actor", skill: dict, target=None) -> None:
     hp_cost = int(skill["effect"].get("hp_cost", 0))
     if hp_cost and player.fighter.hp <= hp_cost:
         raise exceptions.Impossible(strings["hp_low"])
+    level = int(getattr(player, "skill_levels", {}).get(skill["id"], 1))
     effect = SKILL_EFFECTS[skill["effect"]["type"]]
-    effect.perform(engine, player, skill, target)
+    effect.perform(engine, player, skill_effect_scaled(skill, level), target)
     # 效果成功落地才结算消耗
     player.fighter.mp -= cost
     if hp_cost:

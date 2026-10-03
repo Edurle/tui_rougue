@@ -219,18 +219,21 @@ def test_skill_point_ledger():
     engine.learn_skill("s_leifa_1")
     assert player.skill_points == 1
     assert "s_leifa_1" in player.learned_skills
-    # 重复学拒学
+    assert player.skill_levels["s_leifa_1"] == 1
+    # 已学技能=升级（每级 1 点，不再拒绝）
+    engine.learn_skill("s_leifa_1")
+    assert player.skill_levels["s_leifa_1"] == 2
+    assert player.skill_points == 0
+    # 点不足：升级与新学都拒绝
+    with pytest.raises(Impossible):
+        engine.learn_skill("s_leifa_2")
     with pytest.raises(Impossible):
         engine.learn_skill("s_leifa_1")
-    # 学第二链首 → 0 点
-    engine.learn_skill("s_leifa_2")
-    assert player.skill_points == 0
-    # 点不足拒学
-    with pytest.raises(Impossible):
-        engine.learn_skill("s_leifa_4")
     # 升级 +1 点（+4 真气上限）
     player.level.add_xp(1000)
     assert player.skill_points >= 1
+    # 学第二链首
+    engine.learn_skill("s_leifa_2")
     assert player.fighter.base_max_mp == player.fighter.max_mp  # 无装备时聚合=基础
     # 大招 2 点：1 点不够
     learn_all(engine, "leifa")
@@ -432,3 +435,103 @@ def test_not_learned_rejected():
     engine = make_engine()
     with pytest.raises(Impossible):
         engine.execute_skill(1, target=put_monster(engine, 1, 0))
+
+
+# ---- 技能等级制（10 级，满级前可续加） ----
+
+
+def test_skill_level_upgrade_to_max():
+    engine = make_engine()
+    player = engine.player
+    player.skill_points = 30
+    engine.learn_skill("s_leifa_1")  # 初学 1 点
+    for _ in range(9):  # 升到 10 级
+        engine.learn_skill("s_leifa_1")
+    assert player.skill_levels["s_leifa_1"] == 10
+    from exceptions import Impossible as Imp
+
+    with pytest.raises(Imp):  # 满级拒绝
+        engine.learn_skill("s_leifa_1")
+
+
+def test_skill_effect_scales_with_level():
+    import skills as skills_module
+
+    engine = make_engine()
+    player = engine.player
+    engine.learn_skill("s_leifa_1")
+    lv1 = skills_module.skill_effect_scaled(engine.content.skills["s_leifa_1"], 1)
+    lv5 = skills_module.skill_effect_scaled(engine.content.skills["s_leifa_1"], 5)
+    e1, e5 = lv1["effect"], lv5["effect"]
+    mult = 1 + 0.2 * 4
+    assert e5["power"] == max(1, round(e1["power"] * mult))
+    assert e5.get("scale", 0) == max(1, round(e1.get("scale", 0) * mult))
+    assert e5.get("radius", e1.get("radius")) == e1.get("radius")  # 非强度字段不变
+    assert skills_module.skill_effect_scaled(engine.content.skills["s_leifa_1"], 1) is engine.content.skills["s_leifa_1"]
+
+
+def test_higher_level_skill_hits_harder():
+    """同技能不同等级实战伤害更高（cast 走缩放路径）。"""
+    import tile_types
+
+    engine = make_engine()
+    player = engine.player
+    gm = engine.gamemap
+    px, py = player.x, player.y
+    for cx in range(px, px + 4):
+        gm.terrain[cx, py] = tile_types.T_PLAIN
+    gm.refresh_tile_flags()
+
+    def kill_damage(skill_level_points):
+        player.skill_levels["s_leifa_1"] = skill_level_points
+        beast = engine.content.build_monster("xingxing", gm, px + 2, py)
+        beast.fighter.base_max_hp = 999
+        beast.fighter._hp = 999
+        beast.fighter.base_defense = 0
+        from actions import CastSkillAction
+
+        player.fighter.mp = 99
+        CastSkillAction(player, 1, target=beast).perform(engine)
+        return 999 - beast.fighter.hp
+
+    player.learned_skills  # noqa: B018 —— 触发 property 正常
+    d1 = kill_damage(1)
+    d10 = kill_damage(10)
+    assert d10 > d1 * 2, f"10 级伤害 {d10} 应显著高于 1 级 {d1}"
+
+
+def test_skill_levels_save_roundtrip(tmp_path, monkeypatch):
+    import save_manager
+
+    monkeypatch.setattr(save_manager, "SAVE_DIR", str(tmp_path))
+    engine = make_engine()
+    engine.player.skill_points = 20
+    engine.learn_skill("s_leifa_1")
+    engine.learn_skill("s_leifa_1")
+    engine.learn_skill("s_leifa_1")  # Lv3
+    engine.autosave()
+    loaded = save_manager.load_engine(engine.content, Settings())
+    assert loaded.player.skill_levels.get("s_leifa_1") == 3
+    assert set(loaded.player.skill_levels) == loaded.player.learned_skills  # 视图一致
+
+
+def test_legacy_save_learned_skills_become_level1(tmp_path, monkeypatch):
+    """旧档（learned_skills 列表）读入后全部视为 1 级。"""
+    import json
+
+    import save_manager
+
+    monkeypatch.setattr(save_manager, "SAVE_DIR", str(tmp_path))
+    engine = make_engine()
+    engine.player.skill_points = 5
+    engine.learn_skill("s_leifa_1")
+    engine.autosave()
+    # 手工把档改成旧格式
+    path = save_manager.save_path()
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["player"]["learned_skills"] = ["s_leifa_1", "s_leifa_2"]
+    del data["player"]["skill_levels"]
+    path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+
+    loaded = save_manager.load_engine(engine.content, Settings())
+    assert loaded.player.skill_levels == {"s_leifa_1": 1, "s_leifa_2": 1}

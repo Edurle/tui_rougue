@@ -650,7 +650,7 @@ class Content:
         )
         player.class_ids = tuple(class_ids)
         player.skill_points = 2
-        player.learned_skills = set()
+        player.skill_levels = {}
         player.fighter = Fighter(
             hp=hp,
             power=int(primary["power"]),
