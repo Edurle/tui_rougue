@@ -212,5 +212,18 @@
   "learn_max": "This art is already at its peak (Rank 10).",
   "elite_prefix": "Elite ",
   "learn_need_materials": "Requires materials: {materials}.",
-  "learn_materials_spent": "(consumed: {materials})"
+  "learn_materials_spent": "(consumed: {materials})",
+  "summ_damage": "Dmg {v}",
+  "summ_aoe": "Dmg {v} r{r}",
+  "summ_heal": "Heal {v}",
+  "summ_heal_mp": "MP {v}",
+  "summ_buff_def": "Def+{v}",
+  "summ_buff_pow": "Pow+{v}",
+  "summ_teleport": "Dash {v}",
+  "summ_poison": "Psn {v}x{t}",
+  "summ_summon": "Summon",
+  "summ_stun": "Stun {v}",
+  "summ_cleanse": "Cleanse",
+  "summ_ult_cost": "Ult·Core x1",
+  "learn_growth_hint": "+20% per rank"
 }

@@ -214,6 +214,78 @@ def _skill_state_color(engine, skill: dict) -> Tuple[int, int, int]:
     return COLOR_SKILL_READY
 
 
+def item_effect_summary(strings, item) -> str:
+    """物品效果摘要（行囊物品行右侧）：消耗品按效果类，装备件为加成+词条。"""
+    if item.equipment is not None:
+        parts = []
+        summary = _bonus_summary(strings, item)
+        affixes = _affix_summary(strings, item)
+        if summary:
+            parts.append(summary)
+        if affixes:
+            parts.append(affixes)
+        return " ".join(parts)
+    consumable = item.consumable
+    if consumable is None:
+        return ""
+    from consumable import (
+        BuffItemConsumable, CleanseConsumable, HealConsumable,
+        HealMpConsumable, LightningConsumable, StunAreaConsumable,
+    )
+
+    if isinstance(consumable, HealConsumable):
+        return strings["summ_heal"].format(v=consumable.amount)
+    if isinstance(consumable, HealMpConsumable):
+        return strings["summ_heal_mp"].format(v=consumable.amount)
+    if isinstance(consumable, LightningConsumable):
+        return strings["summ_damage"].format(v=consumable.damage)
+    if isinstance(consumable, CleanseConsumable):
+        return strings["summ_cleanse"]
+    if isinstance(consumable, BuffItemConsumable):
+        key = "summ_buff_pow" if consumable.stat == "power" else "summ_buff_def"
+        return strings[key].format(v=consumable.amount)
+    if isinstance(consumable, StunAreaConsumable):
+        return strings["summ_stun"].format(v=consumable.turns)
+    return ""
+
+
+def skill_effect_summary(strings, player, skill, *, include_gear: bool = True) -> str:
+    """技能效果短摘要（侧栏/参悟用）；伤害按当前修为与（可选）装备词条折算。"""
+    import skills as skills_module
+
+    eff = skill["effect"]
+    etype = eff.get("type")
+
+    def raw_damage() -> int:
+        if include_gear:
+            return skills_module.compute_damage(player, skill)
+        return eff.get("power", 0) + skills_module.skill_level(player) * eff.get("scale", 0)
+
+    if etype == "damage_nearest":
+        return strings["summ_damage"].format(v=raw_damage())
+    if etype == "damage_aoe_self":
+        return strings["summ_aoe"].format(v=raw_damage(), r=eff.get("radius", 1))
+    if etype == "heal_self":
+        amount = eff.get("amount", 0) + skills_module.skill_level(player) * eff.get("scale", 0)
+        return strings["summ_heal"].format(v=amount)
+    if etype == "mp_restore":
+        return strings["summ_heal_mp"].format(v=eff.get("amount", 0))
+    if etype == "buff_defense":
+        return strings["summ_buff_def"].format(v=eff.get("amount", 0))
+    if etype == "buff_power":
+        return strings["summ_buff_pow"].format(v=eff.get("amount", 0))
+    if etype == "teleport_step":
+        return strings["summ_teleport"].format(v=eff.get("range", 3))
+    if etype == "poison_dot":
+        damage, turns = skills_module.compute_poison(player, skill)
+        return strings["summ_poison"].format(v=damage, t=turns)
+    if etype == "summon":
+        return strings["summ_summon"]
+    if etype == "stun_aoe":
+        return strings["summ_stun"].format(v=eff.get("turns", 1))
+    return ""
+
+
 def _sprint(console, x, y, text, fg=None) -> None:
     """侧栏打印（与 console.print 等价，保留作统一入口）。"""
     console.print(x, y, text, fg=fg)
@@ -380,11 +452,17 @@ def _render_skills(console, engine, layout) -> None:
             lv = int(player.skill_levels.get(skill["id"], 0))
             name_lv = f"{name}·{lv}" if lv > 1 else name
             _sprint(console, x, row, f"{key} {name_lv}", fg=color)
+            # 行尾联合右对齐：耗气在最右，效果摘要在其左（不重叠）
             cost_text = strings["skill_mp_cost"].format(mp=cost)
             if skill["effect"].get("hp_cost"):
                 cost_text += f"-{skill['effect']['hp_cost']}"
+            tail = cost_text
+            if skill["id"] in player.learned_skills:
+                summary = skill_effect_summary(strings, player, skill)
+                if summary:
+                    tail = f"{summary} {cost_text}"
             _sprint(
-                console, x + engine.settings.content_w - len(cost_text) - 1, row, cost_text, fg=color
+                console, x + engine.settings.content_w - len(tail), row, tail, fg=color
             )
 
 
@@ -503,6 +581,12 @@ def render_inventory_menu(console: tcod.console.Console, engine: "Engine", handl
         color = item.color if item.equipment is None else COLOR_EQUIP
         label = item.name + (f"×{item.stack}" if item.is_material and item.stack > 1 else "")
         console.print(x + 2, row, f"{mark}{letter}) {label}", fg=tuple(color))
+        summary = item_effect_summary(strings, item)
+        if summary:
+            console.print(
+                x + menu_width - len(summary) - 2, row, summary[: menu_width - 12],
+                fg=(150, 200, 160) if item.equipment is None else COLOR_EQUIP,
+            )
         row += 1
     row += 1
     console.print(x + 2, row, strings["hud_inventory"].format(count=len(all_items)), fg=(160, 160, 170))
@@ -537,7 +621,7 @@ def render_skill_learn_menu(console: tcod.console.Console, engine: "Engine", pag
     map_cols = engine.settings.map_cols
     map_rows = engine.settings.map_rows
     menu_width = min(44, map_cols - 2)
-    menu_height = len(skills_list) + 5
+    menu_height = len(skills_list) + 7  # 含选中项详情两行
     x = max(0, (map_cols - menu_width) // 2)
     y = max(0, (map_rows - menu_height) // 2)
 
@@ -555,6 +639,18 @@ def render_skill_learn_menu(console: tcod.console.Console, engine: "Engine", pag
     console.print(x + 2, y + 1, header, fg=COLOR_HEADER)
 
     from skills import SKILL_MAX_LEVEL
+
+    # 选中项详情：描述 + 效果数值 + 成长提示
+    if skills_list:
+        picked = skills_list[cursor % len(skills_list)]
+        effect = skill_effect_summary(strings, player, picked, include_gear=False)
+        ult = int(picked.get("cost", 1)) >= 2
+        detail = f"{content._(picked['desc'])}"
+        console.print(x + 2, y + menu_height - 3, detail[: menu_width - 4], fg=(170, 170, 180))
+        info = effect + f" · {strings['learn_growth_hint']}"
+        if ult:
+            info += f" · {strings['summ_ult_cost']}"
+        console.print(x + 2, y + menu_height - 2, info[: menu_width - 4], fg=(150, 200, 160))
 
     row = y + 3
     for i, skill in enumerate(skills_list):

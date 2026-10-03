@@ -241,3 +241,78 @@ def test_immobilize_talisman_stuns_visible_enemies():
     gm.update_fov(px, py)
     ItemAction(engine.player, talisman).perform(engine)
     assert enemy.fighter.stun_turns > 0, "定身符应眩晕视野内敌人"
+
+
+# ---- 效果信息展示 ----
+
+
+def test_item_effect_summary_categories():
+    """物品效果摘要：治疗/雷击/增益丹/定身符/装备加成。"""
+    import render
+
+    engine = make_engine()
+    strings = engine.content.strings
+
+    def build(iid):
+        item = engine.content.build_item(iid, engine.gamemap, 0, 0)
+        engine.gamemap.entities.discard(item)
+        item.gamemap = None
+        return item
+
+    assert render.item_effect_summary(strings, build("lingzhi")) == "疗12"
+    assert render.item_effect_summary(strings, build("wulei_fu")) == "伤14"
+    assert render.item_effect_summary(strings, build("pill_might")) == "攻+4"
+    assert render.item_effect_summary(strings, build("talisman_immobilize")) == "定身3"
+    assert "攻+2" in render.item_effect_summary(strings, build("w_taomu"))
+
+
+def test_inventory_renders_effect_summary():
+    import input_handlers as ih
+    import tcod
+
+    engine = make_engine()
+    item = engine.content.build_item("lingzhi", engine.gamemap, 0, 0)
+    engine.gamemap.entities.discard(item)
+    item.gamemap = None
+    engine.player.inventory.add(item)
+    handler = ih.InventoryEventHandler(engine)
+    console = tcod.console.Console(engine.settings.total_cols, engine.settings.total_rows, order="F")
+    handler.on_render(console)
+    body = "".join(
+        "".join(chr(c) if c not in (0, 32) else " " for c in console.rgb[:, y]["ch"])
+        for y in range(engine.settings.total_rows)
+    )
+    assert "疗12" in body, "行囊灵芝行应显示效果摘要"
+
+
+def test_sidebar_skill_row_shows_effect():
+    import input_handlers as ih
+    import tcod
+
+    engine = make_engine()
+    engine.player.skill_points = 3
+    engine.learn_skill("s_leifa_1")
+    console = tcod.console.Console(engine.settings.total_cols, engine.settings.total_rows, order="F")
+    ih.MainGameEventHandler(engine).on_render(console)
+    DIV = engine.settings.divider_col
+    side = "".join(
+        "".join(chr(c) if c not in (0, 32) else " " for c in console.rgb[DIV:, y]["ch"])
+        for y in range(engine.settings.total_rows)
+    )
+    assert "掌心雷" in side and "伤" in side, "已学技能行应附效果摘要"
+
+
+def test_learn_menu_shows_selected_detail():
+    import input_handlers as ih
+    import tcod
+
+    engine = make_engine()
+    handler = ih.SkillLearnEventHandler(engine)
+    console = tcod.console.Console(engine.settings.total_cols, engine.settings.total_rows, order="F")
+    handler.on_render(console)
+    body = "".join(
+        "".join(chr(c) if c not in (0, 32) else " " for c in console.rgb[:, y]["ch"])
+        for y in range(engine.settings.total_rows)
+    )
+    assert "每重 +20%" in body
+    assert "伤" in body or "疗" in body or "掠" in body, "选中项应显示效果数值"

@@ -213,5 +213,18 @@
   "learn_max": "此术已臻化境（10 重）。",
   "elite_prefix": "精英·",
   "learn_need_materials": "修习此术尚需：{materials}。",
-  "learn_materials_spent": "（耗去：{materials}）"
+  "learn_materials_spent": "（耗去：{materials}）",
+  "summ_damage": "伤{v}",
+  "summ_aoe": "伤{v}·围{r}",
+  "summ_heal": "疗{v}",
+  "summ_heal_mp": "回气{v}",
+  "summ_buff_def": "防+{v}",
+  "summ_buff_pow": "攻+{v}",
+  "summ_teleport": "掠{v}格",
+  "summ_poison": "毒{v}×{t}",
+  "summ_summon": "召唤",
+  "summ_stun": "定身{v}",
+  "summ_cleanse": "解蛊毒",
+  "summ_ult_cost": "大招·魔核×1",
+  "learn_growth_hint": "每重 +20%"
 }
