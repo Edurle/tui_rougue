@@ -131,6 +131,96 @@
       "region": "dahuangjing",
       "depth": 5,
       "boss": "boss_zhulongzhen"
+    },
+    {
+      "id": "guangshan_lingku",
+      "name": {
+        "zh_CN": "光山灵窟",
+        "en_US": "Mt. Guang Spirit Hollow"
+      },
+      "intro": {
+        "zh_CN": "窟中佩鸣清越，似有神祇巡行。",
+        "en_US": "Clear chimes of jade echo in the hollow, as if a god still patrols."
+      },
+      "theme": "jade",
+      "region": "zhongshanjing",
+      "depth": 2,
+      "boss": "boss_wuluo"
+    },
+    {
+      "id": "gouwu_shouku",
+      "name": {
+        "zh_CN": "钩吾兽窟",
+        "en_US": "Gouwu Beast Den"
+      },
+      "intro": {
+        "zh_CN": "岩壁上有爪痕深处见骨，婴儿啼声自暗处传来。",
+        "en_US": "Claw marks score the rock to the bone; an infant's cry rises from the dark."
+      },
+      "theme": "stone",
+      "region": "beishanjing",
+      "depth": 3,
+      "boss": "boss_paoyao"
+    },
+    {
+      "id": "fajiu_zhichao",
+      "name": {
+        "zh_CN": "发鸠之巢",
+        "en_US": "Fajiu Roost"
+      },
+      "intro": {
+        "zh_CN": "崖间积着衔来的木石，海风穿谷而过。",
+        "en_US": "Twigs and stones borne from afar heap on the cliffs; a sea wind blows through the vale."
+      },
+      "theme": "ice",
+      "region": "beishanjing",
+      "depth": 3,
+      "boss": "boss_jingwei"
+    },
+    {
+      "id": "fuli_hukul",
+      "name": {
+        "zh_CN": "凫丽狐窟",
+        "en_US": "Fuli Fox Warren"
+      },
+      "intro": {
+        "zh_CN": "九曲巢道深处，九双眼睛同时睁开。",
+        "en_US": "Deep in the warren's bends, nine pairs of eyes open at once."
+      },
+      "theme": "charm",
+      "region": "dongshanjing",
+      "depth": 3,
+      "boss": "boss_longzhi"
+    },
+    {
+      "id": "xiongli_tuqiu",
+      "name": {
+        "zh_CN": "凶犁土丘",
+        "en_US": "Xiongli Mound"
+      },
+      "intro": {
+        "zh_CN": "焦土之上雷纹未散，龙翼的阴影仍在徘徊。",
+        "en_US": "Lightning scars the scorched earth; the shadow of wings still circles."
+      },
+      "theme": "thunder",
+      "region": "dahuangjing",
+      "depth": 4,
+      "boss": "boss_yinglong"
+    },
+    {
+      "id": "chengdu_zaitian",
+      "name": {
+        "zh_CN": "成都载天",
+        "en_US": "Chengdu-Zaitian"
+      },
+      "intro": {
+        "zh_CN": "巨人的足印陷为深谷，日影在此尽头。",
+        "en_US": "The giant's footprints sank into valleys; here the sun's shadow ends."
+      },
+      "theme": "ember",
+      "region": "dahuangjing",
+      "depth": 5,
+      "boss": "boss_kuafu"
     }
   ]
 }

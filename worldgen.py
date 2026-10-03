@@ -22,8 +22,8 @@ from game_map import GameMap
 if TYPE_CHECKING:
     from engine import Engine
 
-WORLD_WIDTH = 160
-WORLD_HEIGHT = 100
+WORLD_WIDTH = 240
+WORLD_HEIGHT = 150
 WORLD_FOV_RADIUS = 14
 
 # 地形阈值（elevation/moisture 归一化 0-1）
@@ -45,14 +45,14 @@ RIDGE_OUTER_WIDTH = 0.06
 WORLD_MARGIN = 2
 
 # 河流与投放（机制常量）
-RIVER_SOURCES = 6
+RIVER_SOURCES = 9
 RIVER_BRIDGE_EVERY = 9  # 河流每隔 N 格架桥，保证可渡
 MONSTER_DENSITY = 1 / 320  # 每 N 可走格一只游荡异兽（低密度，旅行可绕行）
 CENTER_MONSTER_DENSITY = 1 / 700  # 中山经腹地更安宁
 ITEM_DENSITY = 1 / 500
 SPAWN_CLEAR_RADIUS = 2  # 出生点安全清场半径
 SPAWN_SAFE_RADIUS = 18  # 出生点曼哈顿距离内不投放任何异兽
-LANDMARK_MIN_GAP = 12  # 名山之间的最小间距
+LANDMARK_MIN_GAP = 16  # 名山之间的最小间距
 
 
 def _smoothstep(t: np.ndarray) -> np.ndarray:
@@ -368,14 +368,14 @@ def _place_realm_gates(
 ) -> None:
     """把 realms.json 的秘境入口撒到所属区域的可达格上。
 
-    距离约束：难度越高的区域，入口离出生点越远（14 + 基础难度*2 曼哈顿距离）。
+    距离约束：难度越高的区域，入口离出生点越远（18 + 基础难度*3 曼哈顿距离）。
     """
     placed: List[Tuple[int, int]] = []
     region_index = {r["id"]: i for i, r in enumerate(content.regions)}
     for rid, realm in content.realms.items():
         idx = region_index[realm["region"]]
         base = int(content.regions[idx]["base_difficulty"])
-        min_dist = 14 + base * 2
+        min_dist = 18 + base * 3  # 难度越高入口离出生点越远（按世界尺寸校准）
         mask = (
             (gamemap.region_ids == idx)
             & reached

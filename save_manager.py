@@ -196,6 +196,7 @@ def save_game(engine: "Engine") -> None:
         "world_return_xy": list(engine.world_return_xy),
         "realm_cleared": sorted(engine.realm_cleared),
         "visited_regions": sorted(engine.visited_regions),
+        "known_gates": sorted(tuple(g) for g in engine.known_gates),
         "active_page": engine.active_page,
         "messages": [
             {"text": m.plain_text, "kind": m.kind, "count": m.count}

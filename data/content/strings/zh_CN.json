@@ -147,5 +147,7 @@
   "save_ok": "行迹已录于山海图卷。",
   "save_none": "没有可续的行迹。",
   "save_loaded": "你展开山海图卷，续前行迹。",
-  "continue_game": "继续游历（读档）"
+  "continue_game": "继续游历（读档）",
+  "world_map_title": "山海图卷（M/Esc 收起）",
+  "world_map_legend": "▲山 ♣林 ≈水 ▼渊 =渡 Ω秘境 ◈名山 @你"
 }

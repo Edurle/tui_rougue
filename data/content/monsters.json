@@ -678,5 +678,229 @@
     "attack_tags": [
       "fire"
     ]
+  },
+  "boss_wuluo": {
+    "name": {
+      "zh_CN": "武罗·密都神",
+      "en_US": "Wu Luo of the Vale"
+    },
+    "char": "w",
+    "color": [
+      206,
+      172,
+      224
+    ],
+    "tags": [
+      "shanhaijing",
+      "zhongshanjing",
+      "beast",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "青要之山，实惟帝之密都，北望河曲，是多驾鸟。南望墠渚，禹父之所化。武罗司之，其状人面而豹文，小要而白齿，其鸣如鸣佩。",
+      "en_US": "Mt. Qingyao is the Emperor's secret vale, warded by the god Wu Luo - human-faced with leopard markings, a slender waist and white teeth, its voice like chiming jade."
+    },
+    "components": {
+      "fighter": {
+        "hp": 32,
+        "power": 7,
+        "defense": 2,
+        "xp_reward": 380
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    },
+    "resistances": {
+      "stun": 30
+    }
+  },
+  "boss_paoyao": {
+    "name": {
+      "zh_CN": "狍鸮·饕餮",
+      "en_US": "Pao Yao the Glutton"
+    },
+    "char": "o",
+    "color": [
+      196,
+      140,
+      92
+    ],
+    "tags": [
+      "shanhaijing",
+      "beishanjing",
+      "beast",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "钩吾之山……有兽焉，其状如羊身人面，其目在腋下，虎齿人爪，其音如婴儿，名曰狍鸮，是食人。",
+      "en_US": "On Mt. Gouwu lives Pao Yao - a beast with a lamb's body and a human face, eyes beneath its armpits, tiger teeth and human claws. It cries like an infant and devours people."
+    },
+    "components": {
+      "fighter": {
+        "hp": 68,
+        "power": 12,
+        "defense": 4,
+        "xp_reward": 1050
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    }
+  },
+  "boss_jingwei": {
+    "name": {
+      "zh_CN": "精卫·衔石",
+      "en_US": "Jingwei the Stone-Bearer"
+    },
+    "char": "V",
+    "color": [
+      122,
+      142,
+      208
+    ],
+    "tags": [
+      "shanhaijing",
+      "beishanjing",
+      "bird",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "发鸠之山……有鸟焉，其状如乌，文首、白喙、赤足，名曰精卫，其鸣自詨。是炎帝之少女，名曰女娃。女娃游于东海，溺而不返，故常衔西山之木石，以堙于东海。",
+      "en_US": "On Mt. Fajiu lives Jingwei - a bird with a patterned head, white beak and crimson feet. She was once Nvwa, the Yan Emperor's daughter, drowned in the Eastern Sea; now she carries twigs and stones forever to fill it."
+    },
+    "components": {
+      "fighter": {
+        "hp": 55,
+        "power": 11,
+        "defense": 3,
+        "xp_reward": 900
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    },
+    "resistances": {
+      "thunder": 30
+    }
+  },
+  "boss_longzhi": {
+    "name": {
+      "zh_CN": "蠪侄·九首狐",
+      "en_US": "Long Zhi the Nine-Headed"
+    },
+    "char": "j",
+    "color": [
+      232,
+      152,
+      172
+    ],
+    "tags": [
+      "shanhaijing",
+      "dongshanjing",
+      "beast",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "凫丽之山……有兽焉，其状如狐而九尾、九首、虎爪，名曰蠪侄，其音如婴儿，是食人。",
+      "en_US": "On Mt. Fuli lives Long Zhi - a fox with nine tails, nine heads and tiger claws. It cries like an infant and devours people."
+    },
+    "components": {
+      "fighter": {
+        "hp": 78,
+        "power": 14,
+        "defense": 5,
+        "xp_reward": 1350
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    },
+    "resistances": {
+      "fire": 40
+    },
+    "attack_tags": [
+      "fire"
+    ]
+  },
+  "boss_yinglong": {
+    "name": {
+      "zh_CN": "应龙·旱神",
+      "en_US": "Yinglong the Rain-Dragon"
+    },
+    "char": "A",
+    "color": [
+      182,
+      202,
+      255
+    ],
+    "tags": [
+      "shanhaijing",
+      "dahuangjing",
+      "dragon",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "大荒东北隅中，有山名曰凶犁土丘。应龙处南极，杀蚩尤与夸父，不得复上，故下数旱。旱而为应龙之状，乃得大雨。",
+      "en_US": "In the northeast of the Great Wilderness stands Mt. Xiongli. There dwells Yinglong, the winged dragon who slew Chiyou and Kuafu; barred from heaven, it brings drought below - yet summon its likeness, and rain will fall."
+    },
+    "components": {
+      "fighter": {
+        "hp": 95,
+        "power": 15,
+        "defense": 5,
+        "xp_reward": 1800
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    },
+    "resistances": {
+      "thunder": 50,
+      "fire": 40
+    },
+    "attack_tags": [
+      "thunder"
+    ]
+  },
+  "boss_kuafu": {
+    "name": {
+      "zh_CN": "夸父·逐日",
+      "en_US": "Kuafu the Sun-Chaser"
+    },
+    "char": "C",
+    "color": [
+      255,
+      182,
+      92
+    ],
+    "tags": [
+      "shanhaijing",
+      "dahuangjing",
+      "giant",
+      "boss"
+    ],
+    "lore": {
+      "zh_CN": "大荒之中，有山名曰成都载天。有人珥两黄蛇，把两黄蛇，名曰夸父。……夸父不量力，欲追日景，逮之于禺谷。将饮河而不足也，将走大泽，未至，死于此。",
+      "en_US": "In the Great Wilderness stands Mt. Chengdu-Zaitian. There dwells Kuafu, earrings of yellow serpents, who chased the sun to Yugu valley. The rivers could not quench his thirst; he died on the road to the great marsh."
+    },
+    "components": {
+      "fighter": {
+        "hp": 110,
+        "power": 17,
+        "defense": 6,
+        "xp_reward": 2200
+      },
+      "ai": {
+        "type": "hostile"
+      }
+    },
+    "resistances": {
+      "fire": 60,
+      "stun": 60
+    },
+    "attack_tags": [
+      "fire"
+    ]
   }
 }

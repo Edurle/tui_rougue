@@ -43,6 +43,7 @@ class Engine:
         # 大世界旅行：Shift+方向 连续行走；None = 未在旅行
         self.traveling: Optional[Tuple[int, int]] = None
         self.visited_regions: set = set()  # 已踏入过的区域 id（首入叙事）
+        self.known_gates: set = set()  # 曾进入过视野的秘境之门坐标（山海图卷标记）
 
         # 玩家实体在世界生成后创建一次，此后跨地图复用（保留状态）
         self.player = None  # type: ignore[assignment]
@@ -75,6 +76,7 @@ class Engine:
         engine.active_page = data.get("active_page", 0)
         engine.traveling = None
         engine.visited_regions = set(data.get("visited_regions", []))
+        engine.known_gates = {tuple(g) for g in data.get("known_gates", [])}
 
         engine.world = save_manager._restore_map(engine, data["world"])
         engine.gamemap = engine.world
@@ -194,6 +196,14 @@ class Engine:
         self.gamemap.update_fov(self.player.x, self.player.y)
         if self.gamemap.map_type == "world":
             self._check_region_enter()
+            self._check_known_gates()
+
+    def _check_known_gates(self) -> None:
+        """视野内的秘境之门记入山海图卷（永久标记，M 键查看）。"""
+        gamemap = self.gamemap
+        for entity in gamemap.entities:
+            if "realm_gate" in entity.tags and gamemap.visible[entity.x, entity.y]:
+                self.known_gates.add((entity.x, entity.y))
 
     def _check_region_enter(self) -> None:
         """首次踏入新区域：游历叙事（世界专属）。"""

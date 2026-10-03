@@ -186,6 +186,7 @@ class TakeStairsAction(Action):
             if "sealed" in gate.tags:
                 raise exceptions.Impossible(strings["realm_sealed"])
             realm_id = next(t for t in gate.tags if t not in ("realm_gate", "sealed"))
+            engine.known_gates.add(here)  # 踏上门槛即记入山海图卷
             engine.enter_realm(realm_id, here)
             realm_def = engine.content.realm_def(realm_id)
             engine.message_log.add_message(

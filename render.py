@@ -746,3 +746,119 @@ def render_game_over(console: tcod.console.Console, engine: "Engine") -> None:
     text = strings["game_over_hint"]
     x = max(0, (engine.settings.map_cols - len(text)) // 2)
     console.print(x, engine.settings.map_rows - 2, text, fg=tuple(theme["hud"]["dead_tag"]))
+
+
+# ---- 山海图卷（M：世界地图）----
+
+# 块采样时各地形的显示优先级（桥最高：渡口是导航关键）
+_MAP_PROMINENCE = {
+    tile_types.T_BRIDGE: 12,
+    tile_types.T_SNOW: 11,
+    tile_types.T_MOUNTAIN: 10,
+    tile_types.T_ABYSS: 9,
+    tile_types.T_WATER: 8,
+    tile_types.T_RIVER: 7,
+    tile_types.T_FOREST: 6,
+    tile_types.T_HILL: 5,
+    tile_types.T_SHORE: 3,
+    tile_types.T_PLAIN: 2,
+    tile_types.T_FLOOR: 1,
+    tile_types.T_WALL: 1,
+}
+
+
+def render_world_map_overlay(console: tcod.console.Console, engine: "Engine") -> None:
+    """山海图卷：世界已探索区域缩略图 + 名山/秘境之门/玩家/视口标记。"""
+    world = engine.world
+    content = engine.content
+    strings = content.strings
+    theme = content.theme
+    map_cols = engine.settings.map_cols
+    map_rows = engine.settings.map_rows
+
+    _, light_lut, dark_lut = _terrain_luts(theme)
+    ch_lut, _, _ = _terrain_luts(theme)
+    prominence = np.zeros(tile_types.N_TERRAINS, dtype=np.int8)
+    for tid, score in _MAP_PROMINENCE.items():
+        prominence[tid] = score
+
+    # 标题 + 图例占顶部两行，图本体居中
+    head = 2
+    avail_w = max(4, map_cols - 2)
+    avail_h = max(4, map_rows - head - 1)
+    scale = max(1, -(-world.width // avail_w), -(-world.height // avail_h))
+    tw = -(-world.width // scale)
+    th = -(-world.height // scale)
+    ox = max(0, (map_cols - tw) // 2)
+    oy = head + max(0, (map_rows - head - th) // 2)
+
+    console.draw_frame(
+        x=0, y=0, width=map_cols, height=map_rows,
+        title=f" {strings['world_map_title']} ",
+        clear=True,
+        fg=tuple(theme["ui"]["frame"]),
+        bg=tuple(theme["background"]),
+    )
+    console.print(
+        max(1, (map_cols - len(strings["world_map_legend"]) * 1) // 2), 1,
+        strings["world_map_legend"], fg=(150, 150, 160),
+    )
+
+    # 块采样：图格 (gx, gy) ← 世界 scale×scale 块内 explored 的最显著地形
+    explored = world.explored
+    terrain = world.terrain
+    for gy in range(th):
+        for gx in range(tw):
+            x0, y0 = gx * scale, gy * scale
+            x1 = min(world.width, x0 + scale)
+            y1 = min(world.height, y0 + scale)
+            block_explored = explored[x0:x1, y0:y1]
+            if not block_explored.any():
+                continue
+            block_terrain = terrain[x0:x1, y0:y1]
+            scores = prominence[block_terrain] * block_explored
+            flat = np.argmax(scores)
+            tid = block_terrain.flatten()[flat]
+            color = dark_lut[tid]
+            # 提亮一档让图卷可读（记忆色偏暗）
+            bright = np.clip(color.astype(np.float64) * 1.6, 0, 255).astype(np.uint8)
+            console.print(ox + gx, oy + gy, chr(int(ch_lut[tid])), fg=tuple(int(c) for c in bright))
+
+    # 名山地标（其所在格已被探索）
+    for lm in world.landmarks:
+        if explored[lm["x"], lm["y"]]:
+            console.print(ox + lm["x"] // scale, oy + lm["y"] // scale, "◈", fg=(255, 222, 130))
+
+    # 已知秘境之门（进入过视野即永久标记；封印后灰显）
+    sealed_gates = {
+        (e.x, e.y): "sealed" in e.tags for e in world.entities if "realm_gate" in e.tags
+    }
+    for gx_, gy_ in engine.known_gates:
+        sealed = sealed_gates.get((gx_, gy_), False)
+        console.print(
+            ox + gx_ // scale, oy + gy_ // scale, "Ω",
+            fg=(110, 104, 124) if sealed else (176, 138, 240),
+        )
+
+    # 当前视口范围（≥3 格宽时画框，否则仅玩家标记）
+    cam_x, cam_y = camera_origin(world, engine.player, map_cols, map_rows)
+    vx0, vy0 = cam_x // scale, cam_y // scale
+    vx1 = min(tw - 1, (cam_x + map_cols - 1) // scale)
+    vy1 = min(th - 1, (cam_y + map_rows - 1) // scale)
+    frame_color = (214, 196, 120)
+    if vx1 - vx0 >= 2 and vy1 - vy0 >= 2:
+        for x in range(vx0, vx1 + 1):
+            console.print(ox + x, oy + vy0, "─", fg=frame_color)
+            console.print(ox + x, oy + vy1, "─", fg=frame_color)
+        for y in range(vy0, vy1 + 1):
+            console.print(ox + vx0, oy + y, "│", fg=frame_color)
+            console.print(ox + vx1, oy + y, "│", fg=frame_color)
+        console.print(ox + vx0, oy + vy0, "┌", fg=frame_color)
+        console.print(ox + vx1, oy + vy0, "┐", fg=frame_color)
+        console.print(ox + vx0, oy + vy1, "└", fg=frame_color)
+        console.print(ox + vx1, oy + vy1, "┘", fg=frame_color)
+
+    # 玩家（最上层）
+    console.print(
+        ox + engine.player.x // scale, oy + engine.player.y // scale, "@", fg=(255, 255, 255)
+    )

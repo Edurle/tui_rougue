@@ -52,6 +52,7 @@ def test_save_load_roundtrip(tmp_path, monkeypatch):
     gate = _find_gate(engine, "yaoshan_gudong")
     engine.player.x, engine.player.y = gate.x, gate.y
     TakeStairsAction(engine.player, "down").perform(engine)  # autosave 触发
+    assert (gate.x, gate.y) in engine.known_gates
     engine.player.x, engine.player.y = engine.gamemap.downstairs_xy
     TakeStairsAction(engine.player, "down").perform(engine)  # BOSS 层
     world_explored_before = engine.world.explored.sum()
@@ -80,6 +81,8 @@ def test_save_load_roundtrip(tmp_path, monkeypatch):
     assert loaded.gamemap.realm_id == "yaoshan_gudong"
     assert loaded.gamemap.realm_depth == 2
     assert any("boss" in getattr(a, "tags", []) for a in loaded.gamemap.actors)
+    # 图卷记忆一致
+    assert (gate.x, gate.y) in loaded.known_gates
 
 
 def test_player_death_deletes_save(tmp_path, monkeypatch):

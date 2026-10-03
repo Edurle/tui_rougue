@@ -20,7 +20,7 @@
       },
       "zone": "center",
       "base_difficulty": 1,
-      "mountain_count": 3,
+      "mountain_count": 4,
       "mountains": [
         {
           "zh_CN": "历儿之山",
@@ -37,6 +37,14 @@
         {
           "zh_CN": "洞庭之山",
           "en_US": "Mt. Dongting"
+        },
+        {
+          "zh_CN": "青要之山",
+          "en_US": "Mt. Qingyao"
+        },
+        {
+          "zh_CN": "和山",
+          "en_US": "Mt. He"
         }
       ],
       "intro": {
@@ -52,7 +60,7 @@
       },
       "zone": "south",
       "base_difficulty": 4,
-      "mountain_count": 3,
+      "mountain_count": 4,
       "mountains": [
         {
           "zh_CN": "招摇之山",
@@ -69,6 +77,14 @@
         {
           "zh_CN": "鹿吴之山",
           "en_US": "Mt. Luwu"
+        },
+        {
+          "zh_CN": "猿翼之山",
+          "en_US": "Mt. Yuanyi"
+        },
+        {
+          "zh_CN": "杻阳之山",
+          "en_US": "Mt. Niuyang"
         }
       ],
       "intro": {
@@ -84,7 +100,7 @@
       },
       "zone": "west",
       "base_difficulty": 5,
-      "mountain_count": 3,
+      "mountain_count": 4,
       "mountains": [
         {
           "zh_CN": "华山",
@@ -101,6 +117,14 @@
         {
           "zh_CN": "天山",
           "en_US": "Mt. Tian"
+        },
+        {
+          "zh_CN": "松果之山",
+          "en_US": "Mt. Songguo"
+        },
+        {
+          "zh_CN": "太华之山",
+          "en_US": "Mt. Taihua"
         }
       ],
       "intro": {
@@ -116,7 +140,7 @@
       },
       "zone": "north",
       "base_difficulty": 7,
-      "mountain_count": 3,
+      "mountain_count": 4,
       "mountains": [
         {
           "zh_CN": "单狐之山",
@@ -133,6 +157,14 @@
         {
           "zh_CN": "带山",
           "en_US": "Mt. Dai"
+        },
+        {
+          "zh_CN": "灌题之山",
+          "en_US": "Mt. Guanti"
+        },
+        {
+          "zh_CN": "发鸠之山",
+          "en_US": "Mt. Fajiu"
         }
       ],
       "intro": {
@@ -148,7 +180,7 @@
       },
       "zone": "east",
       "base_difficulty": 10,
-      "mountain_count": 3,
+      "mountain_count": 4,
       "mountains": [
         {
           "zh_CN": "泰山",
@@ -165,6 +197,14 @@
         {
           "zh_CN": "独山",
           "en_US": "Mt. Du"
+        },
+        {
+          "zh_CN": "藟山",
+          "en_US": "Mt. Lei"
+        },
+        {
+          "zh_CN": "东始之山",
+          "en_US": "Mt. Dongshi"
         }
       ],
       "intro": {
@@ -180,7 +220,7 @@
       },
       "zone": "outer",
       "base_difficulty": 16,
-      "mountain_count": 4,
+      "mountain_count": 5,
       "mountains": [
         {
           "zh_CN": "大荒之山",
@@ -193,6 +233,14 @@
         {
           "zh_CN": "日月山",
           "en_US": "Mt. Sunmoon"
+        },
+        {
+          "zh_CN": "不姜之山",
+          "en_US": "Mt. Bujiang"
+        },
+        {
+          "zh_CN": "犁霵之山",
+          "en_US": "Mt. Liji"
         }
       ],
       "intro": {

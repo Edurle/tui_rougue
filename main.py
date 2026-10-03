@@ -35,10 +35,12 @@ from input_handlers import (
     OpenExamineAction,
     OpenInventoryAction,
     OpenSkillLearnAction,
+    OpenWorldMapAction,
     RestartAction,
     SkillLearnEventHandler,
     SwitchHandlerAction,
     TargetingEventHandler,
+    WorldMapEventHandler,
 )
 from paths import resource_path
 from settings import Settings
@@ -161,6 +163,8 @@ def game_loop(context, console, engine, content) -> str:
                     handler = SkillLearnEventHandler(engine)
                 elif isinstance(action, OpenExamineAction):
                     handler = ExamineEventHandler(engine)
+                elif isinstance(action, OpenWorldMapAction):
+                    handler = WorldMapEventHandler(engine)
                 elif isinstance(action, CloseMenuAction):
                     handler = MainGameEventHandler(engine)
                 elif isinstance(action, LoadGameAction):

@@ -151,7 +151,7 @@ def test_travel_walks_until_blocked():
     from actions import BumpAction
 
     engine = make_engine()
-    # 把玩家挪到开阔平原并清出一条向东长廊
+    # 把玩家挪到开阔平原并清出一条向东长廊（含廊内投放实体，防旅行提前停）
     import tile_types
 
     world = engine.world
@@ -160,6 +160,13 @@ def test_travel_walks_until_blocked():
         for y in range(py - 1, py + 2):
             world.terrain[x, y] = tile_types.T_PLAIN
     world.refresh_tile_flags()
+    for entity in list(world.entities):
+        if (
+            entity is not engine.player
+            and px - 2 <= entity.x < px + 32
+            and py - 10 <= entity.y <= py + 10
+        ):
+            world.entities.discard(entity)
     engine.player.x, engine.player.y = px, py
     engine.update_fov()
 
@@ -204,3 +211,52 @@ def test_region_first_enter_narrative():
     assert "zhongshanjing" in engine.visited_regions  # 出生即触发首入叙事
     joined = "".join(m.plain_text for m in engine.message_log.messages)
     assert "中山" in joined
+
+
+# ---- 山海图卷（M：世界地图）----
+
+
+def test_world_map_overlay_renders():
+    import tcod
+
+    import input_handlers as ih
+    import render
+    import tile_types
+
+    engine = make_engine()
+    # 挪到一座秘境之门旁看一眼（清出视野通道防森林遮挡），让门进入 known_gates
+    gate = find_gate(engine, "yaoshan_gudong")
+    engine.player.x, engine.player.y = gate.x + 2, gate.y
+    for cx in range(gate.x, gate.x + 3):
+        engine.gamemap.terrain[cx, gate.y] = tile_types.T_PLAIN
+    engine.gamemap.refresh_tile_flags()
+    engine.update_fov()
+    assert (gate.x, gate.y) in engine.known_gates, "视野内的门应记入图卷"
+
+    handler = ih.WorldMapEventHandler(engine)
+    console = tcod.console.Console(engine.settings.total_cols, engine.settings.total_rows, order="F")
+    handler.on_render(console)
+    DIV = engine.settings.divider_col
+    body = "".join(
+        "".join(chr(int(c)) if c not in (0, 32) else " " for c in console.rgb[:DIV, y]["ch"])
+        for y in range(engine.settings.total_rows)
+    )
+    assert "山海图卷" in body
+    assert "@" in body, "图卷应标记玩家"
+    assert "Ω" in body, "图卷应标记已知秘境之门"
+
+
+def test_world_map_key_pipeline():
+    import tcod
+    from tcod.event import KeySym
+
+    import input_handlers as ih
+
+    engine = make_engine()
+    handler = ih.MainGameEventHandler(engine)
+    event = tcod.event.KeyDown(sym=KeySym.M, scancode=0, mod=tcod.event.Modifier.NONE, repeat=False)
+    action = handler.dispatch(event)
+    assert isinstance(action, ih.OpenWorldMapAction)
+
+    map_handler = ih.WorldMapEventHandler(engine)
+    assert isinstance(map_handler.dispatch(event), ih.CloseMenuAction)

@@ -146,5 +146,7 @@
   "save_ok": "Your journey is inscribed on the map scroll.",
   "save_none": "No saved journey to resume.",
   "save_loaded": "You unroll the map scroll and resume your journey.",
-  "continue_game": "Continue Journey (Load)"
+  "continue_game": "Continue Journey (Load)",
+  "world_map_title": "World Map (M/Esc to close)",
+  "world_map_legend": "▲Mts ♣Woods ≈Water ▼Abyss =Ford ΩGates ◈Peaks @You"
 }

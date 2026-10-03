@@ -68,6 +68,7 @@ DESCEND_KEY = KeySym.GREATER  # Shift + 句号
 ASCEND_KEY = KeySym.LESS  # Shift + 逗号
 SKILL_LEARN_KEY = KeySym.K  # vi 的 K 让位：上移用方向键/W
 EXAMINE_KEY = KeySym.X  # 查看视野内怪物属性
+WORLD_MAP_KEY = KeySym.M  # 山海图卷（大世界地图）
 TAB_KEY = KeySym.TAB
 EQUIP_KEY = KeySym.E
 
@@ -128,6 +129,10 @@ class OpenSkillLearnAction(SwitchHandlerAction):
 
 
 class OpenExamineAction(SwitchHandlerAction):
+    pass
+
+
+class OpenWorldMapAction(SwitchHandlerAction):
     pass
 
 
@@ -217,6 +222,8 @@ class MainGameEventHandler(LogScrollMixin, EventHandler):
                 return OpenExamineAction()
             engine.message_log.add_message(engine.content.strings["examine_none"], "info")
             return None
+        if key == WORLD_MAP_KEY:
+            return OpenWorldMapAction()
         if key in SCROLL_UP_KEYS and player.is_alive:
             engine.message_log.scroll(3)
             return None
@@ -534,6 +541,22 @@ class GameOverEventHandler(EventHandler):
             return RestartAction()
         if key == KeySym.ESCAPE:
             return actions.EscapeAction()
+        return None
+
+
+class WorldMapEventHandler(EventHandler):
+    """山海图卷（M）：世界探索全图。M/Esc/回车关闭，不消耗回合。"""
+
+    def on_render(self, console) -> None:
+        super().on_render(console)
+        import render
+
+        render.render_world_map_overlay(console, self.engine)
+
+    def ev_keydown(self, event: tcod.event.KeyDown):
+        key = normalize_sym(event.sym)
+        if key in (KeySym.ESCAPE, WORLD_MAP_KEY) or key in CONFIRM_KEYS:
+            return CloseMenuAction()
         return None
 
 

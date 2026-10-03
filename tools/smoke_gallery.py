@@ -102,6 +102,14 @@ def run() -> None:
                 break
         make_shot(engine, ih.MainGameEventHandler(engine), "shot_world_travel", context, console)
 
+        # 2b) 山海图卷（M）：探索一段后打开世界地图
+        for _ in range(40):
+            engine.gamemap.explored |= engine.gamemap.visible
+            engine.player.x += 2
+            engine.player.x = min(engine.player.x, engine.world.width - 3)
+            engine.update_fov()
+        make_shot(engine, ih.WorldMapEventHandler(engine), "shot_world_map", context, console)
+
         # 3) 秘境第 1 层（回世界出生点附近找新手秘境入口）
         gate = next(
             e for e in engine.world.entities
