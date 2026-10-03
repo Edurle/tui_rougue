@@ -1,4 +1,4 @@
-"""行囊组件。"""
+"""行囊组件（无容量上限：拾取/炼制不再因满包受阻）。"""
 
 from __future__ import annotations
 
@@ -10,24 +10,17 @@ if typing.TYPE_CHECKING:
     from item import Item  # noqa: F401
 
 
-class InventoryFull(Exception):
-    pass
-
-
 class Inventory(BaseComponent):
-    def __init__(self, capacity: int) -> None:
-        self.capacity = capacity
+    def __init__(self) -> None:
         self.items: list = []
 
     def add(self, item) -> None:
-        """入囊：材料与既有同类堆叠合并（不占新格），其余计容量。"""
+        """入囊：材料与既有同类堆叠合并，其余直接追加（无上限）。"""
         if item.is_material:
             for existing in self.items:
                 if existing.is_material and existing.name == item.name:
                     existing.stack += item.stack
                     return
-        if len(self.items) >= self.capacity:
-            raise InventoryFull()
         self.items.append(item)
 
     def count_material(self, item_id: str, content) -> int:

@@ -426,8 +426,11 @@ def _affix_summary(strings, item) -> str:
 # ---- 覆盖层菜单 ----
 
 
-def render_inventory_menu(console: tcod.console.Console, engine: "Engine", cursor: int = -1) -> None:
-    """行囊覆盖菜单：物品区（字母 使用/装备）+ 装备区（数字 卸下）。居中于地图区。"""
+def render_inventory_menu(console: tcod.console.Console, engine: "Engine", handler=None) -> None:
+    """行囊覆盖菜单：物品区（滚动窗口，字母 使用/装备）+ 装备区（数字 卸下）。
+
+    物品无上限：超出视口时按光标滚动，字母 a-j 映射到当前可视的前十件。
+    """
     strings = engine.content.strings
     theme = engine.content.theme
     items: List[Item] = list(engine.player.inventory.items)
@@ -436,8 +439,17 @@ def render_inventory_menu(console: tcod.console.Console, engine: "Engine", curso
 
     map_cols = engine.settings.map_cols
     map_rows = engine.settings.map_rows
+    # 菜单总高上限：装备区 5 行 + 计数行 + 边框 4 行 + 至少 3 行物品
+    max_listed = max(3, map_rows - 5 - 1 - 4 - 3)
+    listed = min(len(items), max_listed)
+    scroll = 0
+    cursor = -1
+    if handler is not None:
+        cursor = handler.cursor
+        scroll = handler.list_scroll(items, listed)
+
     menu_width = min(40, map_cols - 2)
-    menu_height = len(items) + len(SLOT_ORDER) + 5
+    menu_height = listed + len(SLOT_ORDER) + 5
     x = max(0, (map_cols - menu_width) // 2)
     y = max(0, (map_rows - menu_height) // 2)
 
@@ -454,16 +466,22 @@ def render_inventory_menu(console: tcod.console.Console, engine: "Engine", curso
 
     letters = "abcdefghij"
     row = y + 2
-    for i, item in enumerate(items):
+    for i in range(listed):
+        global_index = scroll + i
+        item = items[global_index]
         letter = letters[i] if i < len(letters) else " "
-        mark = ">" if cursor == i else " "
+        mark = ">" if cursor == global_index else " "
+        # 滚动指示：窗口上方还有更多
+        if i == 0 and scroll > 0:
+            mark = "↑"
+        if i == listed - 1 and scroll + listed < len(items):
+            letter = letter if letter != " " else "↓"
         color = item.color if item.equipment is None else COLOR_EQUIP
         label = item.name + (f"×{item.stack}" if item.is_material and item.stack > 1 else "")
         console.print(x + 2, row, f"{mark}{letter}) {label}", fg=tuple(color))
         row += 1
     row += 1
-    console.print(x + 2, row, strings["hud_inventory"].format(
-        count=len(items), cap=engine.player.inventory.capacity), fg=(160, 160, 170))
+    console.print(x + 2, row, strings["hud_inventory"].format(count=len(items)), fg=(160, 160, 170))
     row += 1
     for i, item in enumerate(slot_items):
         slot_name = strings[f"slot_{SLOT_ORDER[i]}"]

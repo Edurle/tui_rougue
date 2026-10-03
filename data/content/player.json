@@ -30,8 +30,5 @@
       "defense": 1,
       "skill_points": 1
     }
-  },
-  "inventory": {
-    "capacity": 10
   }
 }

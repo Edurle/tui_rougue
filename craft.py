@@ -66,13 +66,7 @@ def execute_recipe(engine: "Engine", recipe: dict) -> None:
     count = int(output.get("count", 1))
     if item.is_material:
         item.stack = count
-    try:
-        engine.player.inventory.add(item)
-    except Exception:
-        # 行囊满（非材料不堆叠）：材料已扣——放回脚下，让玩家腾挪后再炼
-        item.gamemap = engine.gamemap
-        engine.gamemap.entities.add(item)
-        raise exceptions.Impossible(strings["inventory_full"].format(item=item.name))
+    engine.player.inventory.add(item)  # 行囊无上限，直接入囊
 
     engine.effects.spawn_buff(engine.player.x, engine.player.y)
     label = item.name + (f"×{count}" if count > 1 else "")

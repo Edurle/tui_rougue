@@ -628,7 +628,6 @@ class Content:
     ) -> Actor:
         pdef = self.player_def
         level_data = _require(pdef, "level", "player.json")
-        inv_data = _require(pdef, "inventory", "player.json")
         if len(class_ids) != 2 or class_ids[0] == class_ids[1]:
             raise ContentError(f"双职业定义非法：{class_ids}")
         for cid in class_ids:
@@ -665,7 +664,7 @@ class Content:
             bonuses=level_data["per_level"],
         )
         player.level.parent = player
-        player.inventory = Inventory(capacity=inv_data["capacity"])
+        player.inventory = Inventory()
         player.inventory.parent = player
         from equipment import Equipment
 

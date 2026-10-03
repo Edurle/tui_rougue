@@ -9,7 +9,6 @@ from __future__ import annotations
 import typing
 
 import exceptions
-from inventory import InventoryFull
 
 if typing.TYPE_CHECKING:
     from engine import Engine
@@ -86,10 +85,7 @@ class PickupAction(Action):
         item = engine.gamemap.get_item_at(self.entity.x, self.entity.y)
         if item is None:
             return self._gather(engine)
-        try:
-            self.entity.inventory.add(item)
-        except InventoryFull:
-            raise exceptions.Impossible(strings["inventory_full"].format(item=item.name))
+        self.entity.inventory.add(item)
         engine.gamemap.entities.discard(item)
         # 注意：不清空 item.gamemap——行囊中的物品组件仍需经它回溯到 engine
         if item.is_material and item.stack > 1:
@@ -111,11 +107,7 @@ class PickupAction(Action):
         count = engine.rng.randint(int(yields["min"]), int(yields["max"]))
         material = engine.content.build_item(yields["id"], engine.gamemap, node.x, node.y)
         material.stack = count
-        try:
-            self.entity.inventory.add(material)
-        except InventoryFull:
-            engine.gamemap.entities.discard(material)
-            raise exceptions.Impossible(strings["inventory_full"].format(item=material.name))
+        self.entity.inventory.add(material)
         engine.gamemap.entities.discard(material)
         engine.gamemap.entities.discard(node)
         engine.effects.spawn_pickup(self.entity.x, self.entity.y)
@@ -181,11 +173,7 @@ class UnequipAction(Action):
         item = equipment.unequip_slot(self.slot) if equipment is not None else None
         if item is None:
             raise exceptions.Impossible(strings["no_item_here"])
-        try:
-            self.entity.inventory.add(item)
-        except InventoryFull:
-            equipment.equip(item)  # 放不回去，原样穿回
-            raise exceptions.Impossible(strings["inventory_full"].format(item=item.name))
+        self.entity.inventory.add(item)
         self.entity.fighter.clamp_vitals()
         engine.message_log.add_message(strings["equip_off"].format(item=item.name), "loot")
 

@@ -251,20 +251,47 @@ class MainGameEventHandler(LogScrollMixin, EventHandler):
 
 
 class InventoryEventHandler(EventHandler):
-    """行囊：字母=使用消耗品/装备装备件；↑↓+E=光标装备/卸下；1-5=卸下对应槽。"""
+    """行囊：字母=使用消耗品/装备装备件（映射可视窗口前十件）；↑↓+E=光标装备/卸下；1-5=卸下对应槽。
+
+    物品无上限：光标越出可视窗口时窗口随动滚动（list_scroll）。
+    """
 
     def __init__(self, engine) -> None:
         super().__init__(engine)
         self.cursor = 0  # 统一列表：前行囊物品，后 5 个装备槽
+        self.scroll = 0  # 物品区滚动窗口起点
 
     def _row_count(self) -> int:
         return len(self.engine.player.inventory.items) + len(SLOT_ORDER)
+
+    def max_listed(self) -> int:
+        """物品区可视容量（与渲染端同一公式）。"""
+        s = self.engine.settings
+        return max(3, s.map_rows - 5 - 1 - 4 - 3)
+
+    def list_scroll(self, items, listed: int) -> int:
+        """光标驱动的滚动窗口起点（渲染端每帧调用）。"""
+        if self.cursor < 0:
+            self.cursor = 0
+        if self.cursor >= len(items) + len(SLOT_ORDER):
+            self.cursor = len(items) + len(SLOT_ORDER) - 1
+        self.scroll = max(0, min(self.scroll, len(items) - 1))
+        if self.cursor < self.scroll:  # 光标到窗口上方：上滚
+            self.scroll = self.cursor
+        elif self.cursor >= self.scroll + listed:  # 光标到窗口下方：下滚
+            self.scroll = self.cursor - listed + 1
+        self.scroll = max(0, min(self.scroll, max(0, len(items) - listed)))
+        return self.scroll
+
+    def _sync_scroll(self) -> None:
+        items = list(self.engine.player.inventory.items)
+        self.list_scroll(items, min(len(items), self.max_listed()))
 
     def on_render(self, console) -> None:
         super().on_render(console)
         import render
 
-        render.render_inventory_menu(console, self.engine, cursor=self.cursor)
+        render.render_inventory_menu(console, self.engine, handler=self)
 
     def ev_keydown(self, event: tcod.event.KeyDown):
         engine = self.engine
@@ -272,23 +299,28 @@ class InventoryEventHandler(EventHandler):
         if key == KeySym.ESCAPE or key == INVENTORY_TOGGLE_KEY:
             return CloseMenuAction()
         items = list(engine.player.inventory.items)
+        listed = min(len(items), self.max_listed())
         # E 优先于字母选择（字母表中不再用 e 选第 5 件）
         if key == EQUIP_KEY:
             return self._cursor_equip()
         if key == KeySym.UP:
             self.cursor = max(0, self.cursor - 1)
+            self._sync_scroll()
             return None
         if key == KeySym.DOWN:
             self.cursor = min(self._row_count() - 1, self.cursor + 1)
+            self._sync_scroll()
             return None
         if key in CONFIRM_KEYS:
             if self.cursor < len(items):
                 return self._use_or_equip(items[self.cursor])
             return None
         if key in INVENTORY_LETTER_KEYS:
-            index = INVENTORY_LETTER_KEYS.index(key)
-            if index < len(items):
-                return self._use_or_equip(items[index])
+            letter_index = INVENTORY_LETTER_KEYS.index(key)
+            if letter_index < listed:  # 字母只映射当前可视窗口
+                index = self.scroll + letter_index
+                if index < len(items):
+                    return self._use_or_equip(items[index])
             return None
         if key in UNEQUIP_KEYS:
             slot = SLOT_ORDER[UNEQUIP_KEYS.index(key)]

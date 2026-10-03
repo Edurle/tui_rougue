@@ -17,7 +17,6 @@ from actions import EquipAction, UnequipAction  # noqa: E402
 from content_loader import load_content  # noqa: E402
 from engine import Engine  # noqa: E402
 from equipment import SLOT_ORDER  # noqa: E402
-from inventory import InventoryFull  # noqa: E402
 from settings import Settings  # noqa: E402
 
 
@@ -82,22 +81,22 @@ def test_slot_swap_returns_old_item():
     assert player.fighter.power == player.fighter.base_power + 3
 
 
-def test_unequip_when_inventory_full():
+def test_inventory_unlimited():
+    """行囊无上限：大量物品照样入包、卸下装备不再受阻。"""
     engine = make_engine()
     player = engine.player
     sword = give_item(engine, "w_taomu")
     EquipAction(player, sword).perform(engine)
-    for i in range(player.inventory.capacity):
+    for _ in range(30):  # 远超旧容量 10
         filler = engine.content.build_item(
             "lingzhi", engine.gamemap, engine.player.x, engine.player.y
         )
         engine.gamemap.entities.discard(filler)
         player.inventory.add(filler)
-    from exceptions import Impossible
-
-    with pytest.raises(Impossible):
-        UnequipAction(player, "weapon").perform(engine)
-    assert player.equipment.slots["weapon"] is sword  # 放不回则原样穿回
+    assert len(player.inventory.items) >= 30
+    UnequipAction(player, "weapon").perform(engine)
+    assert player.equipment.slots["weapon"] is None
+    assert sword in player.inventory.items
 
 
 # ---- 词条 ----
