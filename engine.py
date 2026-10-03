@@ -103,6 +103,9 @@ class Engine:
             msg = Message(m["text"], m.get("kind", "info"))
             msg.count = m.get("count", 1)
             engine.message_log.messages.append(msg)
+        if engine.current_realm is not None:
+            # 读档回到秘境：补一条回程指引（存档里的旧消息没有）
+            engine.message_log.add_message(content.strings["realm_enter_hint"], "info")
         engine.update_fov()
 
     # ---- 回合推进 ----

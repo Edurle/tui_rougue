@@ -144,6 +144,42 @@ def test_not_on_gate_gives_hint():
             raise AssertionError("不在秘境之门上按 > 应提示")
 
 
+def test_first_floor_exit_gives_bearing_hint():
+    """第 1 层不在青色山径上按 <：提示出口方位（防误入者被困）。"""
+    import exceptions
+
+    engine = make_engine()
+    gate = find_gate(engine, "yaoshan_gudong")
+    engine.player.x, engine.player.y = gate.x, gate.y
+    TakeStairsAction(engine.player, "down").perform(engine)
+    joined = "".join(m.plain_text for m in engine.message_log.messages)
+    assert "欲返尘世" in joined, "进门应提示回程方法"
+
+    ux, uy = engine.gamemap.upstairs_xy
+    engine.player.x, engine.player.y = ux + 5, uy + 3  # 出口西北
+    try:
+        TakeStairsAction(engine.player, "up").perform(engine)
+        raise AssertionError("不在出口按 < 应 Impossible")
+    except exceptions.Impossible as exc:
+        assert "西北" in str(exc) and "山径" in str(exc), f"应指明方位：{exc}"
+
+
+def test_load_into_realm_appends_exit_hint(tmp_path, monkeypatch):
+    """读档回到秘境时补发回程指引（存档旧消息里没有）。"""
+    import save_manager
+
+    monkeypatch.setattr(save_manager, "SAVE_DIR", str(tmp_path))
+    engine = make_engine()
+    gate = find_gate(engine, "yaoshan_gudong")
+    engine.player.x, engine.player.y = gate.x, gate.y
+    TakeStairsAction(engine.player, "down").perform(engine)  # autosave 于秘境
+
+    loaded = save_manager.load_engine(engine.content, Settings())
+    assert loaded.current_realm == "yaoshan_gudong"
+    tail = "".join(m.plain_text for m in loaded.message_log.messages[-2:])
+    assert "欲返尘世" in tail
+
+
 # ---- 大世界旅行（Shift+方向）----
 
 

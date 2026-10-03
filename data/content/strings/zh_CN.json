@@ -166,5 +166,16 @@
   "cleanse_no_poison": "你没有中毒，无需服丹。",
   "buff_item_power": "药力奔涌，膂力+{amount}（{turns} 回合）。",
   "buff_item_defense": "罡气护体，防御+{amount}（{turns} 回合）。",
-  "talisman_stun": "符光乍现，{count} 名敌人僵立原地。"
+  "talisman_stun": "符光乍现，{count} 名敌人僵立原地。",
+  "realm_exit_hint": "回返尘世需踏上青色山径（{bearing}方，来路的光阶）。",
+  "realm_enter_hint": "欲返尘世：回到来路青色山径处按 <。",
+  "bearing_n": "北",
+  "bearing_s": "南",
+  "bearing_e": "东",
+  "bearing_w": "西",
+  "bearing_ne": "东北",
+  "bearing_nw": "西北",
+  "bearing_se": "东南",
+  "bearing_sw": "西南",
+  "bearing_here": "脚下"
 }

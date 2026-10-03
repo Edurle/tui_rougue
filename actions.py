@@ -190,6 +190,15 @@ class UnequipAction(Action):
         engine.message_log.add_message(strings["equip_off"].format(item=item.name), "loot")
 
 
+def _bearing_key(dx: int, dy: int) -> str:
+    """出口相对方位的 strings 键（地图 y 向下为南）。"""
+    ns = "n" if dy < 0 else "s" if dy > 0 else ""
+    ew = "e" if dx > 0 else "w" if dx < 0 else ""
+    if not ns and not ew:
+        return "bearing_here"
+    return f"bearing_{ns}{ew}" if ns and ew else f"bearing_{ns or ew}"
+
+
 class TakeStairsAction(Action):
     """山径交互：大世界上 = 踏入秘境之门（>）；秘境内 = 层间移动（> 深入 / < 回返）。
 
@@ -224,6 +233,7 @@ class TakeStairsAction(Action):
                 ),
                 "descend",
             )
+            engine.message_log.add_message(strings["realm_enter_hint"], "info")
             return
 
         # ---- 秘境内 ----
@@ -234,6 +244,13 @@ class TakeStairsAction(Action):
             engine.message_log.add_message(strings["realm_descend"], "descend")
         else:
             if here != gamemap.upstairs_xy:
+                if gamemap.realm_depth <= 1:
+                    # 第 1 层不在出口：指明青色山径方位，避免误入者困在秘境
+                    ux, uy = gamemap.upstairs_xy
+                    bearing = strings[_bearing_key(ux - self.entity.x, uy - self.entity.y)]
+                    raise exceptions.Impossible(
+                        strings["realm_exit_hint"].format(bearing=bearing)
+                    )
                 raise exceptions.Impossible(strings["not_on_up_stairs"])
             was_first_floor = gamemap.realm_depth <= 1
             engine.previous_floor()

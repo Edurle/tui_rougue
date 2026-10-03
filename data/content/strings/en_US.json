@@ -165,5 +165,16 @@
   "cleanse_no_poison": "You are not poisoned.",
   "buff_item_power": "Power surges: +{amount} for {turns} turns.",
   "buff_item_defense": "Gang qi shields you: defense +{amount} for {turns} turns.",
-  "talisman_stun": "The talisman flashes; {count} enemies freeze in place."
+  "talisman_stun": "The talisman flashes; {count} enemies freeze in place.",
+  "realm_exit_hint": "To return to the wilds, step onto the cyan path (to the {bearing}, the glowing steps you arrived on).",
+  "realm_enter_hint": "To return to the wilds: go back to the cyan path you arrived on and press <.",
+  "bearing_n": "north",
+  "bearing_s": "south",
+  "bearing_e": "east",
+  "bearing_w": "west",
+  "bearing_ne": "northeast",
+  "bearing_nw": "northwest",
+  "bearing_se": "southeast",
+  "bearing_sw": "southwest",
+  "bearing_here": "right here"
 }
