@@ -123,18 +123,43 @@ def test_version_mismatch_rejected(tmp_path, monkeypatch):
     assert save_manager.load_engine(engine.content, Settings()) is None
 
 
-def test_class_select_has_continue_option(tmp_path, monkeypatch):
+def test_title_menu_pipeline(tmp_path, monkeypatch):
+    """开始界面：主菜单项完整、继续游历无档置灰、设置界面语言/档位调整。"""
     import input_handlers as ih
     import save_manager
+    import tcod
+    from tcod.event import KeySym
 
     monkeypatch.setattr(save_manager, "SAVE_DIR", str(tmp_path))
+    content = load_content()
+    settings = Settings()
+
+    # 无档：继续游历置灰（回车不产生选择）
+    handler = ih.TitleMenuEventHandler(content, settings, has_save=False)
+    handler.cursor = 1  # 停在"继续游历"
+    handler.dispatch(tcod.event.KeyDown(sym=KeySym.RETURN, scancode=0, mod=tcod.event.Modifier.NONE, repeat=False))
+    assert not handler.done and handler.choice is None
+
+    # 有档：可选择继续
     engine = make_engine()
     engine.autosave()
+    handler = ih.TitleMenuEventHandler(content, settings, has_save=True)
+    handler.cursor = 1
+    handler.dispatch(tcod.event.KeyDown(sym=KeySym.RETURN, scancode=0, mod=tcod.event.Modifier.NONE, repeat=False))
+    assert handler.done and handler.choice == "continue"
 
-    handler = ih.ClassSelectEventHandler(engine.content, Settings(), has_save=True)
-    options = handler._options()
-    assert options[0] == ih.CONTINUE_ID
-    assert len(options) == len(engine.content.classes) + 1
+    # 设置界面：切换语言（content 即时重载并保存）、切档位（needs_resize）
+    menu = ih.SettingsMenuEventHandler(content, settings)
+    menu.cursor = 0  # 语言项
+    menu.dispatch(tcod.event.KeyDown(sym=KeySym.RIGHT, scancode=0, mod=tcod.event.Modifier.NONE, repeat=False))
+    assert settings.lang in ("zh_CN", "en_US") and settings.lang != content.lang
+    assert menu.lang_changed and menu.content.lang == settings.lang
+    menu.cursor = 1  # 画面
+    menu.dispatch(tcod.event.KeyDown(sym=KeySym.RIGHT, scancode=0, mod=tcod.event.Modifier.NONE, repeat=False))
+    assert menu.needs_resize and settings.map_size == "medium"
+    # Esc 返回
+    menu.dispatch(tcod.event.KeyDown(sym=KeySym.ESCAPE, scancode=0, mod=tcod.event.Modifier.NONE, repeat=False))
+    assert menu.done
 
 
 def test_level_up_autosaves(tmp_path, monkeypatch):

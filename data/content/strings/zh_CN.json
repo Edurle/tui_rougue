@@ -177,5 +177,21 @@
   "bearing_nw": "西北",
   "bearing_se": "东南",
   "bearing_sw": "西南",
-  "bearing_here": "脚下"
+  "bearing_here": "脚下",
+  "title_menu_tagline": "以《山海经》为卷 · 大世界 × 秘境 × 天工开物",
+  "title_menu_new": "开始新游历",
+  "title_menu_continue": "继续游历",
+  "title_menu_settings": "设置",
+  "title_menu_quit": "离开",
+  "title_menu_hint": "↑↓ 选择 · 回车 确认",
+  "settings_title": "设置（←→ 调整 · Esc 返回）",
+  "settings_lang": "语言",
+  "settings_map": "画面",
+  "settings_sidebar": "信息板",
+  "settings_back": "返回",
+  "lang_zh_CN": "简体中文",
+  "lang_en_US": "English",
+  "settings_saved": "设置已保存。",
+  "settings_headline": "设置",
+  "settings_hint": "←→ 调整 · Esc 返回"
 }

@@ -540,19 +540,15 @@ def render_skill_learn_menu(console: tcod.console.Console, engine: "Engine", pag
         row += 1
 
 
-def render_class_select(console, content, settings, primary, cursor, has_save: bool = False) -> None:
-    """开局双职业选择界面（两段）；有存档时顶部多一项"继续游历"。"""
+def render_class_select(console, content, settings, primary, cursor) -> None:
+    """开局双职业选择界面（两段）。"""
     strings = content.strings
     theme = content.theme
     title = (
         strings["class_select_secondary"] if primary else strings["class_select_primary"]
     )
-    from input_handlers import CONTINUE_ID
-
     class_ids = list(content.classes.keys())
-    shown = class_ids if primary is not None else (
-        ([CONTINUE_ID] if has_save else []) + class_ids
-    )
+    shown = class_ids if primary is not None else [c for c in class_ids if c != primary]
 
     map_cols = settings.map_cols
     map_rows = settings.map_rows
@@ -577,13 +573,8 @@ def render_class_select(console, content, settings, primary, cursor, has_save: b
 
     row = y + 3
     for i, cid in enumerate(shown):
-        mark = "►" if i == cursor else " "
-        if cid == CONTINUE_ID:
-            name = strings["continue_game"]
-            console.print(x + 2, row, f"{mark} {name}", fg=(122, 220, 208))
-            row += 1
-            continue
         cdef = content.classes[cid]
+        mark = "►" if i == cursor else " "
         stats = strings["class_select_stats"].format(
             hp=cdef["hp"], pow=cdef["power"], **{"def": cdef["defense"], "mp": cdef["mp"]}
         )
@@ -594,12 +585,91 @@ def render_class_select(console, content, settings, primary, cursor, has_save: b
         row += 1
     # 选中项简介
     if shown:
-        picked = shown[cursor % len(shown)]
-        if picked == CONTINUE_ID:
-            desc = strings["save_loaded"]
-        else:
-            desc = content._(content.classes[picked]["desc"])
+        desc = content._(content.classes[shown[cursor % len(shown)]]["desc"])
         console.print(x + 2, y + menu_height - 2, desc[: menu_width - 4], fg=(170, 170, 180))
+
+
+# ---- 开始界面 / 设置界面 ----
+
+
+def render_title_menu(console, content, settings, cursor: int, has_save: bool) -> None:
+    """开始界面：标题 + 主菜单（新游历/继续游历/设置/离开）。"""
+    strings = content.strings
+    theme = content.theme
+
+    console.clear(fg=(236, 236, 240), bg=tuple(theme["background"]))
+    map_cols = settings.map_cols
+    map_rows = settings.map_rows
+
+    # 标题区：山形装饰 + 游名 + 副标题
+    center_x = map_cols // 2
+    title = strings["window_title"]
+    tagline = strings["title_menu_tagline"]
+    peak_line = "▲▲▲▲▲▲▲▲▲"
+    console.print(max(0, center_x - len(peak_line) // 2), max(2, map_rows // 2 - 7), peak_line, fg=(122, 202, 190))
+    console.print(max(0, center_x - len(title) // 2), max(3, map_rows // 2 - 6), title, fg=(255, 222, 130))
+    console.print(max(0, center_x - len(tagline) // 2), max(4, map_rows // 2 - 5), tagline, fg=(150, 150, 160))
+
+    items = ("new", "continue", "settings", "quit")
+    labels = {
+        "new": strings["title_menu_new"],
+        "continue": strings["title_menu_continue"],
+        "settings": strings["title_menu_settings"],
+        "quit": strings["title_menu_quit"],
+    }
+    enabled = {"new": True, "continue": has_save, "settings": True, "quit": True}
+
+    row = map_rows // 2 + 1
+    for i, item in enumerate(items):
+        mark = "►" if i == cursor else " "
+        active = enabled[item]
+        color = COLOR_NAME if (i == cursor and active) else (110, 110, 118)
+        console.print(center_x - 10, row, f"{mark} {labels[item]}", fg=color)
+        row += 2
+    hint = strings["title_menu_hint"]
+    console.print(max(0, center_x - len(hint) // 2), map_rows - 2, hint, fg=(130, 130, 140))
+
+
+def render_settings_menu(console, content, settings, cursor: int) -> None:
+    """设置界面：语言/画面/信息板（←→ 即时调整），Esc 返回。"""
+    strings = content.strings
+    theme = content.theme
+
+    console.clear(fg=(236, 236, 240), bg=tuple(theme["background"]))
+    map_cols = settings.map_cols
+    map_rows = settings.map_rows
+
+    menu_width = min(40, map_cols - 4)
+    menu_height = 10
+    x = max(0, (map_cols - menu_width) // 2)
+    y = max(0, (map_rows - menu_height) // 2)
+    console.draw_frame(
+        x=x, y=y, width=menu_width, height=menu_height,
+        title=f" {strings['settings_headline']} ",
+        clear=True,
+        fg=tuple(theme["ui"]["frame"]),
+        bg=tuple(theme["background"]),
+    )
+
+    current_lang = settings.lang or content.lang
+    rows = [
+        (strings["settings_lang"], strings.get(f"lang_{current_lang}", current_lang)),
+        (strings["settings_map"], strings[f"size_{settings.map_size}"]),
+        (strings["settings_sidebar"], strings[f"size_{settings.sidebar_size}"]),
+        (strings["settings_back"], ""),
+    ]
+    row = y + 2
+    for i, (label, value) in enumerate(rows):
+        mark = "►" if i == cursor else " "
+        color = COLOR_NAME if i == cursor else (150, 150, 158)
+        console.print(x + 2, row, f"{mark} {label}"[: menu_width - 11], fg=color)
+        if value:
+            value_color = (122, 202, 190) if i == cursor else (140, 140, 150)
+            console.print(x + menu_width - len(value) - 3, row, value, fg=value_color)
+        row += 1
+    # 操作提示 + 已保存（截断保护）
+    console.print(x + 2, y + menu_height - 3, strings["settings_hint"][: menu_width - 4], fg=(130, 130, 140))
+    console.print(x + 2, y + menu_height - 2, strings["settings_saved"][: menu_width - 4], fg=(120, 200, 160))
 
 
 def render_targeting_overlay(console: tcod.console.Console, engine: "Engine", target, skill: dict) -> None:

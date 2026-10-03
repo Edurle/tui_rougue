@@ -39,9 +39,11 @@ from input_handlers import (
     OpenSkillLearnAction,
     OpenWorldMapAction,
     RestartAction,
+    SettingsMenuEventHandler,
     SkillLearnEventHandler,
     SwitchHandlerAction,
     TargetingEventHandler,
+    TitleMenuEventHandler,
     WorldMapEventHandler,
 )
 from paths import resource_path
@@ -103,22 +105,55 @@ def _present(context, console) -> None:
     context.present(console, keep_aspect=True, integer_scaling=True)
 
 
-def collect_class_ids(context, console, content, settings) -> tuple | None:
-    """开局两段职业选择（主→副）；返回 (主 id, 副 id) 或 None（选了"继续游历"）。"""
-    import save_manager
-
-    strings = content.strings
+def collect_class_ids(context, console, content, settings) -> tuple:
+    """开局两段职业选择（主→副）；返回 (主 id, 副 id)。"""
     console.clear(fg=(236, 236, 240), bg=tuple(content.theme["background"]))
-    handler = ClassSelectEventHandler(content, settings, has_save=save_manager.save_exists())
+    handler = ClassSelectEventHandler(content, settings)
     while not handler.done:
         handler.on_render(console)
         _present(context, console)
         for event in tcod.event.get():
             handler.dispatch(event)
     console.clear(fg=(236, 236, 240), bg=tuple(content.theme["background"]))
-    if handler.continue_requested:
-        return None
     return handler.chosen
+
+
+def title_menu_loop(context, console, content, settings):
+    """开始界面主菜单（含设置子界面）。
+
+    返回 (choice, content)：
+    - ("new", content)      开始新游历（随后进职业选择）
+    - ("continue", content) 继续游历（存档存在）
+    - ("quit", content)     离开（调用方 SystemExit/返回）
+    - ("resize", content)   设置改了显示档位 → 外层重建窗口后回主菜单
+    content 可能因语言切换被重载（设置内即时生效）。
+    """
+    import save_manager
+
+    while True:
+        handler = TitleMenuEventHandler(content, settings, has_save=save_manager.save_exists())
+        handler_done = False
+        while not handler_done:
+            handler.on_render(console)
+            _present(context, console)
+            for event in tcod.event.get():
+                handler.dispatch(event)
+                if handler.done:
+                    handler_done = True
+
+        if handler.choice == "settings":
+            settings_menu = SettingsMenuEventHandler(content, settings)
+            while not settings_menu.done:
+                settings_menu.on_render(console)
+                _present(context, console)
+                for event in tcod.event.get():
+                    settings_menu.dispatch(event)
+            content = settings_menu.content  # 语言可能已切换（content 重载）
+            if settings_menu.needs_resize:
+                return "resize", content
+            continue  # 回主菜单
+
+        return handler.choice, content
 
 
 def _run_session(context, console, engine, content) -> str:
@@ -221,10 +256,6 @@ def engine_default(content) -> tuple:
 
 
 def run(lang: Optional[str], smoke_output: Optional[str] = None) -> None:
-    resolved_lang = lang if lang in SUPPORTED_LANGS else detect_lang()
-    content = load_content(resolved_lang)
-    strings = content.strings
-
     settings = Settings.load()
     map_override = parse_arg_value(sys.argv, "--map")
     sidebar_override = parse_arg_value(sys.argv, "--sidebar")
@@ -232,9 +263,18 @@ def run(lang: Optional[str], smoke_output: Optional[str] = None) -> None:
         settings.map_size = map_override
     if sidebar_override:
         settings.sidebar_size = sidebar_override
+    # 语言优先级：--lang 参数 > 设置界面保存的语言 > 系统语言检测
+    if lang in SUPPORTED_LANGS:
+        resolved_lang = lang
+    elif settings.lang in SUPPORTED_LANGS:
+        resolved_lang = settings.lang
+    else:
+        resolved_lang = detect_lang()
+    content = load_content(resolved_lang)
 
-    selected: Optional[tuple] = None  # 本会话双职业；restart 后置 None 重选
+    selected: Optional[tuple] = None  # 本会话双职业；restart 后置 None 回主菜单
     while True:
+        strings = content.strings
         tileset = build_tileset(content, settings)
         with tcod.context.new(
             columns=settings.total_cols,
@@ -254,52 +294,49 @@ def run(lang: Optional[str], smoke_output: Optional[str] = None) -> None:
                 print(f"冒烟截图已保存：{smoke_output}")
                 return
 
+            # ---- 开始界面（新开局 / 转世重修后回到这里）----
             if selected is None:
-                selected = collect_class_ids(context, console, content, settings)
-                if selected is None:
-                    # 选了"继续游历"：从存档重建引擎
+                choice, content = title_menu_loop(context, console, content, settings)
+                strings = content.strings
+                if choice == "quit":
+                    return
+                if choice == "resize":
+                    continue  # 设置改了显示档位：重建窗口回主菜单
+                if choice == "continue":
                     import save_manager
 
                     engine = save_manager.load_engine(content, settings)
-                    if engine is not None:
-                        engine.message_log.add_message(strings["save_loaded"], "system")
-                        changed = _run_session(context, console, engine, content)
-                        if changed == "restart":
-                            pass  # selected 仍为 None：回到职业选择
-                        elif changed in ("map", "sidebar"):
-                            engine.apply_layout()
-                            engine.message_log.add_message(
-                                strings[f"ui_{changed}_size"].format(
-                                    size=strings[f"size_{settings.map_size if changed == 'map' else settings.sidebar_size}"]
-                                ),
-                                "info",
-                            )
+                    if engine is None:  # 存档消失/版本旧：回主菜单
                         continue
-                    selected = None  # 读档失败（无档/版本旧）：落到新开局选择
-                    continue
+                    engine.message_log.add_message(strings["save_loaded"], "system")
+                    selected = ("§loaded§", None)  # 标记：引擎已就绪，跳过职业选择
+                else:  # new：进入两段职业选择
+                    selected = collect_class_ids(context, console, content, settings)
+                    console.clear(fg=(236, 236, 240), bg=tuple(content.theme["background"]))
+                    continue  # 选完职业，重建画面进入游戏
 
-            engine = new_engine(content, settings, selected)
-            engine.message_log.add_message(
-                strings["class_chosen"].format(
-                    primary=content.class_name(selected[0]),
-                    secondary=content.class_name(selected[1]),
-                ),
-                "system",
-            )
+            # ---- 游戏会话 ----
+            if selected and selected[0] == "§loaded§":
+                pass  # 读档引擎已在上面就绪
+            else:
+                engine = new_engine(content, settings, selected)
+                engine.message_log.add_message(
+                    strings["class_chosen"].format(
+                        primary=content.class_name(selected[0]),
+                        secondary=content.class_name(selected[1]),
+                    ),
+                    "system",
+                )
 
             changed = _run_session(context, console, engine, content)
-            if changed == "restart":
-                selected = None  # 转世重修：回到职业选择
-            elif changed == "map":
-                # 地图尺寸与视口解耦：改几何不丢进度，仅更新日志布局
+            selected = None  # 会话结束（退出存档后）回开始界面
+            if changed in ("map", "sidebar"):
                 engine.apply_layout()
                 engine.message_log.add_message(
-                    strings["ui_map_size"].format(size=strings[f"size_{settings.map_size}"]), "info"
-                )
-            elif changed == "sidebar":
-                engine.apply_layout()
-                engine.message_log.add_message(
-                    strings["ui_sidebar_size"].format(size=strings[f"size_{settings.sidebar_size}"]), "info"
+                    strings[f"ui_{changed}_size"].format(
+                        size=strings[f"size_{settings.map_size if changed == 'map' else settings.sidebar_size}"]
+                    ),
+                    "info",
                 )
             # 循环回到顶部：以新设置重建窗口；旧 context 已由 with 退出时关闭
 

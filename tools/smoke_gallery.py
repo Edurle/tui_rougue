@@ -158,17 +158,13 @@ def run() -> None:
             engine.player.inventory.add(item)
         make_shot(engine, ih.CraftEventHandler(engine), "shot_craft", context, console)
 
-        # 9) 职业选择（有存档：顶部"继续游历"）
-        engine.autosave()
-        selector = ih.ClassSelectEventHandler(content, settings, has_save=True)
+        # 9) 职业选择（两段式）
+        selector = ih.ClassSelectEventHandler(content, settings)
         selector.on_render(console)
         context.present(console, keep_aspect=True, integer_scaling=True)
         path = OUT / "shot_class_select.png"
         context.save_screenshot(str(path))
         print(f"已保存 {path}")
-        import save_manager
-
-        save_manager.delete_save()
 
     # 10) 中档布局（32 行完整技能区）
     settings_m = Settings("medium", "large")
@@ -186,6 +182,26 @@ def run() -> None:
         put_monster(engine_m, 2, 0, "luwu")
         engine_m.update_fov()
         make_shot(engine_m, ih.MainGameEventHandler(engine_m), "shot_medium_layout", context, console_m)
+
+
+        # 11) 开始界面主菜单（有存档：继续游历可选）
+        import save_manager as sm2
+
+        engine_m2 = Engine(content, settings_m, ("leifa", "fushi"))
+        engine_m2.autosave()
+        title = ih.TitleMenuEventHandler(content, settings_m, has_save=sm2.save_exists())
+        title.on_render(console_m)
+        context.present(console_m, keep_aspect=True, integer_scaling=True)
+        context.save_screenshot(str(OUT / "shot_title_menu.png"))
+        print(f"已保存 {OUT / 'shot_title_menu.png'}")
+
+        # 12) 设置界面
+        settings_menu = ih.SettingsMenuEventHandler(content, settings_m)
+        settings_menu.on_render(console_m)
+        context.present(console_m, keep_aspect=True, integer_scaling=True)
+        context.save_screenshot(str(OUT / "shot_settings.png"))
+        print(f"已保存 {OUT / 'shot_settings.png'}")
+        sm2.delete_save()
 
 
 if __name__ == "__main__":

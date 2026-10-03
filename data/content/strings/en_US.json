@@ -176,5 +176,21 @@
   "bearing_nw": "northwest",
   "bearing_se": "southeast",
   "bearing_sw": "southwest",
-  "bearing_here": "right here"
+  "bearing_here": "right here",
+  "title_menu_tagline": "A Shanhaijing Roguelike · Overworld, Realms & Crafting",
+  "title_menu_new": "New Journey",
+  "title_menu_continue": "Continue",
+  "title_menu_settings": "Settings",
+  "title_menu_quit": "Quit",
+  "title_menu_hint": "Arrows to choose · Enter to confirm",
+  "settings_title": "Settings (Left/Right to adjust · Esc to go back)",
+  "settings_lang": "Language",
+  "settings_map": "Display",
+  "settings_sidebar": "Sidebar",
+  "settings_back": "Back",
+  "lang_zh_CN": "简体中文",
+  "lang_en_US": "English",
+  "settings_saved": "Settings saved.",
+  "settings_headline": "Settings",
+  "settings_hint": "Left/Right to adjust · Esc to go back"
 }

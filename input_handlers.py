@@ -619,34 +619,151 @@ class CraftEventHandler(EventHandler):
         return None
 
 
-CONTINUE_ID = "§continue§"  # 职业选择列表顶部的"继续游历"占位项
+class TitleMenuEventHandler(tcod.event.EventDispatch):
+    """开始界面主菜单：新游历 / 继续游历（无档置灰）/ 设置 / 离开。"""
 
-
-class ClassSelectEventHandler(tcod.event.EventDispatch):
-    """开局双职业选择：两段（主→副）。不持有 engine——选择完成后 chosen 非 None。
-
-    has_save 时列表顶部多一项"继续游历（读档）"。
-    """
-
-    def __init__(self, content, settings, has_save: bool = False) -> None:
+    def __init__(self, content, settings, has_save: bool) -> None:
         self.content = content
         self.settings = settings
         self.has_save = has_save
+        self.cursor = 0
+        self.choice: Optional[str] = None  # "new" / "continue" / "settings" / "quit"
+        self.done = False
+
+    def _items(self) -> List[str]:
+        return ["new", "continue", "settings", "quit"]
+
+    def _enabled(self, item: str) -> bool:
+        return item != "continue" or self.has_save
+
+    def on_render(self, console) -> None:
+        import render
+
+        render.render_title_menu(console, self.content, self.settings, cursor=self.cursor, has_save=self.has_save)
+
+    def ev_quit(self, event: tcod.event.Quit):
+        raise SystemExit()
+
+    def ev_keydown(self, event: tcod.event.KeyDown):
+        key = normalize_sym(event.sym)
+        items = self._items()
+        if key == KeySym.UP:
+            self.cursor = (self.cursor - 1) % len(items)
+            return None
+        if key == KeySym.DOWN:
+            self.cursor = (self.cursor + 1) % len(items)
+            return None
+        if key in CONFIRM_KEYS:
+            picked = items[self.cursor % len(items)]
+            if not self._enabled(picked):
+                return None
+            self.choice = picked
+            self.done = True
+            return None
+        if key == KeySym.ESCAPE:
+            self.choice = "quit"
+            self.done = True
+            return None
+        return None
+
+
+class SettingsMenuEventHandler(tcod.event.EventDispatch):
+    """设置界面：语言 / 画面 / 信息板（←→ 即时调整并保存），Esc 返回。
+
+    改语言会重载 content（界面即时切换文案）；改显示档位需重建窗口，
+    通过 needs_resize 标记由主循环处理。
+    """
+
+    def __init__(self, content, settings) -> None:
+        self.content = content
+        self.settings = settings
+        self.cursor = 0
+        self.done = False
+        self.needs_resize = False  # 显示档位变更 → 外层重建窗口
+        self.lang_changed = False  # 语言变更 → 外层用重载后的 content
+
+    def _items(self) -> List[str]:
+        return ["lang", "map", "sidebar", "back"]
+
+    def _cycle(self, item: str, delta: int) -> None:
+        from settings import SIZE_ORDER
+
+        if item == "back":
+            self.done = True
+            return
+        if item == "lang":
+            from content_loader import SUPPORTED_LANGS
+
+            current = self.settings.lang or self.content.lang
+            langs = list(SUPPORTED_LANGS)
+            idx = (langs.index(current) + delta) % len(langs)
+            self.settings.lang = langs[idx]
+            self.settings.save()
+            from content_loader import load_content
+
+            self.content = load_content(langs[idx])  # 界面即时切换
+            self.lang_changed = True
+            return
+        order = list(SIZE_ORDER)
+        attr = "map_size" if item == "map" else "sidebar_size"
+        current = getattr(self.settings, attr)
+        idx = (order.index(current) + delta) % len(order)
+        setattr(self.settings, attr, order[idx])
+        self.settings.save()
+        self.needs_resize = True
+
+    def on_render(self, console) -> None:
+        import render
+
+        render.render_settings_menu(console, self.content, self.settings, cursor=self.cursor)
+
+    def ev_quit(self, event: tcod.event.Quit):
+        raise SystemExit()
+
+    def ev_keydown(self, event: tcod.event.KeyDown):
+        key = normalize_sym(event.sym)
+        items = self._items()
+        if key == KeySym.ESCAPE:
+            self.done = True
+            return None
+        if key == KeySym.UP:
+            self.cursor = (self.cursor - 1) % len(items)
+            return None
+        if key == KeySym.DOWN:
+            self.cursor = (self.cursor + 1) % len(items)
+            return None
+        if key == KeySym.LEFT:
+            self._cycle(items[self.cursor % len(items)], -1)
+            return None
+        if key == KeySym.RIGHT or key in CONFIRM_KEYS:
+            item = items[self.cursor % len(items)]
+            if item == "back":
+                self.done = True
+            elif key == KeySym.RIGHT:
+                self._cycle(item, 1)
+            else:  # 回车在语言/档位项上=右切，返回项=返回
+                self._cycle(item, 1)
+            return None
+        return None
+
+
+class ClassSelectEventHandler(tcod.event.EventDispatch):
+    """开局双职业选择：两段（主→副）。不持有 engine——选择完成后 chosen 非 None。"""
+
+    def __init__(self, content, settings) -> None:
+        self.content = content
+        self.settings = settings
         self.class_ids: List[str] = list(content.classes.keys())
         self.primary: Optional[str] = None
         self.cursor = 0
         self.chosen: Optional[tuple] = None  # (主, 副) 就绪后由主循环取用
-        self.continue_requested = False  # 顶部"继续游历"被选中
         self.done = False
-
-    def _options(self) -> List[str]:
-        return ([CONTINUE_ID] if self.has_save else []) + self.class_ids
 
     def on_render(self, console) -> None:
         import render
 
         render.render_class_select(console, self.content, self.settings, primary=self.primary,
-                                   cursor=self.cursor, has_save=self.has_save)
+                                   cursor=self.cursor)
 
     def ev_quit(self, event: tcod.event.Quit):
         raise SystemExit()
@@ -654,20 +771,14 @@ class ClassSelectEventHandler(tcod.event.EventDispatch):
     def ev_keydown(self, event: tcod.event.KeyDown):
         key = normalize_sym(event.sym)
         if self.primary is None:
-            options = self._options()
             if key == KeySym.UP:
-                self.cursor = (self.cursor - 1) % len(options)
+                self.cursor = (self.cursor - 1) % len(self.class_ids)
                 return None
             if key == KeySym.DOWN:
-                self.cursor = (self.cursor + 1) % len(options)
+                self.cursor = (self.cursor + 1) % len(self.class_ids)
                 return None
             if key in CONFIRM_KEYS:
-                picked = options[self.cursor % len(options)]
-                if picked == CONTINUE_ID:
-                    self.continue_requested = True
-                    self.done = True
-                    return None
-                self.primary = picked
+                self.primary = self.class_ids[self.cursor]
                 self.cursor = 0
                 return None
             if key == KeySym.ESCAPE:

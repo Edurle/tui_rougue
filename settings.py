@@ -1,8 +1,8 @@
-"""显示设置：画面大小（字号+格数）与信息板宽度（列数）两档独立调节。
+"""显示设置：画面大小（字号+格数）与信息板宽度（列数）两档独立调节 + 界面语言。
 
 受 tcod 单窗口统一字格约束，"画面"档同时决定字号与总格数（窗口像素
 基本不变，格数与字号成反比）；"信息板"档决定信息板占的列数（地图相应
-让列）。当前默认 large/large（最大）。选择持久化到 settings.json。
+让列）。语言 None = 跟随系统检测。全部持久化到 settings.json。
 """
 
 from __future__ import annotations
@@ -60,9 +60,10 @@ def sidebar_layout(total_rows: int) -> dict:
 
 
 class Settings:
-    def __init__(self, map_size: str = "large", sidebar_size: str = "large") -> None:
+    def __init__(self, map_size: str = "large", sidebar_size: str = "large", lang: str | None = None) -> None:
         self.map_size = map_size
         self.sidebar_size = sidebar_size
+        self.lang = lang  # None = 跟随系统语言检测
 
     # ---- 档位切换 ----
 
@@ -119,7 +120,15 @@ class Settings:
 
     def save(self) -> None:
         SETTINGS_FILE.write_text(
-            json.dumps({"map_size": self.map_size, "sidebar_size": self.sidebar_size}, ensure_ascii=False, indent=2),
+            json.dumps(
+                {
+                    "map_size": self.map_size,
+                    "sidebar_size": self.sidebar_size,
+                    "lang": self.lang,
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
             encoding="utf-8",
         )
 
@@ -133,7 +142,9 @@ class Settings:
                 data = {}
         map_size = data.get("map_size", "large")
         sidebar_size = data.get("sidebar_size", "large")
+        lang = data.get("lang")
         return cls(
             map_size=map_size if map_size in SIZE_ORDER else "large",
             sidebar_size=sidebar_size if sidebar_size in SIZE_ORDER else "large",
+            lang=lang,
         )

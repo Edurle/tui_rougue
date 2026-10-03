@@ -86,12 +86,17 @@ dist\shanhai_rogue.exe
 
 ## 多语言
 
-内置 `zh_CN`（简体中文）与 `en_US`（英文），发布 exe 会**自动跟随系统语言**，也可强制指定：
+内置 `zh_CN`（简体中文）与 `en_US`（英文）。切换方式（优先级从高到低）：
 
-```
-python main.py --lang en_US        # 或 zh_CN
-shanhai_rogue.exe --lang en_US
-```
+1. **开始界面 → 设置 → 语言**（`←→` 切换，即时生效并保存到 settings.json）
+2. 启动参数强制：`python main.py --lang en_US`（或 `shanhai_rogue.exe --lang en_US`）
+3. 未设置时自动跟随系统语言
+
+## 开始界面与设置
+
+启动进入开始界面：**开始新游历 / 继续游历（无存档时置灰）/ 设置 / 离开**。对局中死亡按回车也回到这里。
+
+设置界面（开始界面 → 设置）：**语言**（中/英即时切换）、**画面大小**、**信息板宽度**——`←→` 调整即时保存，显示档位调整后自动重建窗口；`Esc` 返回。对局中仍可用 `F1`/`F2` 快捷切换两档显示。
 
 - 文案：`data/content/strings/{语言}.json`，新增语言 = 加一个同结构文件
 - 实体名/典故：monsters.json / items.json / player.json 中 `name`/`lore` 写成 `{"zh_CN": …, "en_US": …}`（纯字符串 = 所有语言同值；缺失语言自动回退 zh_CN）
