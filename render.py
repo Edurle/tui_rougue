@@ -316,6 +316,10 @@ def _render_hints(console, engine, strings, theme, layout) -> None:
     item_here = gamemap.get_item_at(player.x, player.y)
     if item_here is not None:
         hints.append(("G", strings["hint_pickup"].format(item=item_here.name)))
+    else:
+        node_here = gamemap.get_resource_node_at(player.x, player.y)
+        if node_here is not None:
+            hints.append(("G", strings["hint_gather"].format(name=node_here.name)))
     fighter = player.fighter
     if fighter and 0 < fighter.hp / fighter.max_hp < 0.45:
         from consumable import HealConsumable
@@ -454,7 +458,8 @@ def render_inventory_menu(console: tcod.console.Console, engine: "Engine", curso
         letter = letters[i] if i < len(letters) else " "
         mark = ">" if cursor == i else " "
         color = item.color if item.equipment is None else COLOR_EQUIP
-        console.print(x + 2, row, f"{mark}{letter}) {item.name}", fg=tuple(color))
+        label = item.name + (f"×{item.stack}" if item.is_material and item.stack > 1 else "")
+        console.print(x + 2, row, f"{mark}{letter}) {label}", fg=tuple(color))
         row += 1
     row += 1
     console.print(x + 2, row, strings["hud_inventory"].format(

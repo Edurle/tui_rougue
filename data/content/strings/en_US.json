@@ -148,5 +148,9 @@
   "save_loaded": "You unroll the map scroll and resume your journey.",
   "continue_game": "Continue Journey (Load)",
   "world_map_title": "World Map (M/Esc to close)",
-  "world_map_legend": "▲Mts ♣Woods ≈Water ▼Abyss =Ford ΩGates ◈Peaks @You"
+  "world_map_legend": "▲Mts ♣Woods ≈Water ▼Abyss =Ford ΩGates ◈Peaks @You",
+  "pickup_stack": "You pick up {item} x{count}.",
+  "gather_ok": "You gather {item} x{count}.",
+  "material_drop": "{item} spills from the remains of {monster}.",
+  "hint_gather": "Gather {name}"
 }

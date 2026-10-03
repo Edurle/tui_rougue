@@ -156,6 +156,15 @@ def generate_dungeon(
         stairs_x, stairs_y = rooms[-1].center
         gamemap.downstairs_xy = (stairs_x, stairs_y)
 
+    # ---- 资源点（灵草/矿脉，走上去按 G 采集）----
+    from worldgen import scatter_resource_nodes
+
+    realm_counts = {
+        node_id: int(node.get("realm_per_floor", 0))
+        for node_id, node in content.craft_nodes.items()
+    }
+    scatter_resource_nodes(gamemap, content, rng, realm_counts)
+
     gamemap.rebuild_wall_glyphs()
 
     return gamemap

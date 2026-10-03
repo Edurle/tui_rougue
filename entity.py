@@ -107,3 +107,9 @@ class Item(Entity):
         super().__init__(char=char, color=color, name=name, **kwargs)
         self.consumable: Optional["Consumable"] = None
         self.equipment: Optional["EquippedItem"] = None
+        # 材料堆叠数（仅 material 生效；装备/丹药始终 1）
+        self.stack: int = 1
+
+    @property
+    def is_material(self) -> bool:
+        return "material" in self.tags and self.consumable is None and self.equipment is None

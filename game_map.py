@@ -77,7 +77,8 @@ class GameMap:
         return [
             e
             for e in self.entities
-            if isinstance(e, Item) and (e.consumable is not None or e.equipment is not None)
+            if isinstance(e, Item)
+            and (e.consumable is not None or e.equipment is not None or e.is_material)
         ]
 
     def get_blocking_entity_at(self, x: int, y: int) -> Optional[Entity]:
@@ -102,6 +103,13 @@ class GameMap:
         """指定格上的秘境入口实体（世界地图专用）。"""
         for entity in self.entities:
             if entity.x == x and entity.y == y and "realm_gate" in entity.tags:
+                return entity
+        return None
+
+    def get_resource_node_at(self, x: int, y: int) -> Optional[Entity]:
+        """指定格上的资源点（灵草丛/矿脉，走上去按 G 采集）。"""
+        for entity in self.entities:
+            if entity.x == x and entity.y == y and "resource_node" in entity.tags:
                 return entity
         return None
 

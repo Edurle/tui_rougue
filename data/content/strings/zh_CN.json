@@ -149,5 +149,9 @@
   "save_loaded": "你展开山海图卷，续前行迹。",
   "continue_game": "继续游历（读档）",
   "world_map_title": "山海图卷（M/Esc 收起）",
-  "world_map_legend": "▲山 ♣林 ≈水 ▼渊 =渡 Ω秘境 ◈名山 @你"
+  "world_map_legend": "▲山 ♣林 ≈水 ▼渊 =渡 Ω秘境 ◈名山 @你",
+  "pickup_stack": "你拾起了{item}×{count}。",
+  "gather_ok": "你采下{item}×{count}。",
+  "material_drop": "{monster}的遗骸中散落了{item}。",
+  "hint_gather": "采集{name}"
 }

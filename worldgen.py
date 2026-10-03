@@ -247,6 +247,31 @@ def _ensure_connectivity(terrain: np.ndarray, spawn: Tuple[int, int], anchors: L
             _carve_line(terrain, anchor, spawn)
 
 
+def scatter_resource_nodes(gamemap: GameMap, content, rng: random.Random, counts: dict, avoid_spawn: Tuple[int, int] = None) -> None:
+    """在可走空格撒资源点（避开门/物品/实体/出生点近旁）。"""
+    for node_id, want in counts.items():
+        placed = 0
+        tries = want * 40
+        while placed < want and tries > 0:
+            tries -= 1
+            x = rng.randrange(3, gamemap.width - 3)
+            y = rng.randrange(3, gamemap.height - 3)
+            if not gamemap.tiles["walkable"][x, y]:
+                continue
+            if gamemap.get_blocking_entity_at(x, y) is not None:
+                continue
+            if gamemap.get_resource_node_at(x, y) is not None:
+                continue
+            if gamemap.get_realm_gate_at(x, y) is not None:
+                continue
+            if gamemap.get_item_at(x, y) is not None:
+                continue
+            if avoid_spawn is not None and abs(x - avoid_spawn[0]) + abs(y - avoid_spawn[1]) <= 8:
+                continue
+            content.build_resource_node(node_id, gamemap, x, y)
+            placed += 1
+
+
 def generate_world(engine: "Engine", rng: random.Random) -> GameMap:
     content = engine.content
     w, h = WORLD_WIDTH, WORLD_HEIGHT
@@ -355,12 +380,39 @@ def generate_world(engine: "Engine", rng: random.Random) -> GameMap:
     # ---- 11. 投放：游荡异兽与散落物品 ----
     _populate_world(gamemap, content, rng, spawn)
 
+    # ---- 11b. 资源点与散落材料 ----
+    world_counts = {
+        node_id: int(node.get("world_target", 0))
+        for node_id, node in content.craft_nodes.items()
+    }
+    scatter_resource_nodes(gamemap, content, rng, world_counts, avoid_spawn=spawn)
+    _scatter_materials(gamemap, content, rng, spawn)
+
     # ---- 12. 秘境入口（可达约束 + 按区域难度控制远近）----
     reached = _flood_reachable(terrain, spawn)
     _place_realm_gates(gamemap, content, rng, spawn, reached)
 
     gamemap.spawn_xy = spawn
     return gamemap
+
+
+def _scatter_materials(gamemap: GameMap, content, rng: random.Random, spawn: Tuple[int, int]) -> None:
+    """地面稀疏撒布可直接拾取的材料（朱砂/符纸/玉屑，灵草另有资源点）。"""
+    ground_materials = ("mat_cinnabar", "mat_talisman_paper", "mat_jade_fragment", "mat_spirit_herb")
+    for mid in ground_materials:
+        for _ in range(rng.randint(2, 4)):
+            for _try in range(40):
+                x = rng.randrange(3, gamemap.width - 3)
+                y = rng.randrange(3, gamemap.height - 3)
+                if (
+                    gamemap.tiles["walkable"][x, y]
+                    and gamemap.get_item_at(x, y) is None
+                    and gamemap.get_resource_node_at(x, y) is None
+                    and gamemap.get_blocking_entity_at(x, y) is None
+                    and abs(x - spawn[0]) + abs(y - spawn[1]) > 10
+                ):
+                    content.build_item(mid, gamemap, x, y)
+                    break
 
 
 def _place_realm_gates(

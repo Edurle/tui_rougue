@@ -158,6 +158,32 @@ def _realm_gate_sealed() -> np.ndarray:
     return m
 
 
+def _herb_node() -> np.ndarray:
+    """灵草丛：三株摇曳的草叶。"""
+    m = _canvas()
+    for x in (3, 6, 9):
+        base = x - 1
+        m[4, x] = m[5, base] = m[5, x] = m[6, x] = m[7, x] = True
+        m[3, x] = True
+        m[8, base] = m[8, x] = m[8, base + 1] = True
+    m[11, 2:10] = True
+    return m
+
+
+def _ore_node() -> np.ndarray:
+    """玄铁矿脉：晶簇。"""
+    m = _canvas()
+    m[7, 2:10] = True
+    m[8, 1] = m[8, 10] = True
+    m[9, 1:11] = True
+    m[10, 2:10] = True
+    m[11, 3:9] = True
+    # 晶体
+    m[3, 4] = m[4, 3] = m[4, 4] = m[5, 3] = m[5, 4] = m[3, 8] = m[4, 8] = m[5, 7] = m[5, 8] = True
+    m[6, 4] = m[6, 7] = m[4, 6] = m[5, 6] = True
+    return m
+
+
 ART_REGISTRY: dict[str, Callable[[], np.ndarray]] = {
     "thunder_talisman": _thunder_talisman,
     "lingzhi": _lingzhi,
@@ -165,6 +191,8 @@ ART_REGISTRY: dict[str, Callable[[], np.ndarray]] = {
     "stairs_glow": _stairs_glow,
     "realm_gate": _realm_gate,
     "realm_gate_sealed": _realm_gate_sealed,
+    "herb_node": _herb_node,
+    "ore_node": _ore_node,
 }
 
 

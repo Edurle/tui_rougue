@@ -85,15 +85,43 @@ class PickupAction(Action):
         strings = engine.content.strings
         item = engine.gamemap.get_item_at(self.entity.x, self.entity.y)
         if item is None:
-            raise exceptions.Impossible(strings["no_item_here"])
+            return self._gather(engine)
         try:
             self.entity.inventory.add(item)
         except InventoryFull:
             raise exceptions.Impossible(strings["inventory_full"].format(item=item.name))
         engine.gamemap.entities.discard(item)
         # 注意：不清空 item.gamemap——行囊中的物品组件仍需经它回溯到 engine
+        if item.is_material and item.stack > 1:
+            engine.message_log.add_message(
+                strings["pickup_stack"].format(item=item.name, count=item.stack), "loot"
+            )
+        else:
+            engine.message_log.add_message(strings["pickup"].format(item=item.name), "loot")
         engine.effects.spawn_pickup(self.entity.x, self.entity.y)
-        engine.message_log.add_message(strings["pickup"].format(item=item.name), "loot")
+
+    def _gather(self, engine: "Engine") -> None:
+        """采集脚下的资源点（灵草丛/矿脉），产出材料直接入囊。"""
+        strings = engine.content.strings
+        node = engine.gamemap.get_resource_node_at(self.entity.x, self.entity.y)
+        if node is None:
+            raise exceptions.Impossible(strings["no_item_here"])
+        node_kind = next(t for t in node.tags if t != "resource_node")
+        yields = engine.content.craft_nodes[node_kind]["yields"]
+        count = engine.rng.randint(int(yields["min"]), int(yields["max"]))
+        material = engine.content.build_item(yields["id"], engine.gamemap, node.x, node.y)
+        material.stack = count
+        try:
+            self.entity.inventory.add(material)
+        except InventoryFull:
+            engine.gamemap.entities.discard(material)
+            raise exceptions.Impossible(strings["inventory_full"].format(item=material.name))
+        engine.gamemap.entities.discard(material)
+        engine.gamemap.entities.discard(node)
+        engine.effects.spawn_pickup(self.entity.x, self.entity.y)
+        engine.message_log.add_message(
+            strings["gather_ok"].format(item=material.name, count=count), "loot"
+        )
 
 
 class ItemAction(Action):

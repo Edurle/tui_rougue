@@ -346,6 +346,25 @@ class Engine:
             "loot",
         )
 
+    def roll_material_drop(self, source) -> None:
+        """异兽死亡按 tags 掉炼制材料；BOSS 额外必掉魔核。"""
+        if source is None or getattr(source, "summon_ttl", None) is not None:
+            return
+        drops: list = []
+        if "boss" in getattr(source, "tags", []):
+            drops.append("mat_demon_core")
+        material_id = self.content.roll_material_drop(getattr(source, "tags", []), self.rng)
+        if material_id is not None:
+            drops.append(material_id)
+        for mid in drops:
+            item = self.content.build_item(mid, self.gamemap, source.x, source.y)
+            self.message_log.add_message(
+                self.content.strings["material_drop"].format(
+                    monster=source.name, item=item.name
+                ),
+                "loot",
+            )
+
     # ---- 秘境流转 ----
 
     def enter_realm(self, realm_id: str, return_xy: Tuple[int, int]) -> None:
@@ -363,7 +382,7 @@ class Engine:
         self.autosave()
 
     def exit_realm(self) -> None:
-        """从秘境回世界，落在入口坐标。"""
+        """从秘境回世界，落在入口坐标；按配额补撒世界资源点（灵草/矿脉复苏）。"""
         if self.current_realm is None:
             return
         self.realms.setdefault(self.current_realm, {})[self.gamemap.realm_depth] = self.gamemap
@@ -371,8 +390,26 @@ class Engine:
         self.player.place(self.world, *self.world_return_xy)
         self.current_realm = None
         self.effects.clear()
+        self._replenish_world_nodes()
         self.update_fov()
         self.autosave()
+
+    def _replenish_world_nodes(self) -> None:
+        """补撒世界资源点至 crafting.nodes 的 world_target 配额。"""
+        from worldgen import scatter_resource_nodes
+
+        counts: dict = {}
+        for node_id, node in self.content.craft_nodes.items():
+            target = int(node.get("world_target", 0))
+            existing = sum(
+                1
+                for e in self.world.entities
+                if "resource_node" in e.tags and node_id in e.tags
+            )
+            if existing < target:
+                counts[node_id] = target - existing
+        if counts:
+            scatter_resource_nodes(self.world, self.content, self.rng, counts)
 
     def autosave(self) -> None:
         """进出秘境与换层时自动存档（死亡即删档的 roguelike 铁律下安全）。"""

@@ -129,6 +129,10 @@ class Content:
         self.realms: Dict[str, dict] = {
             r["id"]: r for r in _load_json(directory / "realms.json")["realms"]
         }
+        crafting_raw = _load_json(directory / "crafting.json")
+        self.craft_drops: Dict[str, dict] = crafting_raw["drops"]
+        self.craft_nodes: Dict[str, dict] = crafting_raw["nodes"]
+        self.recipes: List[dict] = crafting_raw["recipes"]
         self.monsters: Dict[str, dict] = {
             k: v for k, v in monsters_raw.items() if not k.startswith("_")
         }
@@ -151,6 +155,33 @@ class Content:
         self._validate_regions()
         self._validate_realms()
         self._validate_classes_skills()
+        self._validate_crafting()
+
+    def _validate_crafting(self) -> None:
+        for tag, entry in self.craft_drops.items():
+            if entry["id"] not in self.items:
+                raise ContentError(f"crafting.drops[{tag}] 引用了不存在的物品 '{entry['id']}'")
+            if not 0 < entry["chance"] <= 1:
+                raise ContentError(f"crafting.drops[{tag}] 的 chance 必须在 (0, 1]")
+        for node_id, node in self.craft_nodes.items():
+            yields = _require(node, "yields", f"crafting.nodes[{node_id}]")
+            if yields["id"] not in self.items:
+                raise ContentError(f"crafting.nodes[{node_id}] 产出了不存在的物品 '{yields['id']}'")
+        valid_kinds = {"alchemy", "forge", "talisman"}
+        for recipe in self.recipes:
+            for field_name in ("id", "kind", "name", "inputs", "output"):
+                _require(recipe, field_name, f"配方 {recipe.get('id', '?')}")
+            if recipe["kind"] not in valid_kinds:
+                raise ContentError(
+                    f"配方 {recipe['id']} 的 kind '{recipe['kind']}' 非法，可用：{sorted(valid_kinds)}"
+                )
+            for entry in recipe["inputs"]:
+                if entry["id"] not in self.items:
+                    raise ContentError(f"配方 {recipe['id']} 引用了不存在的材料 '{entry['id']}'")
+                if entry["count"] <= 0:
+                    raise ContentError(f"配方 {recipe['id']} 的材料数量必须为正")
+            if recipe["output"]["id"] not in self.items:
+                raise ContentError(f"配方 {recipe['id']} 产出了不存在的物品 '{recipe['output']['id']}'")
 
     def _validate_regions(self) -> None:
         valid_zones = {"center", "south", "west", "north", "east", "outer"}
@@ -240,6 +271,34 @@ class Content:
             art="realm_gate_sealed" if sealed else "realm_gate",
         )
 
+    # ---- 天工开物（材料/资源点） ----
+
+    def roll_material_drop(self, monster_tags, rng: random.Random) -> Optional[str]:
+        """按怪物 tags 的首个命中映射掉材料（crafting.drops 顺序即优先级）。"""
+        for tag, entry in self.craft_drops.items():
+            if tag in monster_tags:
+                if rng.random() < entry["chance"]:
+                    return entry["id"]
+                return None
+        return None
+
+    def build_resource_node(self, node_id: str, gamemap, x: int, y: int):
+        """资源点实体（灵草丛/矿脉）：不挡路，走上去按 G 采集。"""
+        from entity import Entity
+
+        node = self.craft_nodes[node_id]
+        return Entity(
+            gamemap=gamemap,
+            x=x,
+            y=y,
+            char="§",
+            color=(140, 226, 150) if node_id == "herb" else (160, 162, 178),
+            name=self._(node["name"]),
+            blocks_movement=False,
+            tags=["resource_node", node_id],
+            art=node.get("art"),
+        )
+
     # ---- 校验 ----
 
     def _validate(self) -> None:
@@ -276,8 +335,9 @@ class Content:
             _rgb(idef["color"], f"物品 {iid}")
             has_consumable = "consumable" in idef
             has_equipment = "equipment" in idef
-            if not has_consumable and not has_equipment:
-                raise ContentError(f"物品 {iid} 必须定义 consumable 或 equipment 之一")
+            is_material = "material" in idef.get("tags", [])
+            if not has_consumable and not has_equipment and not is_material:
+                raise ContentError(f"物品 {iid} 必须定义 consumable / equipment / material 之一")
             if has_consumable:
                 cons = idef["consumable"]
                 ctype = _require(cons, "type", f"物品 {iid}.consumable")

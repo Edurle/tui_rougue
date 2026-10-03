@@ -1,31 +1,65 @@
 {
   "_schema": {
-    "说明": "【天工开物·占位数据】为将来的采集/合成（炮制、锻造）系统预留。系统首版未实现；实现时：inputs/output 中的 id 必须存在于 items.json（或未来的材料表），产出物品同样走 items.json 定义。",
-    "字段": {
-      "id": "稳定标识",
-      "name": "配方名",
-      "chapter": "对应《天工开物》篇目",
-      "inputs": "材料清单 [{id, count}]",
-      "output": "产物 {id, count}",
-      "tags": "扩展标签"
+    "说明": "【天工开物】炼丹/炼器/炼符三系数据：drops=异兽材料掉落（按 tags 匹配），nodes=大世界/秘境的资源点，recipes=炼制配方（kind: alchemy 丹/forge 器/talisman 符）。",
+    "drops": "按怪物 tags 匹配材料：首个命中的 tag 生效；boss 额外必掉 demon_core",
+    "nodes": "资源点：yields=采集产出，world_target=大世界配额（出秘境时补撒），realm_per_floor=每秘境层数量，art=程序图块",
+    "recipes": "inputs/output 的 id 必须存在于 items.json；材料消耗支持堆叠计数"
+  },
+  "drops": {
+    "dragon": {
+      "id": "mat_dragon_scale",
+      "chance": 0.9
+    },
+    "boss": {
+      "id": "mat_demon_core",
+      "chance": 1.0
+    },
+    "serpent": {
+      "id": "mat_serpent_scale",
+      "chance": 0.55
+    },
+    "bird": {
+      "id": "mat_bird_feather",
+      "chance": 0.55
+    },
+    "beast": {
+      "id": "mat_beast_bone",
+      "chance": 0.5
+    },
+    "shanhaijing": {
+      "id": "mat_talisman_paper",
+      "chance": 0.12
     }
   },
-  "recipes": [
-    {
-      "id": "refine_lingzhi",
-      "name": "炮制灵芝",
-      "chapter": "曲蘖",
-      "inputs": [{ "id": "lingzhi", "count": 3 }],
-      "output": { "id": "lingzhi_dew", "count": 1 },
-      "tags": ["tiangongkaiwu", "alchemy"]
+  "nodes": {
+    "herb": {
+      "yields": {
+        "id": "mat_spirit_herb",
+        "min": 1,
+        "max": 2
+      },
+      "world_target": 20,
+      "realm_per_floor": 4,
+      "art": "herb_node",
+      "name": {
+        "zh_CN": "灵草丛",
+        "en_US": "Spirit Herbs"
+      }
     },
-    {
-      "id": "inscribe_wulei",
-      "name": "摹刻五雷符",
-      "chapter": "丹青",
-      "inputs": [{ "id": "wulei_fu", "count": 1 }, { "id": "lingzhi", "count": 1 }],
-      "output": { "id": "wulei_fu", "count": 2 },
-      "tags": ["tiangongkaiwu", "talisman"]
+    "ore": {
+      "yields": {
+        "id": "mat_dark_ore",
+        "min": 1,
+        "max": 2
+      },
+      "world_target": 15,
+      "realm_per_floor": 3,
+      "art": "ore_node",
+      "name": {
+        "zh_CN": "玄铁矿脉",
+        "en_US": "Dark Ore Vein"
+      }
     }
-  ]
+  },
+  "recipes": []
 }

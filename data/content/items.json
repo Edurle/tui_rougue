@@ -731,5 +731,195 @@
         }
       ]
     }
+  },
+  "mat_beast_bone": {
+    "name": {
+      "zh_CN": "兽骨",
+      "en_US": "Beast Bone"
+    },
+    "char": ",",
+    "color": [
+      222,
+      214,
+      190
+    ],
+    "tags": [
+      "material"
+    ],
+    "lore": {
+      "zh_CN": "异兽的枯骨，敲之有金石声，可入药亦可锻刃。",
+      "en_US": "The dried bone of a wild beast; it rings like stone when struck, fit for elixirs and blades alike."
+    }
+  },
+  "mat_bird_feather": {
+    "name": {
+      "zh_CN": "禽羽",
+      "en_US": "Plume"
+    },
+    "char": "\"",
+    "color": [
+      176,
+      216,
+      232
+    ],
+    "tags": [
+      "material"
+    ],
+    "lore": {
+      "zh_CN": "异禽的翎羽，迎光流转五彩，是摹符的上好笔锋。",
+      "en_US": "A plume of a strange bird, shimmering five colors in the light - a fine brush for inscribing talismans."
+    }
+  },
+  "mat_serpent_scale": {
+    "name": {
+      "zh_CN": "蛇鳞",
+      "en_US": "Serpent Scale"
+    },
+    "char": "o",
+    "color": [
+      126,
+      200,
+      148
+    ],
+    "tags": [
+      "material"
+    ],
+    "lore": {
+      "zh_CN": "大蛇蜕下的鳞片，凉而坚韧，入药可辟毒。",
+      "en_US": "A scale shed by a great serpent, cool and tough; in elixirs it wards off venom."
+    }
+  },
+  "mat_dragon_scale": {
+    "name": {
+      "zh_CN": "龙鳞",
+      "en_US": "Dragon Scale"
+    },
+    "char": "O",
+    "color": [
+      255,
+      196,
+      120
+    ],
+    "tags": [
+      "material"
+    ],
+    "lore": {
+      "zh_CN": "真龙之鳞，蕴雷携火，锻入兵刃则百邪辟易。",
+      "en_US": "A true dragon's scale, steeped in thunder and fire; forged into a blade, it repels all evil."
+    }
+  },
+  "mat_demon_core": {
+    "name": {
+      "zh_CN": "魔核",
+      "en_US": "Demon Core"
+    },
+    "char": "*",
+    "color": [
+      214,
+      120,
+      200
+    ],
+    "tags": [
+      "material"
+    ],
+    "lore": {
+      "zh_CN": "凶兽体内凝结的精魄之核，是炼制至宝的枢机。",
+      "en_US": "The crystallized core of a fiend, the keystone of forging supreme treasures."
+    }
+  },
+  "mat_spirit_herb": {
+    "name": {
+      "zh_CN": "灵草",
+      "en_US": "Spirit Herb"
+    },
+    "char": ";",
+    "color": [
+      140,
+      226,
+      150
+    ],
+    "tags": [
+      "material"
+    ],
+    "lore": {
+      "zh_CN": "山间灵草，服之气清神明，是诸丹之基。",
+      "en_US": "A mountain spirit herb; taken alone it clears the mind, and it is the base of all elixirs."
+    }
+  },
+  "mat_dark_ore": {
+    "name": {
+      "zh_CN": "玄铁",
+      "en_US": "Dark Ore"
+    },
+    "char": "^",
+    "color": [
+      150,
+      152,
+      168
+    ],
+    "tags": [
+      "material"
+    ],
+    "lore": {
+      "zh_CN": "出于山阴的玄色铁矿，重逾常铁三倍，锻甲铸兵皆良。",
+      "en_US": "A dark ore from the mountain's shadow, thrice as heavy as common iron - excellent for arms and armor."
+    }
+  },
+  "mat_cinnabar": {
+    "name": {
+      "zh_CN": "朱砂",
+      "en_US": "Cinnabar"
+    },
+    "char": ".",
+    "color": [
+      232,
+      110,
+      96
+    ],
+    "tags": [
+      "material"
+    ],
+    "lore": {
+      "zh_CN": "赤色矿粉，安神镇魂，炼丹画符皆不可缺。",
+      "en_US": "Vermilion powder that calms the spirit; no elixir or talisman can do without it."
+    }
+  },
+  "mat_talisman_paper": {
+    "name": {
+      "zh_CN": "符纸",
+      "en_US": "Talisman Paper"
+    },
+    "char": "_",
+    "color": [
+      232,
+      220,
+      180
+    ],
+    "tags": [
+      "material"
+    ],
+    "lore": {
+      "zh_CN": "以楮皮和露水制成的黄纸，专承符墨。",
+      "en_US": "Yellow paper made of mulberry bark and dew, made to bear talisman ink."
+    }
+  },
+  "mat_jade_fragment": {
+    "name": {
+      "zh_CN": "玉屑",
+      "en_US": "Jade Shard"
+    },
+    "char": "`",
+    "color": [
+      180,
+      232,
+      214
+    ],
+    "tags": [
+      "material"
+    ],
+    "lore": {
+      "zh_CN": "美玉碾磨的碎屑，养气凝神，佩饰点睛之选。",
+      "en_US": "Shards of ground jade that nourish the spirit - the finishing touch for amulets."
+    }
   }
 }

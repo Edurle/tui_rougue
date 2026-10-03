@@ -95,6 +95,21 @@ def _serialize_entities(gamemap, content) -> list:
             iid = _item_id_of(entity, content)
             if iid is not None:
                 out.append({"kind": "item", "id": iid, "x": entity.x, "y": entity.y})
+        elif getattr(entity, "is_material", False):
+            iid = _item_id_of(entity, content)
+            if iid is not None:
+                out.append(
+                    {
+                        "kind": "material",
+                        "id": iid,
+                        "x": entity.x,
+                        "y": entity.y,
+                        "stack": entity.stack,
+                    }
+                )
+        elif "resource_node" in tags:
+            node_id = next(t for t in tags if t != "resource_node")
+            out.append({"kind": "node", "node": node_id, "x": entity.x, "y": entity.y})
     return out
 
 
@@ -162,7 +177,9 @@ def _serialize_player(player, content) -> dict:
         "xp": player.level.current_xp,
         "skill_points": player.skill_points,
         "learned_skills": sorted(player.learned_skills),
-        "inventory": [_item_id_of(i, content) for i in player.inventory.items],
+        "inventory": [
+            {"id": _item_id_of(i, content), "stack": i.stack} for i in player.inventory.items
+        ],
         "equipped": {
             slot: _item_id_of(item, content)
             for slot, item in player.equipment.slots.items()
@@ -251,6 +268,11 @@ def _restore_entities(engine, gamemap, entities: list) -> None:
             content.build_realm_gate(entry["realm_id"], gamemap, entry["x"], entry["y"], sealed=entry["sealed"])
         elif kind == "item":
             content.build_item(entry["id"], gamemap, entry["x"], entry["y"])
+        elif kind == "material":
+            material = content.build_item(entry["id"], gamemap, entry["x"], entry["y"])
+            material.stack = int(entry.get("stack", 1))
+        elif kind == "node":
+            content.build_resource_node(entry["node"], gamemap, entry["x"], entry["y"])
         elif kind == "monster":
             actor = content.build_monster(entry["id"], gamemap, entry["x"], entry["y"])
             actor.fighter.hp = entry["hp"]
@@ -278,12 +300,16 @@ def _restore_player(engine, data: dict):
     player.level.current_xp = data["xp"]
     player.skill_points = data["skill_points"]
     player.learned_skills = set(data["learned_skills"])
-    for iid in data["inventory"]:
-        if iid is None:
+    for entry in data["inventory"]:
+        # 新档存 {id, stack}；旧档存纯 id（兼容）
+        entry_id = entry["id"] if isinstance(entry, dict) else entry
+        if entry_id is None:
             continue
-        item = content.build_item(iid, engine.world, 0, 0)  # 行囊物品坐标无意义
+        item = content.build_item(entry_id, engine.world, 0, 0)  # 行囊物品坐标无意义
         engine.world.entities.discard(item)
         item.gamemap = None
+        if isinstance(entry, dict) and "material" in content.items.get(entry_id, {}).get("tags", []):
+            item.stack = int(entry.get("stack", 1))
         player.inventory.items.append(item)
     for slot, iid in data["equipped"].items():
         if iid is None:
