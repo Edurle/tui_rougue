@@ -19,7 +19,7 @@
   "lightning_used": "The talisman cracks — a bolt of thunder strikes {target} for {damage} damage.",
   "lightning_no_target": "No enemy in sight for the thunder to strike.",
   "inventory_empty": "Your pack is empty.",
-  "inventory_title": "Pack (letter: use/equip · E: cursor equip/remove · Esc: close)",
+  "inventory_title": "Pack (Tab page · letters use/equip · E cursor · Esc)",
   "descend": "You follow the trail into {region} — {mountain}.",
   "not_on_stairs": "There is no trail onward here.",
   "corpse_name": "{name}'s remains",
@@ -202,5 +202,9 @@
   "kind_beast": "Beast",
   "examine_lore_show": "[L] Show lore",
   "examine_hint_full": "Tab/1-9 switch target · L lore · Esc close",
-  "examine_dist": "Dist"
+  "examine_dist": "Dist",
+  "inv_page_consumable": "Consumables",
+  "inv_page_equipment": "Gear",
+  "inv_page_material": "Materials",
+  "inventory_empty_page": "(empty)"
 }

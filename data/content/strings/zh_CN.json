@@ -19,7 +19,7 @@
   "lightning_used": "五雷符轰然引动，一道天雷劈中 {target}，造成 {damage} 点伤害。",
   "lightning_no_target": "四下无敌，天雷无处可落。",
   "inventory_empty": "行囊空空如也。",
-  "inventory_title": "行囊（字母 使用/装备 · E 光标装备/卸下 · Esc 收起）",
+  "inventory_title": "行囊（Tab 换页 · 字母 使用/装备 · E 光标 · Esc 收起）",
   "descend": "你循径深入，行至{region}·{mountain}。",
   "not_on_stairs": "这里没有向前去的山径。",
   "corpse_name": "{name}尸骸",
@@ -203,5 +203,9 @@
   "kind_beast": "兽",
   "examine_lore_show": "L 展开山海经典故",
   "examine_hint_full": "Tab/1-9 换目标 · L 典故 · Esc 关闭",
-  "examine_dist": "距"
+  "examine_dist": "距",
+  "inv_page_consumable": "消耗品",
+  "inv_page_equipment": "装备",
+  "inv_page_material": "材料",
+  "inventory_empty_page": "（此页无物）"
 }

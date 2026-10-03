@@ -427,29 +427,34 @@ def _affix_summary(strings, item) -> str:
 
 
 def render_inventory_menu(console: tcod.console.Console, engine: "Engine", handler=None) -> None:
-    """行囊覆盖菜单：物品区（滚动窗口，字母 使用/装备）+ 装备区（数字 卸下）。
+    """行囊覆盖菜单（分页）：消耗品/装备/材料（Tab 切换）+ 装备区（数字 卸下）。
 
     物品无上限：超出视口时按光标滚动，字母 a-j 映射到当前可视的前十件。
     """
+    from input_handlers import INV_PAGES, item_page
+
     strings = engine.content.strings
     theme = engine.content.theme
-    items: List[Item] = list(engine.player.inventory.items)
+    all_items: List[Item] = list(engine.player.inventory.items)
     equipment = engine.player.equipment
     slot_items = [equipment.slots.get(slot) if equipment else None for slot in SLOT_ORDER]
 
     map_cols = engine.settings.map_cols
     map_rows = engine.settings.map_rows
-    # 菜单总高上限：装备区 5 行 + 计数行 + 边框 4 行 + 至少 3 行物品
-    max_listed = max(3, map_rows - 5 - 1 - 4 - 3)
-    listed = min(len(items), max_listed)
-    scroll = 0
+    page = 0
     cursor = -1
     if handler is not None:
+        page = handler.page
         cursor = handler.cursor
-        scroll = handler.list_scroll(items, listed)
+    items = [i for i in all_items if item_page(i) == INV_PAGES[page]]
+
+    # 菜单总高上限：页眉 1 行 + 装备区 5 行 + 计数行 + 边框 4 行 + 至少 3 行物品
+    max_listed = max(3, map_rows - 1 - 5 - 1 - 4 - 3)
+    listed = min(len(items), max_listed)
+    scroll = handler.list_scroll(items, listed) if handler is not None else 0
 
     menu_width = min(40, map_cols - 2)
-    menu_height = listed + len(SLOT_ORDER) + 5
+    menu_height = listed + len(SLOT_ORDER) + 6
     x = max(0, (map_cols - menu_width) // 2)
     y = max(0, (map_rows - menu_height) // 2)
 
@@ -464,24 +469,34 @@ def render_inventory_menu(console: tcod.console.Console, engine: "Engine", handl
         bg=tuple(theme["background"]),
     )
 
+    # 页眉：三页标签 + 各页计数
+    page_keys = ("inv_page_consumable", "inv_page_equipment", "inv_page_material")
+    counts = {name: sum(1 for i in all_items if item_page(i) == name) for name in INV_PAGES}
+    header_parts = []
+    for i, (name, key) in enumerate(zip(INV_PAGES, page_keys)):
+        label = f"{strings[key]}{counts[name]}"
+        header_parts.append(f"[{label}]" if i == page else label)
+    console.print(x + 2, y + 1, " ".join(header_parts)[: menu_width - 4], fg=COLOR_HEADER)
+
     letters = "abcdefghij"
-    row = y + 2
+    row = y + 3
+    if not items:
+        console.print(x + 2, row, strings["inventory_empty_page"], fg=COLOR_SKILL_LOCKED)
+        row += 1
+        listed = 0
     for i in range(listed):
         global_index = scroll + i
         item = items[global_index]
         letter = letters[i] if i < len(letters) else " "
         mark = ">" if cursor == global_index else " "
-        # 滚动指示：窗口上方还有更多
         if i == 0 and scroll > 0:
             mark = "↑"
-        if i == listed - 1 and scroll + listed < len(items):
-            letter = letter if letter != " " else "↓"
         color = item.color if item.equipment is None else COLOR_EQUIP
         label = item.name + (f"×{item.stack}" if item.is_material and item.stack > 1 else "")
         console.print(x + 2, row, f"{mark}{letter}) {label}", fg=tuple(color))
         row += 1
     row += 1
-    console.print(x + 2, row, strings["hud_inventory"].format(count=len(items)), fg=(160, 160, 170))
+    console.print(x + 2, row, strings["hud_inventory"].format(count=len(all_items)), fg=(160, 160, 170))
     row += 1
     for i, item in enumerate(slot_items):
         slot_name = strings[f"slot_{SLOT_ORDER[i]}"]

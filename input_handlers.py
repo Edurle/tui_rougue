@@ -250,24 +250,41 @@ class MainGameEventHandler(LogScrollMixin, EventHandler):
         return None
 
 
-class InventoryEventHandler(EventHandler):
-    """行囊：字母=使用消耗品/装备装备件（映射可视窗口前十件）；↑↓+E=光标装备/卸下；1-5=卸下对应槽。
+# 行囊分页：消耗品 → 装备 → 材料（Tab 循环）；双重身份按消耗品优先归类
+INV_PAGES = ("consumable", "equipment", "material")
 
-    物品无上限：光标越出可视窗口时窗口随动滚动（list_scroll）。
+
+def item_page(item) -> str:
+    if item.consumable is not None:
+        return "consumable"
+    if item.equipment is not None:
+        return "equipment"
+    return "material"
+
+
+class InventoryEventHandler(EventHandler):
+    """行囊（分页）：Tab 在 消耗品/装备/材料 间切换。
+
+    页内：字母=使用/装备（映射可视窗口前十件）、↑↓+E=光标操作；
+    1-5=卸下装备槽（固定区）。物品无上限，光标越窗时滚动。
     """
 
     def __init__(self, engine) -> None:
         super().__init__(engine)
-        self.cursor = 0  # 统一列表：前行囊物品，后 5 个装备槽
-        self.scroll = 0  # 物品区滚动窗口起点
+        self.page = 0
+        self.cursor = 0  # 统一列表：前当页物品，后 5 个装备槽
+        self.scroll = 0  # 当页物品区滚动窗口起点
+
+    def _page_items(self) -> list:
+        return [i for i in self.engine.player.inventory.items if item_page(i) == INV_PAGES[self.page]]
 
     def _row_count(self) -> int:
-        return len(self.engine.player.inventory.items) + len(SLOT_ORDER)
+        return len(self._page_items()) + len(SLOT_ORDER)
 
     def max_listed(self) -> int:
         """物品区可视容量（与渲染端同一公式）。"""
         s = self.engine.settings
-        return max(3, s.map_rows - 5 - 1 - 4 - 3)
+        return max(3, s.map_rows - 5 - 1 - 4 - 4)  # 多留一行页眉
 
     def list_scroll(self, items, listed: int) -> int:
         """光标驱动的滚动窗口起点（渲染端每帧调用）。"""
@@ -284,7 +301,7 @@ class InventoryEventHandler(EventHandler):
         return self.scroll
 
     def _sync_scroll(self) -> None:
-        items = list(self.engine.player.inventory.items)
+        items = self._page_items()
         self.list_scroll(items, min(len(items), self.max_listed()))
 
     def on_render(self, console) -> None:
@@ -298,8 +315,13 @@ class InventoryEventHandler(EventHandler):
         key = normalize_sym(event.sym)
         if key == KeySym.ESCAPE or key == INVENTORY_TOGGLE_KEY:
             return CloseMenuAction()
-        items = list(engine.player.inventory.items)
+        items = self._page_items()
         listed = min(len(items), self.max_listed())
+        if key == TAB_KEY:
+            self.page = (self.page + 1) % len(INV_PAGES)
+            self.cursor = 0
+            self.scroll = 0
+            return None
         # E 优先于字母选择（字母表中不再用 e 选第 5 件）
         if key == EQUIP_KEY:
             return self._cursor_equip()
@@ -334,16 +356,18 @@ class InventoryEventHandler(EventHandler):
             return actions.EquipAction(self.engine.player, item)
         if item.consumable is not None:
             return actions.ItemAction(self.engine.player, item)
-        return None
+        return None  # 纯材料不可直接使用
 
     def _cursor_equip(self):
         engine = self.engine
-        items = list(engine.player.inventory.items)
+        items = self._page_items()
         if self.cursor < len(items):
             item = items[self.cursor]
             if item.equipment is not None:
                 return actions.EquipAction(engine.player, item)
-            return None
+            if item.consumable is not None:
+                return actions.ItemAction(engine.player, item)
+            return None  # 材料：E 无操作
         slot = SLOT_ORDER[self.cursor - len(items)]
         if engine.player.equipment.slots.get(slot) is not None:
             return actions.UnequipAction(engine.player, slot)

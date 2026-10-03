@@ -165,7 +165,8 @@ def test_inventory_letter_equips():
     action = dispatch_key(handler, KeySym.I)
     assert isinstance(action, ih.OpenInventoryAction)
     handler = ih.InventoryEventHandler(engine)
-    action = dispatch_key(handler, KeySym.A)  # 首件装备
+    dispatch_key(handler, KeySym.TAB)  # 消耗品 → 装备页
+    action = dispatch_key(handler, KeySym.A)  # 装备页首件
     assert isinstance(action, EquipAction)
     engine.handle_action(action)
     assert engine.player.equipment.slots["weapon"] is not None
@@ -175,6 +176,7 @@ def test_inventory_cursor_e_and_digit_unequip():
     engine = make_engine()
     give_item(engine, "w_taomu")
     handler = ih.InventoryEventHandler(engine)
+    dispatch_key(handler, KeySym.TAB)  # 装备页
     action = dispatch_key(handler, KeySym.E)  # 光标 0 在首件装备上
     assert isinstance(action, EquipAction)
     engine.handle_action(action)
@@ -196,6 +198,53 @@ def test_consumable_letter_still_usable():
     assert isinstance(action, ItemAction)
     engine.handle_action(action)
     assert engine.player.fighter.mp == 8
+
+
+def test_inventory_pages_split_and_tab_navigation():
+    """行囊分页：消耗品/装备/材料 Tab 切换；双重身份（材料+消耗品）归消耗品页。"""
+    import tcod
+
+    from input_handlers import INV_PAGES, item_page
+
+    engine = make_engine()
+    give_item(engine, "lingzhi")  # 消耗品
+    give_item(engine, "w_taomu")  # 装备件
+    give_item(engine, "mat_spirit_herb")  # 材料
+    handler = ih.InventoryEventHandler(engine)
+
+    # 双重身份：一个带 material tag 但有 consumable 的物品 → 消耗品页
+    dual = give_item(engine, "lingzhi")
+    dual.tags = ["material", "consumable"]
+    assert item_page(dual) == "consumable", "既是材料又是消耗品应归消耗品页"
+
+    assert handler.page == 0  # 默认消耗品页
+    assert len(handler._page_items()) == 2  # lingzhi + 双重身份
+    dispatch_key(handler, KeySym.TAB)
+    assert handler.page == 1 and len(handler._page_items()) == 1  # 装备
+    dispatch_key(handler, KeySym.TAB)
+    assert handler.page == 2 and len(handler._page_items()) == 1  # 材料
+    dispatch_key(handler, KeySym.TAB)
+    assert handler.page == 0  # 循环
+
+    # 渲染：页眉三标签 + 计数
+    console = tcod.console.Console(engine.settings.total_cols, engine.settings.total_rows, order="F")
+    handler.on_render(console)
+    body = "".join(
+        "".join(chr(int(c)) if c not in (0, 32) else " " for c in console.rgb[:, y]["ch"])
+        for y in range(engine.settings.total_rows)
+    )
+    assert "消耗品2" in body and "装备1" in body and "材料1" in body
+    assert "灵芝" in body and "桃木剑" not in body  # 当前页只显示本页物品
+
+    # 材料页空提示
+    dispatch_key(handler, KeySym.TAB)
+    handler.on_render(console)
+    # 装备页显示装备件
+    body = "".join(
+        "".join(chr(int(c)) if c not in (0, 32) else " " for c in console.rgb[:, y]["ch"])
+        for y in range(engine.settings.total_rows)
+    )
+    assert "桃木剑" in body
 
 
 def test_heal_mp_consumable_full_rejected():
