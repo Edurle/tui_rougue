@@ -61,5 +61,342 @@
       }
     }
   },
-  "recipes": []
+  "recipes": [
+    {
+      "id": "alchemy_rejuvenation",
+      "kind": "alchemy",
+      "name": {
+        "zh_CN": "九转回春丹",
+        "en_US": "Rejuvenation Pill"
+      },
+      "inputs": [
+        {
+          "id": "mat_spirit_herb",
+          "count": 3
+        },
+        {
+          "id": "mat_cinnabar",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "pill_rejuvenation",
+        "count": 1
+      }
+    },
+    {
+      "id": "alchemy_condense_qi",
+      "kind": "alchemy",
+      "name": {
+        "zh_CN": "凝气丹",
+        "en_US": "Qi-Condensing Pill"
+      },
+      "inputs": [
+        {
+          "id": "mat_spirit_herb",
+          "count": 2
+        },
+        {
+          "id": "mat_serpent_scale",
+          "count": 1
+        },
+        {
+          "id": "mat_cinnabar",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "pill_condense_qi",
+        "count": 1
+      }
+    },
+    {
+      "id": "alchemy_detox",
+      "kind": "alchemy",
+      "name": {
+        "zh_CN": "解毒丹",
+        "en_US": "Detox Pill"
+      },
+      "inputs": [
+        {
+          "id": "mat_spirit_herb",
+          "count": 2
+        },
+        {
+          "id": "mat_cinnabar",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "pill_detox",
+        "count": 1
+      }
+    },
+    {
+      "id": "alchemy_might",
+      "kind": "alchemy",
+      "name": {
+        "zh_CN": "蛮力丹",
+        "en_US": "Might Pill"
+      },
+      "inputs": [
+        {
+          "id": "mat_beast_bone",
+          "count": 2
+        },
+        {
+          "id": "mat_cinnabar",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "pill_might",
+        "count": 1
+      }
+    },
+    {
+      "id": "alchemy_iron_skin",
+      "kind": "alchemy",
+      "name": {
+        "zh_CN": "铁骨丹",
+        "en_US": "Iron-Bone Pill"
+      },
+      "inputs": [
+        {
+          "id": "mat_dark_ore",
+          "count": 2
+        },
+        {
+          "id": "mat_spirit_herb",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "pill_iron_skin",
+        "count": 1
+      }
+    },
+    {
+      "id": "talisman_sky_thunder",
+      "kind": "talisman",
+      "name": {
+        "zh_CN": "摹刻天雷符",
+        "en_US": "Sky Thunder Talisman"
+      },
+      "inputs": [
+        {
+          "id": "mat_talisman_paper",
+          "count": 1
+        },
+        {
+          "id": "mat_bird_feather",
+          "count": 1
+        },
+        {
+          "id": "mat_cinnabar",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "talisman_sky_thunder",
+        "count": 1
+      }
+    },
+    {
+      "id": "talisman_immobilize",
+      "kind": "talisman",
+      "name": {
+        "zh_CN": "摹锁定身符",
+        "en_US": "Immobilize Talisman"
+      },
+      "inputs": [
+        {
+          "id": "mat_talisman_paper",
+          "count": 1
+        },
+        {
+          "id": "mat_serpent_scale",
+          "count": 1
+        },
+        {
+          "id": "mat_cinnabar",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "talisman_immobilize",
+        "count": 1
+      }
+    },
+    {
+      "id": "talisman_adamant",
+      "kind": "talisman",
+      "name": {
+        "zh_CN": "摹贴金刚符",
+        "en_US": "Adamant Talisman"
+      },
+      "inputs": [
+        {
+          "id": "mat_talisman_paper",
+          "count": 1
+        },
+        {
+          "id": "mat_beast_bone",
+          "count": 1
+        },
+        {
+          "id": "mat_cinnabar",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "talisman_adamant",
+        "count": 1
+      }
+    },
+    {
+      "id": "forge_duanshui",
+      "kind": "forge",
+      "name": {
+        "zh_CN": "锻·断水古铗",
+        "en_US": "Forge Watersplitter"
+      },
+      "inputs": [
+        {
+          "id": "mat_dark_ore",
+          "count": 3
+        },
+        {
+          "id": "mat_beast_bone",
+          "count": 2
+        }
+      ],
+      "output": {
+        "id": "w_duanshui",
+        "count": 1
+      }
+    },
+    {
+      "id": "forge_longscale",
+      "kind": "forge",
+      "name": {
+        "zh_CN": "锻·龙鳞刀",
+        "en_US": "Forge Dragonscale Saber"
+      },
+      "inputs": [
+        {
+          "id": "mat_dragon_scale",
+          "count": 2
+        },
+        {
+          "id": "mat_dark_ore",
+          "count": 2
+        },
+        {
+          "id": "mat_demon_core",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "w_longscale",
+        "count": 1
+      }
+    },
+    {
+      "id": "forge_xuantie",
+      "kind": "forge",
+      "name": {
+        "zh_CN": "锻·玄铁重铠",
+        "en_US": "Forge Dark-Iron Plate"
+      },
+      "inputs": [
+        {
+          "id": "mat_dark_ore",
+          "count": 4
+        },
+        {
+          "id": "mat_beast_bone",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "a_xuantie",
+        "count": 1
+      }
+    },
+    {
+      "id": "forge_tayun",
+      "kind": "forge",
+      "name": {
+        "zh_CN": "锻·踏云履",
+        "en_US": "Forge Cloud-Striding Boots"
+      },
+      "inputs": [
+        {
+          "id": "mat_bird_feather",
+          "count": 3
+        },
+        {
+          "id": "mat_dark_ore",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "b_tayun",
+        "count": 1
+      }
+    },
+    {
+      "id": "forge_tongling",
+      "kind": "forge",
+      "name": {
+        "zh_CN": "铸·通灵玉佩",
+        "en_US": "Cast Spirit-Link Jade"
+      },
+      "inputs": [
+        {
+          "id": "mat_jade_fragment",
+          "count": 3
+        },
+        {
+          "id": "mat_serpent_scale",
+          "count": 1
+        },
+        {
+          "id": "mat_demon_core",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "p_tongling",
+        "count": 1
+      }
+    },
+    {
+      "id": "forge_zhenyue",
+      "kind": "forge",
+      "name": {
+        "zh_CN": "锻·镇岳冠",
+        "en_US": "Forge Mountain-Crown"
+      },
+      "inputs": [
+        {
+          "id": "mat_dark_ore",
+          "count": 3
+        },
+        {
+          "id": "mat_demon_core",
+          "count": 1
+        },
+        {
+          "id": "mat_jade_fragment",
+          "count": 1
+        }
+      ],
+      "output": {
+        "id": "m_zhenyue",
+        "count": 1
+      }
+    }
+  ]
 }

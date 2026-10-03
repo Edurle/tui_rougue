@@ -146,6 +146,18 @@ def run() -> None:
         # 8) 行囊（含装备区）
         make_shot(engine, ih.InventoryEventHandler(engine), "shot_inventory", context, console)
 
+        # 8b) 天工开物炼制界面（备齐材料，展示三页与需求着色）
+        for mid, count in (
+            ("mat_spirit_herb", 4), ("mat_cinnabar", 2), ("mat_beast_bone", 3),
+            ("mat_dark_ore", 5), ("mat_talisman_paper", 1),
+        ):
+            item = content.build_item(mid, engine.gamemap, 0, 0)
+            engine.gamemap.entities.discard(item)
+            item.gamemap = None
+            item.stack = count
+            engine.player.inventory.add(item)
+        make_shot(engine, ih.CraftEventHandler(engine), "shot_craft", context, console)
+
         # 9) 职业选择（有存档：顶部"继续游历"）
         engine.autosave()
         selector = ih.ClassSelectEventHandler(content, settings, has_save=True)

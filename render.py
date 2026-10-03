@@ -753,6 +753,77 @@ def render_game_over(console: tcod.console.Console, engine: "Engine") -> None:
     console.print(x, engine.settings.map_rows - 2, text, fg=tuple(theme["hud"]["dead_tag"]))
 
 
+# ---- 天工开物（C：炼制界面）----
+
+
+def render_craft_menu(console: tcod.console.Console, engine: "Engine", page: int, cursor: int) -> None:
+    """炼制界面：丹/器/符三页（Tab 切换），配方 + 材料需求着色 + 行囊材料摘要。"""
+    import craft
+
+    strings = engine.content.strings
+    content = engine.content
+    theme = engine.content.theme
+    recipes = craft.recipes_of_kind(content, craft.CRAFT_KINDS[page])
+
+    map_cols = engine.settings.map_cols
+    map_rows = engine.settings.map_rows
+    menu_width = min(52, map_cols - 2)
+    menu_height = min(map_rows - 2, max(12, len(recipes) * 2 + 8))
+    x = max(0, (map_cols - menu_width) // 2)
+    y = max(0, (map_rows - menu_height) // 2)
+
+    page_names = (
+        strings["craft_page_alchemy"],
+        strings["craft_page_forge"],
+        strings["craft_page_talisman"],
+    )
+    console.draw_frame(
+        x=x,
+        y=y,
+        width=menu_width,
+        height=menu_height,
+        title=f" {strings['craft_title']} ",
+        clear=True,
+        fg=tuple(theme["ui"]["frame"]),
+        bg=tuple(theme["background"]),
+    )
+    header = " · ".join(
+        (f"[{name}]" if i == page else name) for i, name in enumerate(page_names)
+    )
+    console.print(x + 2, y + 1, header, fg=COLOR_HEADER)
+    console.print(
+        x + 2, y + 2,
+        strings["craft_hint"].format(count=len(recipes))[: menu_width - 4],
+        fg=(150, 150, 158),
+    )
+
+    row = y + 4
+    for i, recipe in enumerate(recipes[: menu_height - 7]):
+        mark = ">" if i == cursor else " "
+        name = content._(recipe["name"])
+        output = content.items[recipe["output"]["id"]]
+        requirements = craft.recipe_requirements(engine, recipe)
+        craftable = all(ok for *_, ok in requirements)
+        line_color = COLOR_NAME if craftable else COLOR_SKILL_LOCKED
+        console.print(x + 2, row, f"{mark}{name} → {content._(output['name'])}", fg=line_color)
+        # 材料需求行：绿 ✓ / 红 ✗
+        parts = []
+        for _, mat_name, need, have, ok in requirements:
+            parts.append(f"{mat_name} {have}/{need}")
+        detail = "  " + "  ".join(parts)
+        console.print(x + 2, row + 1, detail[: menu_width - 4], fg=(150, 200, 160))
+        row += 2
+
+    # 行囊材料摘要（底部一行）
+    summary_parts = []
+    for iid in sorted(craft.materials_of(content)):
+        have = engine.player.inventory.count_material(iid, content)
+        if have > 0:
+            summary_parts.append(f"{content._(content.items[iid]['name'])}{have}")
+    summary = strings["craft_materials"] + "：" + (" ".join(summary_parts) if summary_parts else "—")
+    console.print(x + 2, y + menu_height - 2, summary[: menu_width - 4], fg=(170, 170, 180))
+
+
 # ---- 山海图卷（M：世界地图）----
 
 # 块采样时各地形的显示优先级（桥最高：渡口是导航关键）

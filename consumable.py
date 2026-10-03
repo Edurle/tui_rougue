@@ -93,8 +93,74 @@ class LightningConsumable(Consumable):
         self.consume()
 
 
+class CleanseConsumable(Consumable):
+    """解毒丹：清除自身蛊毒。"""
+
+    def activate(self, action: "ItemAction") -> None:
+        strings = self.engine.content.strings
+        player = self.engine.player
+        if not player.fighter.poisoned:
+            raise exceptions.Impossible(strings["cleanse_no_poison"])
+        player.fighter.dot = [0, 0]
+        self.engine.message_log.add_message(strings["cleanse_used"], "heal")
+        self.engine.effects.spawn_heal(player.x, player.y, 0)
+        self.consume()
+
+
+class BuffItemConsumable(Consumable):
+    """药丹/符箓：临时提升攻或防（走 fighter 的回合 buff 状态机）。"""
+
+    def __init__(self, stat: str, amount: int, turns: int) -> None:
+        self.stat = stat
+        self.amount = amount
+        self.turns = turns
+
+    def activate(self, action: "ItemAction") -> None:
+        strings = self.engine.content.strings
+        player = self.engine.player
+        player.fighter.apply_buff(self.stat, self.amount, self.turns)
+        key = f"buff_item_{self.stat}"
+        self.engine.message_log.add_message(
+            strings[key].format(amount=self.amount, turns=self.turns), "buff"
+        )
+        self.engine.effects.spawn_buff(player.x, player.y)
+        self.consume()
+
+
+class StunAreaConsumable(Consumable):
+    """定身符：视野内全体敌人神魂受震。"""
+
+    def __init__(self, turns: int, radius: int = 12) -> None:
+        self.turns = turns
+        self.radius = radius
+
+    def activate(self, action: "ItemAction") -> None:
+        strings = self.engine.content.strings
+        engine = self.engine
+        targets = [
+            actor
+            for actor in engine.gamemap.actors
+            if actor.team == "wild"
+            and actor.is_alive
+            and engine.gamemap.visible[actor.x, actor.y]
+            and actor.distance_to(engine.player) <= self.radius
+        ]
+        if not targets:
+            raise exceptions.Impossible(strings["lightning_no_target"])
+        for target in targets:
+            target.fighter.apply_stun(self.turns)
+            engine.effects.spawn_stun(target.x, target.y)
+        engine.message_log.add_message(
+            strings["talisman_stun"].format(count=len(targets)), "lightning"
+        )
+        self.consume()
+
+
 CONSUMABLE_TYPES = {
     "heal": HealConsumable,
     "heal_mp": HealMpConsumable,
     "lightning": LightningConsumable,
+    "cleanse": CleanseConsumable,
+    "buff_item": BuffItemConsumable,
+    "stun_area": StunAreaConsumable,
 }

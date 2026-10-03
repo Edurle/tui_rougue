@@ -153,5 +153,18 @@
   "pickup_stack": "你拾起了{item}×{count}。",
   "gather_ok": "你采下{item}×{count}。",
   "material_drop": "{monster}的遗骸中散落了{item}。",
-  "hint_gather": "采集{name}"
+  "hint_gather": "采集{name}",
+  "craft_title": "天工开物（Tab 换卷 · ↑↓ 选择 · 回车 炼制 · Esc 收起）",
+  "craft_page_alchemy": "炼丹",
+  "craft_page_forge": "炼器",
+  "craft_page_talisman": "炼符",
+  "craft_hint": "本卷共 {count} 方",
+  "craft_materials": "行囊材料",
+  "craft_ok": "炉火纯青！你依「{recipe}」炼成{item}。",
+  "craft_no_materials": "材料未齐，无法炼制。",
+  "cleanse_used": "药力化开，蛊毒尽解。",
+  "cleanse_no_poison": "你没有中毒，无需服丹。",
+  "buff_item_power": "药力奔涌，膂力+{amount}（{turns} 回合）。",
+  "buff_item_defense": "罡气护体，防御+{amount}（{turns} 回合）。",
+  "talisman_stun": "符光乍现，{count} 名敌人僵立原地。"
 }

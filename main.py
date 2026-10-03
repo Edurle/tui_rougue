@@ -26,12 +26,14 @@ from input_handlers import (
     ChangeSizeAction,
     ClassSelectEventHandler,
     CloseMenuAction,
+    CraftEventHandler,
     DirectionSelectEventHandler,
     ExamineEventHandler,
     GameOverEventHandler,
     InventoryEventHandler,
     LoadGameAction,
     MainGameEventHandler,
+    OpenCraftAction,
     OpenExamineAction,
     OpenInventoryAction,
     OpenSkillLearnAction,
@@ -165,6 +167,8 @@ def game_loop(context, console, engine, content) -> str:
                     handler = ExamineEventHandler(engine)
                 elif isinstance(action, OpenWorldMapAction):
                     handler = WorldMapEventHandler(engine)
+                elif isinstance(action, OpenCraftAction):
+                    handler = CraftEventHandler(engine)
                 elif isinstance(action, CloseMenuAction):
                     handler = MainGameEventHandler(engine)
                 elif isinstance(action, LoadGameAction):

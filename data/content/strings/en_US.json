@@ -152,5 +152,18 @@
   "pickup_stack": "You pick up {item} x{count}.",
   "gather_ok": "You gather {item} x{count}.",
   "material_drop": "{item} spills from the remains of {monster}.",
-  "hint_gather": "Gather {name}"
+  "hint_gather": "Gather {name}",
+  "craft_title": "Crafting (Tab page · ↑↓ select · Enter craft · Esc)",
+  "craft_page_alchemy": "Alchemy",
+  "craft_page_forge": "Forging",
+  "craft_page_talisman": "Talisman",
+  "craft_hint": "{count} recipes in this volume",
+  "craft_materials": "Materials",
+  "craft_ok": "Masterful work! You craft {item} ({recipe}).",
+  "craft_no_materials": "Not enough materials.",
+  "cleanse_used": "The medicine dissolves the venom.",
+  "cleanse_no_poison": "You are not poisoned.",
+  "buff_item_power": "Power surges: +{amount} for {turns} turns.",
+  "buff_item_defense": "Gang qi shields you: defense +{amount} for {turns} turns.",
+  "talisman_stun": "The talisman flashes; {count} enemies freeze in place."
 }

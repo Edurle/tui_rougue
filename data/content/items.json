@@ -921,5 +921,389 @@
       "zh_CN": "美玉碾磨的碎屑，养气凝神，佩饰点睛之选。",
       "en_US": "Shards of ground jade that nourish the spirit - the finishing touch for amulets."
     }
+  },
+  "pill_rejuvenation": {
+    "name": {
+      "zh_CN": "回春丹",
+      "en_US": "Rejuvenation Pill"
+    },
+    "char": "!",
+    "color": [
+      150,
+      240,
+      170
+    ],
+    "tags": [
+      "consumable"
+    ],
+    "lore": {
+      "zh_CN": "以九蒸九晒灵草合朱砂而成，服之气血奔涌，沉疴立起。",
+      "en_US": "Steamed nine times and sun-dried nine more, this pill sends vitality surging through the blood."
+    },
+    "consumable": {
+      "type": "heal",
+      "amount": 30
+    }
+  },
+  "pill_condense_qi": {
+    "name": {
+      "zh_CN": "凝气丹",
+      "en_US": "Qi-Condensing Pill"
+    },
+    "char": "?",
+    "color": [
+      130,
+      230,
+      240
+    ],
+    "tags": [
+      "consumable"
+    ],
+    "lore": {
+      "zh_CN": "蛇鳞辟浊、灵草为引，一粒入腹，真气如泉。",
+      "en_US": "With serpent scale to purify and spirit herb as the guide, one pill restores qi like a spring."
+    },
+    "consumable": {
+      "type": "heal_mp",
+      "amount": 22
+    }
+  },
+  "pill_detox": {
+    "name": {
+      "zh_CN": "解毒丹",
+      "en_US": "Detox Pill"
+    },
+    "char": "!",
+    "color": [
+      180,
+      232,
+      120
+    ],
+    "tags": [
+      "consumable"
+    ],
+    "lore": {
+      "zh_CN": "青碧之丹，苦而回甘，蛊毒入腹顷刻自解。",
+      "en_US": "A jade-green pill, bitter yet sweet after; venoms unbind themselves moments after swallowing."
+    },
+    "consumable": {
+      "type": "cleanse"
+    }
+  },
+  "pill_might": {
+    "name": {
+      "zh_CN": "蛮力丹",
+      "en_US": "Might Pill"
+    },
+    "char": "!",
+    "color": [
+      240,
+      160,
+      100
+    ],
+    "tags": [
+      "consumable"
+    ],
+    "lore": {
+      "zh_CN": "兽骨煅灰合朱砂，药力如兽奔雷霆，膂力暴增而后力竭。",
+      "en_US": "Beast bone ash and cinnabar; the strength of a beast storms through your arms - for a while."
+    },
+    "consumable": {
+      "type": "buff_item",
+      "stat": "power",
+      "amount": 4,
+      "turns": 12
+    }
+  },
+  "pill_iron_skin": {
+    "name": {
+      "zh_CN": "铁骨丹",
+      "en_US": "Iron-Bone Pill"
+    },
+    "char": "!",
+    "color": [
+      190,
+      190,
+      210
+    ],
+    "tags": [
+      "consumable"
+    ],
+    "lore": {
+      "zh_CN": "玄铁细粉入药，筋骨如铸，兵刃加身而不过。",
+      "en_US": "Dark-ore dust tempered into medicine; sinew and bone turn to cast iron."
+    },
+    "consumable": {
+      "type": "buff_item",
+      "stat": "defense",
+      "amount": 4,
+      "turns": 12
+    }
+  },
+  "talisman_sky_thunder": {
+    "name": {
+      "zh_CN": "天雷符",
+      "en_US": "Sky Thunder Talisman"
+    },
+    "char": "?",
+    "color": [
+      200,
+      180,
+      255
+    ],
+    "tags": [
+      "consumable",
+      "talisman"
+    ],
+    "lore": {
+      "zh_CN": "以禽羽为笔、朱砂为墨摹就，引动之时九天雷落。",
+      "en_US": "Inscribed with plume-brush and cinnabar ink; when invoked, thunder falls from the ninth heaven."
+    },
+    "consumable": {
+      "type": "lightning",
+      "damage": 18,
+      "max_range": 8
+    }
+  },
+  "talisman_immobilize": {
+    "name": {
+      "zh_CN": "定身符",
+      "en_US": "Immobilize Talisman"
+    },
+    "char": "?",
+    "color": [
+      220,
+      150,
+      170
+    ],
+    "tags": [
+      "consumable",
+      "talisman"
+    ],
+    "lore": {
+      "zh_CN": "蛇鳞纹路盘曲如锁，符成之处，百邪僵立。",
+      "en_US": "Serpent-scale script coils like a lock; where the talisman lands, all evils stand frozen."
+    },
+    "consumable": {
+      "type": "stun_area",
+      "turns": 3
+    }
+  },
+  "talisman_adamant": {
+    "name": {
+      "zh_CN": "金刚符",
+      "en_US": "Adamant Talisman"
+    },
+    "char": "?",
+    "color": [
+      255,
+      226,
+      130
+    ],
+    "tags": [
+      "consumable",
+      "talisman"
+    ],
+    "lore": {
+      "zh_CN": "金光符文，贴身即化罡气护体。",
+      "en_US": "Golden script that turns to a sheath of gang qi the moment it touches the skin."
+    },
+    "consumable": {
+      "type": "buff_item",
+      "stat": "defense",
+      "amount": 5,
+      "turns": 10
+    }
+  },
+  "w_duanshui": {
+    "name": {
+      "zh_CN": "断水·古铗",
+      "en_US": "Watersplitter"
+    },
+    "char": "/",
+    "color": [
+      200,
+      226,
+      240
+    ],
+    "tags": [
+      "forged"
+    ],
+    "lore": {
+      "zh_CN": "玄铁锻就的古铗，挥之有断流之声。",
+      "en_US": "An ancient blade of dark ore; swing it and you hear the sound of a river parting."
+    },
+    "tier": 5,
+    "equipment": {
+      "slot": "weapon",
+      "bonuses": {
+        "power": 6
+      },
+      "affixes": [
+        {
+          "id": "aoe_damage",
+          "value": 15
+        }
+      ]
+    }
+  },
+  "w_longscale": {
+    "name": {
+      "zh_CN": "龙鳞刀",
+      "en_US": "Dragonscale Saber"
+    },
+    "char": "/",
+    "color": [
+      255,
+      206,
+      130
+    ],
+    "tags": [
+      "forged"
+    ],
+    "lore": {
+      "zh_CN": "真龙之鳞锻于刃脊，雷纹隐现，斩处生焰。",
+      "en_US": "A true dragon's scale forged into the spine; thunder patterns flicker where it cuts."
+    },
+    "tier": 6,
+    "equipment": {
+      "slot": "weapon",
+      "bonuses": {
+        "power": 8
+      },
+      "affixes": [
+        {
+          "id": "thunder_damage",
+          "value": 20
+        }
+      ]
+    }
+  },
+  "a_xuantie": {
+    "name": {
+      "zh_CN": "玄铁重铠",
+      "en_US": "Dark-Iron Plate"
+    },
+    "char": "[",
+    "color": [
+      158,
+      160,
+      176
+    ],
+    "tags": [
+      "forged"
+    ],
+    "lore": {
+      "zh_CN": "玄铁千锤成铠，着之如负山岳，而山岳护你。",
+      "en_US": "Dark ore hammered a thousand times; wearing it is bearing a mountain - and the mountain bears you back."
+    },
+    "tier": 5,
+    "equipment": {
+      "slot": "armor",
+      "bonuses": {
+        "defense": 5,
+        "max_hp": 12
+      },
+      "affixes": []
+    }
+  },
+  "b_tayun": {
+    "name": {
+      "zh_CN": "踏云履",
+      "en_US": "Cloud-Striding Boots"
+    },
+    "char": "\"",
+    "color": [
+      176,
+      216,
+      232
+    ],
+    "tags": [
+      "forged"
+    ],
+    "lore": {
+      "zh_CN": "禽羽衬底，步罡踏斗，行走如乘云气。",
+      "en_US": "Lined with plumes; each step rides the cloud-qi."
+    },
+    "tier": 5,
+    "equipment": {
+      "slot": "boots",
+      "bonuses": {
+        "defense": 2,
+        "max_mp": 8
+      },
+      "affixes": [
+        {
+          "id": "mp_cost_reduce",
+          "value": 1
+        }
+      ]
+    }
+  },
+  "p_tongling": {
+    "name": {
+      "zh_CN": "通灵玉佩",
+      "en_US": "Spirit-Link Jade"
+    },
+    "char": ",",
+    "color": [
+      180,
+      232,
+      214
+    ],
+    "tags": [
+      "forged"
+    ],
+    "lore": {
+      "zh_CN": "玉屑熔铸，佩之灵台清明，气机绵长。",
+      "en_US": "Cast from jade shards; worn, the spirit clears and qi runs long."
+    },
+    "tier": 5,
+    "equipment": {
+      "slot": "amulet",
+      "bonuses": {
+        "max_hp": 8,
+        "max_mp": 8
+      },
+      "affixes": [
+        {
+          "id": "heal_power",
+          "value": 20
+        }
+      ]
+    }
+  },
+  "m_zhenyue": {
+    "name": {
+      "zh_CN": "镇岳冠",
+      "en_US": "Mountain-Crown"
+    },
+    "char": "^",
+    "color": [
+      232,
+      208,
+      140
+    ],
+    "tags": [
+      "forged"
+    ],
+    "lore": {
+      "zh_CN": "魔核嵌顶，玄铁为箍，戴之若镇岳，神魂不摇。",
+      "en_US": "A demon core set at the brow, dark iron for the band; the head becomes a settled mountain."
+    },
+    "tier": 6,
+    "equipment": {
+      "slot": "helm",
+      "bonuses": {
+        "defense": 4,
+        "max_hp": 10
+      },
+      "affixes": [
+        {
+          "id": "resist_stun",
+          "value": 40
+        }
+      ]
+    }
   }
 }

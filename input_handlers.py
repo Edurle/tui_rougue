@@ -69,6 +69,7 @@ ASCEND_KEY = KeySym.LESS  # Shift + 逗号
 SKILL_LEARN_KEY = KeySym.K  # vi 的 K 让位：上移用方向键/W
 EXAMINE_KEY = KeySym.X  # 查看视野内怪物属性
 WORLD_MAP_KEY = KeySym.M  # 山海图卷（大世界地图）
+CRAFT_KEY = KeySym.C  # 天工开物（炼丹/炼器/炼符）
 TAB_KEY = KeySym.TAB
 EQUIP_KEY = KeySym.E
 
@@ -133,6 +134,10 @@ class OpenExamineAction(SwitchHandlerAction):
 
 
 class OpenWorldMapAction(SwitchHandlerAction):
+    pass
+
+
+class OpenCraftAction(SwitchHandlerAction):
     pass
 
 
@@ -224,6 +229,8 @@ class MainGameEventHandler(LogScrollMixin, EventHandler):
             return None
         if key == WORLD_MAP_KEY:
             return OpenWorldMapAction()
+        if player.is_alive and key == CRAFT_KEY:
+            return OpenCraftAction()
         if key in SCROLL_UP_KEYS and player.is_alive:
             engine.message_log.scroll(3)
             return None
@@ -557,6 +564,58 @@ class WorldMapEventHandler(EventHandler):
         key = normalize_sym(event.sym)
         if key in (KeySym.ESCAPE, WORLD_MAP_KEY) or key in CONFIRM_KEYS:
             return CloseMenuAction()
+        return None
+
+
+class CraftEventHandler(EventHandler):
+    """天工开物（C）：炼丹/炼器/炼符三页。Tab 换页，↑↓ 选择，回车 炼制，Esc 关闭。
+
+    不消耗回合（随时随地进行）。
+    """
+
+    def __init__(self, engine) -> None:
+        super().__init__(engine)
+        self.page = 0  # 0 丹 / 1 器 / 2 符
+        self.cursor = 0
+
+    def _recipes(self) -> List[dict]:
+        import craft
+
+        return craft.recipes_of_kind(self.engine.content, craft.CRAFT_KINDS[self.page])
+
+    def on_render(self, console) -> None:
+        super().on_render(console)
+        import render
+
+        render.render_craft_menu(console, self.engine, page=self.page, cursor=self.cursor)
+
+    def ev_keydown(self, event: tcod.event.KeyDown):
+        import exceptions as exceptions_module
+        import craft
+
+        engine = self.engine
+        key = normalize_sym(event.sym)
+        if key == KeySym.ESCAPE or key == CRAFT_KEY:
+            return CloseMenuAction()
+        if key == TAB_KEY:
+            self.page = (self.page + 1) % len(craft.CRAFT_KINDS)
+            self.cursor = 0
+            return None
+        if key == KeySym.UP:
+            self.cursor = max(0, self.cursor - 1)
+            return None
+        if key == KeySym.DOWN:
+            self.cursor = min(len(self._recipes()) - 1, self.cursor + 1)
+            return None
+        if key in CONFIRM_KEYS:
+            recipes = self._recipes()
+            if not recipes:
+                return None
+            try:
+                craft.execute_recipe(engine, recipes[self.cursor])
+            except exceptions_module.Impossible as exc:
+                engine.message_log.add_message(str(exc), "warn")
+            return None
         return None
 
 
