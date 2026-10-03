@@ -16,13 +16,13 @@ from settings import MAP_PRESETS, SIDEBAR_PRESETS, Settings  # noqa: E402
 def test_large_is_default_and_matches_current_layout():
     s = Settings()
     assert (s.map_size, s.sidebar_size) == ("large", "large")
-    assert s.tile_size == 32
-    assert s.total_cols == 40 and s.total_rows == 24
-    assert s.divider_col == 26
-    assert s.content_x == 27 and s.content_w == 13
-    assert s.map_cols == 26 and s.map_rows == 24
-    assert s.divider_row == 18  # 紧凑档：技能两列 + 装备五槽
-    assert s.log_height == 5  # 文档要求：日志 ≥5 行
+    assert s.tile_size == 20
+    assert s.total_cols == 64 and s.total_rows == 38
+    assert s.divider_col == 42
+    assert s.content_x == 43 and s.content_w == 21
+    assert s.map_cols == 42 and s.map_rows == 38
+    assert s.divider_row == 22  # 完整档
+    assert s.log_height == 15  # 日志 ≥5 行
 
 
 def test_all_preset_combinations_derive_consistently():

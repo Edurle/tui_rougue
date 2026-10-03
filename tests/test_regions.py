@@ -136,12 +136,12 @@ def test_contextual_hints_render_world():
     player = engine.player
 
     content.build_item("lingzhi", engine.gamemap, player.x, player.y)  # 脚下放灵芝
-    console = tcod.console.Console(40, 24, order="F")
+    console = tcod.console.Console(engine.settings.total_cols, engine.settings.total_rows, order="F")
     render.render_all(console, engine)
 
     texts = []
     for y in (6, 7):
-        line = "".join(chr(c) for c in console.rgb[27:40, y]["ch"] if c != 32)
+        line = "".join(chr(c) for c in console.rgb[engine.settings.content_x:, y]["ch"] if c != 32)
         texts.append(line)
     joined = "".join(texts)
     assert "G" in joined and "拾取" in joined.replace(" ", "")
@@ -152,7 +152,7 @@ def test_contextual_hints_render_world():
             engine.gamemap.entities.discard(existing)
     render.render_all(console, engine)
     joined = "".join(
-        "".join(chr(c) for c in console.rgb[27:40, y]["ch"] if c != 32) for y in (6, 7)
+        "".join(chr(c) for c in console.rgb[engine.settings.content_x:, y]["ch"] if c != 32) for y in (6, 7)
     )
     assert "拾取" not in joined.replace(" ", "")
     # 大世界没有山径提示

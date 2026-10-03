@@ -214,6 +214,11 @@ def _skill_state_color(engine, skill: dict) -> Tuple[int, int, int]:
     return COLOR_SKILL_READY
 
 
+def _sprint(console, x, y, text, fg=None) -> None:
+    """侧栏打印（与 console.print 等价，保留作统一入口）。"""
+    console.print(x, y, text, fg=fg)
+
+
 def _render_sidebar(console: tcod.console.Console, engine: "Engine") -> None:
     theme = engine.content.theme
     strings = engine.content.strings
@@ -224,9 +229,9 @@ def _render_sidebar(console: tcod.console.Console, engine: "Engine") -> None:
 
     frame_color = tuple(theme["ui"]["frame"])
     for y in range(settings.total_rows):
-        console.print(settings.divider_col, y, "│", fg=frame_color)
+        _sprint(console, settings.divider_col, y, "│", fg=frame_color)
     for x in range(settings.content_x, console.width):
-        console.print(x, layout["divider"], "─", fg=frame_color)
+        _sprint(console, x, layout["divider"], "─", fg=frame_color)
 
     x = settings.content_x
     w = settings.content_w
@@ -234,28 +239,29 @@ def _render_sidebar(console: tcod.console.Console, engine: "Engine") -> None:
     level = player.level
 
     # 名字 + 职业页眉第一段
-    console.print(x, 0, player.name, fg=COLOR_NAME)
+    _sprint(console, x, 0, player.name, fg=COLOR_NAME)
 
     if fighter:
         hp_text = strings["hud_hp"].format(hp=fighter.hp, max_hp=fighter.max_hp)
-        console.print(x, 1, hp_text, fg=tuple(theme["hud"]["hp"]))
+        _sprint(console, x, 1, hp_text, fg=tuple(theme["hud"]["hp"]))
         filled = round(w * fighter.hp / fighter.max_hp)
-        console.print(x, 2, BAR_FILLED * filled, fg=tuple(theme["hud"]["hp"]))
-        console.print(x + filled, 2, BAR_EMPTY * (w - filled), fg=(70, 52, 56))
+        _sprint(console, x, 2, BAR_FILLED * filled, fg=tuple(theme["hud"]["hp"]))
+        _sprint(console, x + filled, 2, BAR_EMPTY * (w - filled), fg=(70, 52, 56))
 
         mp_text = strings["hud_mp"].format(mp=fighter.mp, max_mp=fighter.max_mp)
-        console.print(x, layout["mp_row"], mp_text, fg=(120, 226, 232))
+        _sprint(console, x, layout["mp_row"], mp_text, fg=(120, 226, 232))
         if layout["mp_bar"]:
             filled = round(w * fighter.mp / max(1, fighter.max_mp))
-            console.print(x, layout["mp_row"] + 1, BAR_FILLED * filled, fg=(120, 226, 232))
-            console.print(
-                x + filled, layout["mp_row"] + 1, BAR_EMPTY * (w - filled), fg=(50, 58, 66)
+            _sprint(console, x, layout["mp_row"] + 1, BAR_FILLED * filled, fg=(120, 226, 232))
+            _sprint(
+                console, x + filled, layout["mp_row"] + 1, BAR_EMPTY * (w - filled), fg=(50, 58, 66)
             )
     else:
-        console.print(x, 1, strings["hud_hp_dead"], fg=tuple(theme["hud"]["dead_tag"]))
+        _sprint(console, x, 1, strings["hud_hp_dead"], fg=tuple(theme["hud"]["dead_tag"]))
 
     if level:
-        console.print(
+        _sprint(
+            console,
             x,
             layout["level_row"],
             strings["hud_level"].format(
@@ -279,7 +285,8 @@ def _render_sidebar(console: tcod.console.Console, engine: "Engine") -> None:
         location = strings["hud_floor"].format(
             region=content.region_name("zhongshanjing"), mountain=""
         )
-    console.print(
+    _sprint(
+        console,
         x,
         layout["floor_row"],
         location,
@@ -332,8 +339,8 @@ def _render_hints(console, engine, strings, theme, layout) -> None:
     shown = hints[-2:]  # 最多两条：最新在下（hint_row），较早的在其上
     for i, (key, label) in enumerate(reversed(shown)):
         row = layout["hint_row"] - i
-        console.print(content_x, row, key, fg=(255, 226, 130))
-        console.print(content_x + 2, row, label, fg=hint_color)
+        _sprint(console, content_x, row, key, fg=(255, 226, 130))
+        _sprint(console, content_x + 2, row, label, fg=hint_color)
 
 
 def _render_skills(console, engine, layout) -> None:
@@ -353,7 +360,7 @@ def _render_skills(console, engine, layout) -> None:
     ].format(points=player.skill_points)
     if not layout["compact"]:
         header += f"·{content.class_name(other_id)}"
-    console.print(x, layout["skill_header"], header, fg=COLOR_HEADER)
+    _sprint(console, x, layout["skill_header"], header, fg=COLOR_HEADER)
 
     skills_list = content.skills_for_class(class_id)
     first = layout["skill_first"]
@@ -364,18 +371,18 @@ def _render_skills(console, engine, layout) -> None:
         if layout["skill_two_cols"]:
             row = first + i // 2
             col = x + (i % 2) * (engine.settings.content_w // 2)
-            console.print(col, row, f"{key}{name}", fg=color)
+            _sprint(console, col, row, f"{key}{name}", fg=color)
         else:
             row = first + i
             import skills as skills_module
 
             cost = skills_module.mp_cost(player, skill)
-            console.print(x, row, f"{key} {name}", fg=color)
+            _sprint(console, x, row, f"{key} {name}", fg=color)
             cost_text = strings["skill_mp_cost"].format(mp=cost)
             if skill["effect"].get("hp_cost"):
                 cost_text += f"-{skill['effect']['hp_cost']}"
-            console.print(
-                x + engine.settings.content_w - len(cost_text) - 1, row, cost_text, fg=color
+            _sprint(
+                console, x + engine.settings.content_w - len(cost_text) - 1, row, cost_text, fg=color
             )
 
 
@@ -392,13 +399,13 @@ def _render_equipment(console, engine, layout) -> None:
         slot_name = strings[f"slot_{slot}"]
         item = equipment.slots.get(slot)
         if item is None:
-            console.print(x, row, f"{slot_name} {strings['slot_empty']}", fg=COLOR_SKILL_LOCKED)
+            _sprint(console, x, row, f"{slot_name} {strings['slot_empty']}", fg=COLOR_SKILL_LOCKED)
             continue
         summary = _bonus_summary(strings, item)
-        console.print(x, row, f"{slot_name} {item.name}", fg=COLOR_EQUIP)
+        _sprint(console, x, row, f"{slot_name} {item.name}", fg=COLOR_EQUIP)
         if summary:
-            console.print(
-                x + engine.settings.content_w - len(summary) - 1, row, summary, fg=(150, 200, 160)
+            _sprint(
+                console, x + engine.settings.content_w - len(summary) - 1, row, summary, fg=(150, 200, 160)
             )
 
 

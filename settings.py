@@ -2,7 +2,8 @@
 
 受 tcod 单窗口统一字格约束，"画面"档同时决定字号与总格数（窗口像素
 基本不变，格数与字号成反比）；"信息板"档决定信息板占的列数（地图相应
-让列）。语言 None = 跟随系统检测。全部持久化到 settings.json。
+让列，列数随小字号档位加宽以容纳更多内容）。语言 None = 跟随系统检测。
+全部持久化到 settings.json。
 """
 
 from __future__ import annotations
@@ -15,10 +16,10 @@ SETTINGS_FILE = Path("settings.json")
 WINDOW_PIXELS = (1280, 768)
 SIZE_ORDER = ("large", "medium", "small")
 
-# 画面档：字格边长 px（窗口像素 1280x768 下的等比档位）
-MAP_PRESETS = {"large": 32, "medium": 24, "small": 18}
-# 信息板档：占列数（含分隔线）
-SIDEBAR_PRESETS = {"large": 14, "medium": 18, "small": 22}
+# 画面档：字格边长 px（窗口像素 1280x768 下的等比档位；统一小字多格）
+MAP_PRESETS = {"large": 20, "medium": 16, "small": 12}
+# 信息板档：占列数（含分隔线；小字号下列数加宽，物理宽度大体相当）
+SIDEBAR_PRESETS = {"large": 22, "medium": 28, "small": 38}
 
 MIN_MAP_COLS = 16
 

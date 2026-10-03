@@ -108,7 +108,7 @@ def test_render_all_headless():
 
     content = load_content()
     engine = Engine(content, Settings())
-    console = tcod.console.Console(40, 24, order="F")
+    console = tcod.console.Console(engine.settings.total_cols, engine.settings.total_rows, order="F")
     render.render_all(console, engine)
     ch = console.rgb[:26, :22]["ch"]
     assert (ch != 32).any()  # 地图区有内容

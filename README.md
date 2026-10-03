@@ -160,7 +160,7 @@ assets/            中文像素字体（OFL）   data/content/     全部内容�
 - 主字体 **Maple Mono NF CN**（现代等宽 + Nerd 图标，OFL 授权，实测 CJK 宽高比正常）；融合像素字体保留为 `assets/font-fusion.ttf`，想换回把 `main.py` 的 FALLBACK_FONTS 顺序对调即可
 
 - `assets/font.ttf` 为[融合像素字体](https://github.com/TakWolf/fusion-pixel-font)（12px proportional zh_hans），依 SIL Open Font License 1.1 授权，可随本程序再分发，协议全文见 `assets/font-OFL.txt`
-- 显示设置两档独立（开始界面 → 设置 调整并持久化到 settings.json，对局中不可变更，默认均为**大**）：
+- 显示设置两档独立（开始界面 → 设置 调整并持久化到 settings.json，对局中不可变更，默认均为**大**；统一小字多格：大=20px/64×38 格、中=16px/80×48、小=12px/106×64——信息栏内容容量随之提升，大档日志 5→15 行）：
   - **画面**（字号+格数，窗口像素基本不变）：大 32px/40×24，中 24px/53×32，小 18px/71×42（窗口 ≈1280×768）
   - **信息板**（占列数）：大 14 列 / 中 18 列 / 小 22 列，地图相应让列
 - 信息板四段自适应（`settings.sidebar_layout` 行预算）：属性 → 技能页眉+8 槽 → 装备五槽 → 分隔线+日志；紧凑档（≤26 行）技能两列压缩、保日志 ≥5 行，完整档技能单列带耗气

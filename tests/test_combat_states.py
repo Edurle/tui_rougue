@@ -285,6 +285,8 @@ def test_k_opens_learn_menu_and_learn_flow():
 
 
 def sidebar_text(console, engine, rows):
+    import render
+
     x = engine.settings.content_x
     return "".join(
         "".join(chr(c) for c in console.rgb[x:, y]["ch"] if c != 32) for y in rows
@@ -323,16 +325,16 @@ def test_sidebar_renders_skills_and_equipment():
     assert "桃木剑" in text
 
 
-def test_sidebar_compact_two_columns():
-    import render
-
+def test_sidebar_layout_full_mode_all_sizes():
+    """20/16/12px 字号体系：三档行数均走完整档（单列 8 技能），行账平衡。"""
     from settings import sidebar_layout
 
-    for map_size, expect_two in (("large", True), ("medium", False)):
+    for map_size in ("large", "medium", "small"):
         settings = Settings(map_size, "large")
         layout = sidebar_layout(settings.total_rows)
-        assert layout["skill_two_cols"] is expect_two
-        assert settings.log_height >= 5
+        assert layout["skill_two_cols"] is False, f"{map_size} 应为完整档单列"
+        assert layout["skill_count"] == 8
+        assert settings.log_height >= 5, f"{map_size} 日志 ≥5 行"
         assert layout["divider"] + settings.log_height + 1 == settings.total_rows
 
 
