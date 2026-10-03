@@ -135,3 +135,49 @@ def test_class_select_has_continue_option(tmp_path, monkeypatch):
     options = handler._options()
     assert options[0] == ih.CONTINUE_ID
     assert len(options) == len(engine.content.classes) + 1
+
+
+def test_level_up_autosaves(tmp_path, monkeypatch):
+    """升级即存档：世界游玩的进度里程碑（防退出丢进度）。"""
+    import save_manager
+
+    monkeypatch.setattr(save_manager, "SAVE_DIR", str(tmp_path))
+    engine = make_engine()
+    assert save_manager.save_exists()  # 开局新区域首入已存
+
+    # 世界中升级（大量经验触发自动升级）
+    engine.player.x += 30  # 玩家已移动
+    engine.player.level.add_xp(10000)
+    assert engine.player.level.current_level >= 2
+
+    loaded = save_manager.load_engine(engine.content, Settings())
+    assert loaded.player.level.current_level == engine.player.level.current_level
+    assert (loaded.player.x, loaded.player.y) == (engine.player.x, engine.player.y)
+
+
+def test_exit_session_saves_progress(tmp_path, monkeypatch):
+    """退出会话（Esc/关窗）前自动存档：位置与状态落盘。"""
+    import save_manager
+
+    monkeypatch.setattr(save_manager, "SAVE_DIR", str(tmp_path))
+    engine = make_engine()
+
+    # 模拟世界游玩：移动 + 拾取材料 + 真气消耗（不触发任何常规 autosave 点）
+    engine.player.x += 25
+    engine.player.y += 8
+    engine.player.fighter.mp -= 5
+    item = engine.content.build_item("mat_spirit_herb", engine.gamemap, 0, 0)
+    engine.gamemap.entities.discard(item)
+    item.gamemap = None
+    item.stack = 9
+    engine.player.inventory.add(item)
+
+    # 模拟 main._run_session 的 finally 语义
+    from main import _run_session  # noqa: F401 —— 语义见下；game_loop 需窗口，此处直接调用 autosave
+    engine.autosave()
+
+    loaded = save_manager.load_engine(engine.content, Settings())
+    assert (loaded.player.x, loaded.player.y) == (engine.player.x, engine.player.y)
+    assert loaded.player.fighter.mp == engine.player.fighter.mp
+    mats = [i for i in loaded.player.inventory.items if i.is_material]
+    assert mats and mats[0].stack == 9

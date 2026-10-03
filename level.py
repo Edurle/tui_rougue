@@ -60,3 +60,4 @@ class Level(BaseComponent):
             strings["level_up"].format(level=self.current_level), "levelup"
         )
         self.engine.effects.spawn_level_up(parent.x, parent.y)
+        self.engine.autosave()  # 升级即存档：大世界游玩的进度里程碑

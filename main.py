@@ -121,6 +121,16 @@ def collect_class_ids(context, console, content, settings) -> tuple | None:
     return handler.chosen
 
 
+def _run_session(context, console, engine, content) -> str:
+    """一次游戏会话：退出（Esc/关窗）或切档位时，存活的进度先落盘再离开。"""
+    try:
+        return game_loop(context, console, engine, content)
+    finally:
+        # 死亡已删档（roguelike 铁律），其余情况退出前自动存档防进度丢失
+        if not engine.game_over and engine.player is not None and engine.player.is_alive:
+            engine.autosave()
+
+
 def game_loop(context, console, engine, content) -> str:
     """主循环；返回变更类型（map/sidebar/restart）请求上层处理，退出走 SystemExit。"""
     handler = MainGameEventHandler(engine)
@@ -253,7 +263,7 @@ def run(lang: Optional[str], smoke_output: Optional[str] = None) -> None:
                     engine = save_manager.load_engine(content, settings)
                     if engine is not None:
                         engine.message_log.add_message(strings["save_loaded"], "system")
-                        changed = game_loop(context, console, engine, content)
+                        changed = _run_session(context, console, engine, content)
                         if changed == "restart":
                             pass  # selected 仍为 None：回到职业选择
                         elif changed in ("map", "sidebar"):
@@ -277,7 +287,7 @@ def run(lang: Optional[str], smoke_output: Optional[str] = None) -> None:
                 "system",
             )
 
-            changed = game_loop(context, console, engine, content)
+            changed = _run_session(context, console, engine, content)
             if changed == "restart":
                 selected = None  # 转世重修：回到职业选择
             elif changed == "map":
