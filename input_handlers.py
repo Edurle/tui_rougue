@@ -728,8 +728,8 @@ class TitleMenuEventHandler(tcod.event.EventDispatch):
 class SettingsMenuEventHandler(tcod.event.EventDispatch):
     """设置界面：语言 / 画面 / 信息板（←→ 即时调整并保存），Esc 返回。
 
-    改语言会重载 content（界面即时切换文案）；改显示档位需重建窗口，
-    通过 needs_resize 标记由主循环处理。
+    改语言会重载 content 并置 lang_changed（主循环据此重烘字形并热替换
+    tileset）；改显示档位需重建窗口，通过 needs_resize 标记由主循环处理。
     """
 
     def __init__(self, content, settings) -> None:

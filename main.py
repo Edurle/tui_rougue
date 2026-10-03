@@ -125,7 +125,8 @@ def title_menu_loop(context, console, content, settings):
     - ("continue", content) 继续游历（存档存在）
     - ("quit", content)     离开（调用方 SystemExit/返回）
     - ("resize", content)   设置改了显示档位 → 外层重建窗口后回主菜单
-    content 可能因语言切换被重载（设置内即时生效）。
+    content 可能因语言切换被重载（设置内即时生效），同时重烘字形并
+    热替换 tileset（格数不变，无需重建窗口）。
     """
     import save_manager
 
@@ -147,6 +148,12 @@ def title_menu_loop(context, console, content, settings):
                 _present(context, console)
                 for event in tcod.event.get():
                     settings_menu.dispatch(event)
+                    if settings_menu.lang_changed:
+                        # 字形集按语言烘焙：切语言重载 content 后必须重烘 tileset
+                        # 并热替换，否则新语言字符缺字形显示空白
+                        content = settings_menu.content
+                        context.change_tileset(build_tileset(content, settings))
+                        settings_menu.lang_changed = False
             content = settings_menu.content  # 语言可能已切换（content 重载）
             if settings_menu.needs_resize:
                 return "resize", content
